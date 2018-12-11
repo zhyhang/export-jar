@@ -1,5 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.utils;
 
+import com.intellij.compiler.CompilerConfiguration;
+import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -9,8 +11,12 @@ import com.intellij.openapi.projectRoots.JavaSdkVersion;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiManager;
 import org.yanhuang.plugins.intellij.exportjar.Constants;
 
 import java.io.BufferedOutputStream;
@@ -44,6 +50,20 @@ public class CommonUtils {
 				iterateDirectory(project, allVfs, child);
 			} else {
 				allVfs.add(child);
+			}
+		}
+	}
+
+	public static void collectExportFiles(Project project, Set<VirtualFile> collected, VirtualFile parentVf) {
+		if (!parentVf.isDirectory() && isValidExport(project, parentVf)) {
+			collected.add(parentVf);
+		}
+		final VirtualFile[] children = parentVf.getChildren();
+		for (VirtualFile child : children) {
+			if (child.isDirectory()) {
+				iterateDirectory(project, collected, child);
+			} else if (isValidExport(project, child)) {
+				collected.add(child);
 			}
 		}
 	}
@@ -201,6 +221,33 @@ public class CommonUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * check selected file can export
+	 * @param project project object
+	 * @param virtualFile selected file
+	 * @return true can export, false can not export
+	 */
+	private static boolean isValidExport(Project project, VirtualFile virtualFile) {
+		PsiManager psiManager = PsiManager.getInstance(project);
+		CompilerConfiguration compilerConfiguration = CompilerConfiguration.getInstance(project);
+		ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+		CompilerManager compilerManager = CompilerManager.getInstance(project);
+		if (projectFileIndex.isInSourceContent(virtualFile) && virtualFile.isInLocalFileSystem()) {
+			if (virtualFile.isDirectory()) {
+				PsiDirectory vfd = psiManager.findDirectory(virtualFile);
+				if (vfd != null && JavaDirectoryService.getInstance().getPackage(vfd) != null) {
+					return true;
+				}
+			} else {
+				if (compilerManager.isCompilableFileType(virtualFile.getFileType()) ||
+						compilerConfiguration.isCompilableResourceFile(project, virtualFile)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 

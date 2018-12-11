@@ -49,7 +49,7 @@ public class AllPacker extends Packager {
 		Set<VirtualFile> allVfs = new HashSet();
 		for (int i = 0; i < virtualFiles.length; ++i) {
 			VirtualFile virtualFile = virtualFiles[i];
-			CommonUtils.iterateDirectory(project, allVfs, virtualFile);
+			CommonUtils.collectExportFiles(project, allVfs, virtualFile);
 		}
 
 		List<Path> filePaths = new ArrayList<>();
