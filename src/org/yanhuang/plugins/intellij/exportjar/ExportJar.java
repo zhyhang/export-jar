@@ -111,26 +111,4 @@ public class ExportJar extends AnAction {
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
-		Path jarFilePath=Paths.get("/temp/java9trying4.jar");
-//		Files.deleteIfExists(jarFilePath);
-		JarFile jarFile = new JarFile(jarFilePath.toFile());
-		final Enumeration<JarEntry> entries = jarFile.entries();
-		while (entries.hasMoreElements()) {
-			final JarEntry jarEntry = entries.nextElement();
-			System.out.println(jarEntry.getName());
-		}
-//		createJar("/temp/java9trying4.2.jar");
-		Files.walk(Paths.get("/temp"),1).forEach(System.out::println);
-	}
-
-	private static void createJar(String jarFilePath) {
-		List<Path> entryPaths = new ArrayList<>();
-		List<String> entryNames = new ArrayList<>();
-		entryPaths.add(Paths.get("D:\\temp\\demo-mip-geo.json"));
-		entryNames.add("/temp/demo-mip-geo.json");
-		entryPaths.add(Paths.get("D:\\logs\\dmp.log"));
-		entryNames.add("/dmp.log");
-		CommonUtils.createNewJar(jarFilePath, entryPaths, entryNames);
-	}
 }
