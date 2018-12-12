@@ -1,12 +1,18 @@
 
 package org.yanhuang.plugins.intellij.exportjar.action;
 
+import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.compiler.ex.CompilerPathsEx;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -14,6 +20,7 @@ import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiPackage;
+import org.yanhuang.plugins.intellij.exportjar.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 
 import java.io.IOException;
@@ -111,8 +118,12 @@ public class AllPacker extends Packager {
 	public void finished(boolean b, int error, int i1, CompileContext compileContext) {
 		if (error == 0) {
 			this.pack();
+			Notifications.Bus.notify(new Notification(Constants.actionName, Constants.actionName + " status",
+					exportPath+exportJarName+"<br> complete export successfully", NotificationType.INFORMATION));
 		} else {
 			Messages.info(project, "compile error");
+			Notifications.Bus.notify(new Notification(Constants.actionName, Constants.actionName + " status",
+					"compile error", NotificationType.ERROR));
 		}
 
 	}
