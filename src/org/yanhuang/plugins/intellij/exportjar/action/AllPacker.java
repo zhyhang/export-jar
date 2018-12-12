@@ -43,6 +43,9 @@ public class AllPacker extends Packager {
 	public void pack() {
 		Messages.clear(project);
 		Module module = (Module) LangDataKeys.MODULE.getData(this.dataContext);
+		//TODO final Module module = projectFileIndex.getModuleForFile(virtualFile);
+		// get file's module
+
 		String outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
 		VirtualFile[] virtualFiles = (VirtualFile[]) CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(this.dataContext);
 
