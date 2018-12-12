@@ -1,10 +1,13 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.compiler.ex.CompilerPathsEx;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -18,7 +21,7 @@ import com.intellij.psi.PsiPackage;
 import com.intellij.util.Consumer;
 import org.yanhuang.plugins.intellij.exportjar.Constants;
 import org.yanhuang.plugins.intellij.exportjar.action.AllPacker;
-import org.yanhuang.plugins.intellij.exportjar.action.EachPacker;
+import org.yanhuang.plugins.intellij.exportjar.action.Messages;
 import org.yanhuang.plugins.intellij.exportjar.action.Packager;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 
@@ -157,30 +160,37 @@ public class Settings extends JDialog {
 
     private void onOK() {
         Project project = CommonDataKeys.PROJECT.getData(this.dataContext);
-        Module module = LangDataKeys.MODULE.getData(this.dataContext);
-        Path exportJarFullName = Paths.get(this.exportDirectoryField.getText().trim());
-            if (!Files.isDirectory(exportJarFullName)) {
-                Path exportJarParentPath = exportJarFullName.getParent();
-                if (!Files.exists(exportJarParentPath)) {
-                    showErrorDialog(project, "the selected output path is not exists", "");
-                } else {
-                    String exportJarName=exportJarFullName.getFileName().toString();
-                    if (!exportJarName.endsWith(".jar")) {
-                        exportJarName += ".jar";
-                    }
-                    Packager packager = new AllPacker(this.dataContext, exportJarParentPath.toString(), exportJarName);
-                    if (this.fastModeCheckBox.isSelected()) {
-                        CompilerManager.getInstance(project).make(module, packager);
-                    } else {
-                        CompilerManager.getInstance(project).compile(module, packager);
-                    }
-                    saveOutPutDir(this.exportDirectoryField.getText());
-                    saveOutPutJarName(this.exportJarNameField.getText());
-                    this.dispose();
-                }
-            }else{
-                showErrorDialog(project, "please specify export jar file name", Constants.actionName);
+        Module[] modules = LangDataKeys.MODULE_CONTEXT_ARRAY.getData(this.dataContext);
+        if (modules == null) {
+            Module module = LangDataKeys.MODULE.getData(this.dataContext);
+            if (module == null) {
+                //TODO warn
+//                Editor editor = DataKeys.EDITOR.getData(this.dataContext);
+//                HintManager.getInstance().showErrorHint(editor, "not found any selected modules");
+                Messages.info(project, "not found any selected modules");
+                return;
             }
+            modules = new Module[]{module};
+        }
+        Path exportJarFullName = Paths.get(this.exportDirectoryField.getText().trim());
+        if (!Files.isDirectory(exportJarFullName)) {
+            Path exportJarParentPath = exportJarFullName.getParent();
+            if (!Files.exists(exportJarParentPath)) {
+                showErrorDialog(project, "the selected output path is not exists", "");
+            } else {
+                String exportJarName = exportJarFullName.getFileName().toString();
+                if (!exportJarName.endsWith(".jar")) {
+                    exportJarName += ".jar";
+                }
+                Packager packager = new AllPacker(this.dataContext, exportJarParentPath.toString(), exportJarName);
+                CompilerManager.getInstance(project).make(project, modules, packager);
+                saveOutPutDir(this.exportDirectoryField.getText());
+                saveOutPutJarName(this.exportJarNameField.getText());
+                this.dispose();
+            }
+        } else {
+            showErrorDialog(project, "please specify export jar file name", Constants.actionName);
+        }
     }
 
     private String getPropertyKey() {
