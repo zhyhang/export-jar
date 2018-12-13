@@ -9,8 +9,10 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import java.awt.*;
 
+/**
+ * main entrance for export jar
+ */
 public class ExportJarAction extends AnAction {
-
 
 	@Override
 	public void update(AnActionEvent event) {
@@ -18,7 +20,7 @@ public class ExportJarAction extends AnAction {
 		Presentation presentation = event.getPresentation();
 		if (presentation.isEnabled()) {
 			DataContext dataContext = event.getDataContext();
-			Project project = (Project) CommonDataKeys.PROJECT.getData(dataContext);
+			Project project = CommonDataKeys.PROJECT.getData(dataContext);
 
 			if (project == null) {
 				presentation.setEnabled(false);
@@ -26,7 +28,7 @@ public class ExportJarAction extends AnAction {
 				return;
 			}
 
-			VirtualFile[] virtualFiles = (VirtualFile[]) CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
+			VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
 			if (virtualFiles.length == 0) {
 				presentation.setEnabled(false);
 				presentation.setVisible(false);

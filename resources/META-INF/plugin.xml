@@ -2,7 +2,7 @@
 	<id>org.yanhuang.plugins.intellij.exportjar</id>
 	<name>Export classes to jar</name>
 	<version>1.0</version>
-	<vendor email="zhyhang1978@gmail.com" url="http://blog.csdn.net/zhyhang">Yanhuang</vendor>
+	<vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
 	<description><![CDATA[
       Export selected classes or resources to jar.<br>

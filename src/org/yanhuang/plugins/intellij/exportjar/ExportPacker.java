@@ -1,4 +1,3 @@
-
 package org.yanhuang.plugins.intellij.exportjar;
 
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -10,6 +9,8 @@ import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.compiler.ex.CompilerPathsEx;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiDirectory;
@@ -30,25 +31,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * after compile successfully, do pack file and export to jar
+ */
 public class ExportPacker implements CompileStatusNotification {
 	private DataContext dataContext;
 	private Path exportJarFullPath;
 	private Project project;
+	private boolean exportJava;
+	private boolean exportClass;
 
-	public ExportPacker(DataContext dataContext, Path exportJarFullPath) {
+	public ExportPacker(DataContext dataContext, Path exportJarFullPath, boolean exportJava, boolean exportClass) {
 		this.dataContext = dataContext;
 		this.exportJarFullPath = exportJarFullPath;
-		this.project = (Project) CommonDataKeys.PROJECT.getData(this.dataContext);
+		this.exportClass = exportClass;
+		this.exportJava = exportJava;
+		this.project = CommonDataKeys.PROJECT.getData(this.dataContext);
 	}
 
-	private void pack() throws Exception{
+	private void pack() throws Exception {
 		MessagesUtils.clear(project);
-		Module module = (Module) LangDataKeys.MODULE.getData(this.dataContext);
-		//TODO final Module module = projectFileIndex.getModuleForFile(virtualFile);
-		// get file's module
-
-		String outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
-		VirtualFile[] virtualFiles = (VirtualFile[]) CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(this.dataContext);
+		Module module = LangDataKeys.MODULE.getData(this.dataContext);
+		VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(this.dataContext);
 
 		Set<VirtualFile> allVfs = new HashSet();
 		for (int i = 0; i < virtualFiles.length; ++i) {
@@ -58,15 +62,13 @@ public class ExportPacker implements CompileStatusNotification {
 
 		List<Path> filePaths = new ArrayList<>();
 		List<String> jarEntryNames = new ArrayList<>();
-		boolean hasError = false;
 		for (VirtualFile vf : allVfs) {
-			collectExportVirtualFile(filePaths, jarEntryNames, vf, outPutPath, true, true);
+			collectExportVirtualFile(filePaths, jarEntryNames, vf);
 		}
 		CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames);
 	}
 
-	private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile,
-	                                      String targetPath, boolean exportSource, boolean exportClass) {
+	private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
 		// find package name
 		PsiDirectory psiDirectory = PsiManager.getInstance(project).findDirectory(virtualFile.isDirectory() ?
 				virtualFile : virtualFile.getParent());
@@ -74,7 +76,7 @@ public class ExportPacker implements CompileStatusNotification {
 		String packagePath = psiPackage == null ? "" : psiPackage.getQualifiedName().replaceAll("\\.", "/");
 		String fileName = virtualFile.getName();
 		if (CompilerManager.getInstance(project).isCompilableFileType(virtualFile.getFileType())) {
-			if (exportSource) {
+			if (exportJava) {
 				collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
 			}
 			// only export java classes
@@ -83,7 +85,13 @@ public class ExportPacker implements CompileStatusNotification {
 				String outClassNamePrefix = fileName.substring(0, fileName.length() - 5);
 				String outerClassName = outClassNamePrefix + ".class";
 				String nestClassNamePrefix = outClassNamePrefix + "$";
-				final Path classFilePath = Paths.get(targetPath).resolve(packagePath);
+				ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+				final Module module = projectFileIndex.getModuleForFile(virtualFile);
+				if (module == null) {
+					throw new RuntimeException("not found module info of file " + virtualFile.getName());
+				}
+				String outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
+				final Path classFilePath = Paths.get(outPutPath).resolve(packagePath);
 				try {
 					Files.walk(classFilePath, 1).forEach(p -> {
 						String className = p.getFileName().toString();
@@ -119,8 +127,9 @@ public class ExportPacker implements CompileStatusNotification {
 				e.printStackTrace(pw);
 				MessagesUtils.error(project, dmsg.toString());
 				MessagesUtils.errorNotify(Constants.actionName + " status", "export jar error");
+				return;
 			}
-			MessagesUtils.info(project, exportJarFullPath +" complete export successfully");
+			MessagesUtils.info(project, exportJarFullPath + " complete export successfully");
 			MessagesUtils.infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete " +
 					"export successfully");
 		} else {

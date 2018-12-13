@@ -17,6 +17,7 @@ public class MessagesUtils {
 
 	/**
 	 * find or create if absent
+	 *
 	 * @param project current project
 	 * @return found message view panel(packing export jar), create if absent
 	 */
@@ -24,7 +25,7 @@ public class MessagesUtils {
 		MessageView messageView = MessageView.SERVICE.getInstance(project);
 		final Content existViewPanel = messageView.getContentManager().findContent(Constants.infoTabName);
 		if (existViewPanel != null) {
-			return (ProblemsViewPanel)existViewPanel.getComponent();
+			return (ProblemsViewPanel) existViewPanel.getComponent();
 		}
 		ProblemsViewPanel viewPanel = new ProblemsViewPanel(project);
 		Content content = ContentFactory.SERVICE.getInstance().createContent(viewPanel, Constants.infoTabName, true);
@@ -35,6 +36,7 @@ public class MessagesUtils {
 
 	/**
 	 * clear message in message view panel
+	 *
 	 * @param project current panel
 	 */
 	public static void clear(Project project) {
@@ -47,8 +49,9 @@ public class MessagesUtils {
 
 	/**
 	 * show info message in message view panel
+	 *
 	 * @param project current project
-	 * @param string message
+	 * @param string  message
 	 */
 	public static void info(Project project, String string) {
 		ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
@@ -60,8 +63,9 @@ public class MessagesUtils {
 
 	/**
 	 * show error message in message view panel
+	 *
 	 * @param project current project
-	 * @param string error message
+	 * @param string  error message
 	 */
 	public static void error(Project project, String string) {
 		ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
@@ -72,8 +76,23 @@ public class MessagesUtils {
 	}
 
 	/**
+	 * show warn message in message view panel
+	 *
+	 * @param project current project
+	 * @param string  warn message
+	 */
+	public static void warn(Project project, String string) {
+		ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
+		if (toolWindow != null) {
+			toolWindow.activate(null, false);
+		}
+		messageViewPanel(project).addMessage(MessageCategory.WARNING, new String[]{string}, null, -1, -1, null);
+	}
+
+	/**
 	 * show info notification popup
-	 * @param title title
+	 *
+	 * @param title   title
 	 * @param message message showing in popup, can be html snippet
 	 */
 	public static void infoNotify(String title, String message) {
@@ -83,7 +102,8 @@ public class MessagesUtils {
 
 	/**
 	 * show error notification popup
-	 * @param title title
+	 *
+	 * @param title   title
 	 * @param message message showing in popup, can be html snippet
 	 */
 	public static void errorNotify(String title, String message) {
