@@ -17,14 +17,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
-import org.yanhuang.plugins.intellij.exportjar.Constants;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -198,12 +196,13 @@ public class CommonUtils {
 		}
 	}
 
-	public static void createNewJar(String jarFileFullPath, List<Path> filePaths, List<String> entryNames) {
+	public static void createNewJar(Project project, Path jarFileFullPath, List<Path> filePaths,
+	                                List<String> entryNames) {
 		final Manifest manifest = new Manifest();
 		Attributes mainAttributes = manifest.getMainAttributes();
 		mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
 		mainAttributes.put(new Attributes.Name("Created-By"), Constants.creator);
-		try (OutputStream os = Files.newOutputStream(Paths.get(jarFileFullPath));
+		try (OutputStream os = Files.newOutputStream(jarFileFullPath);
 		     BufferedOutputStream bos = new BufferedOutputStream(os);
 		     JarOutputStream jos = new JarOutputStream(bos, manifest)) {
 			for (int i = 0; i < entryNames.size(); i++) {
@@ -217,6 +216,7 @@ public class CommonUtils {
 					jos.write(Files.readAllBytes(filePath));
 				}
 				jos.closeEntry();
+				MessagesUtils.info(project, "packed " + filePath + " to jar");
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -225,7 +225,8 @@ public class CommonUtils {
 
 	/**
 	 * check selected file can export
-	 * @param project project object
+	 *
+	 * @param project     project object
 	 * @param virtualFile selected file
 	 * @return true can export, false can not export
 	 */

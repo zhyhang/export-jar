@@ -4,11 +4,12 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.compiler.CompilerBundle;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.yanhuang.plugins.intellij.exportjar.ui.Settings;
+import org.yanhuang.plugins.intellij.exportjar.ui.SettingDialog;
+import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import java.awt.*;
 
-public class ExportJar extends AnAction {
+public class ExportJarAction extends AnAction {
 
 
 	@Override
@@ -40,7 +41,7 @@ public class ExportJar extends AnAction {
 
 	@Override
 	public void actionPerformed(AnActionEvent event) {
-		Settings setting = new Settings(event.getDataContext());
+		SettingDialog setting = new SettingDialog(event.getDataContext());
 		setting.setResizable(false);
 		setting.setSize(500, 200);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

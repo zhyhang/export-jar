@@ -30,7 +30,7 @@
 
 	<actions>
 		<!-- Add your actions here -->
-		<action id="ExportJar" class="org.yanhuang.plugins.intellij.exportjar.ExportJar" text="ExportJar" description="Export selected classes or resources to jar">
+		<action id="ExportJar" class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="ExportJar" description="Export selected classes or resources to jar">
 			<add-to-group group-id="ProjectViewCompileGroup" anchor="after" relative-to-action="Compile"/>
 		</action>
 	</actions>

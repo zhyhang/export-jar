@@ -1,18 +1,13 @@
 
-package org.yanhuang.plugins.intellij.exportjar.action;
+package org.yanhuang.plugins.intellij.exportjar;
 
-import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.compiler.CompileContext;
+import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.compiler.ex.CompilerPathsEx;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -20,10 +15,13 @@ import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiPackage;
-import org.yanhuang.plugins.intellij.exportjar.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
+import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
+import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,23 +30,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AllPacker extends Packager {
+public class ExportPacker implements CompileStatusNotification {
 	private DataContext dataContext;
-	private String exportPath;
-	private String exportJarName;
+	private Path exportJarFullPath;
 	private Project project;
 
-
-	public AllPacker(DataContext dataContext, String exportPath, String exportJarName) {
+	public ExportPacker(DataContext dataContext, Path exportJarFullPath) {
 		this.dataContext = dataContext;
-		this.exportPath = exportPath;
-		this.exportJarName = exportJarName;
+		this.exportJarFullPath = exportJarFullPath;
 		this.project = (Project) CommonDataKeys.PROJECT.getData(this.dataContext);
 	}
 
-	@Override
-	public void pack() {
-		Messages.clear(project);
+	private void pack() throws Exception{
+		MessagesUtils.clear(project);
 		Module module = (Module) LangDataKeys.MODULE.getData(this.dataContext);
 		//TODO final Module module = projectFileIndex.getModuleForFile(virtualFile);
 		// get file's module
@@ -68,7 +62,7 @@ public class AllPacker extends Packager {
 		for (VirtualFile vf : allVfs) {
 			collectExportVirtualFile(filePaths, jarEntryNames, vf, outPutPath, true, true);
 		}
-		CommonUtils.createNewJar(this.exportPath + "/" + this.exportJarName, filePaths, jarEntryNames);
+		CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames);
 	}
 
 	private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile,
@@ -98,34 +92,41 @@ public class AllPacker extends Packager {
 						}
 					});
 				} catch (IOException e) {
-					e.printStackTrace();
-					//TODO error message to message window
+					throw new RuntimeException(e);
 				}
 			}
-		}else {
+		} else {
 			collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
 		}
 	}
 
 	private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath,
-	                                Path filePath) {
+	                               Path filePath) {
 		filePaths.add(filePath);
-		String normalPackagePath = "".equals(packagePath) ? "" : packagePath.endsWith("/") ? packagePath : packagePath + "/";
+		String normalPackagePath = "".equals(packagePath) ? "" : packagePath.endsWith("/") ? packagePath :
+				packagePath + "/";
 		jarEntryNames.add(normalPackagePath + filePath.getFileName());
 	}
 
 	@Override
 	public void finished(boolean b, int error, int i1, CompileContext compileContext) {
 		if (error == 0) {
-			this.pack();
-			Notifications.Bus.notify(new Notification(Constants.actionName, Constants.actionName + " status",
-					exportPath+exportJarName+"<br> complete export successfully", NotificationType.INFORMATION));
+			try {
+				this.pack();
+			} catch (Exception e) {
+				StringWriter dmsg = new StringWriter();// 详细信息
+				PrintWriter pw = new PrintWriter(dmsg);
+				e.printStackTrace(pw);
+				MessagesUtils.error(project, dmsg.toString());
+				MessagesUtils.errorNotify(Constants.actionName + " status", "export jar error");
+			}
+			MessagesUtils.info(project, exportJarFullPath +" complete export successfully");
+			MessagesUtils.infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete " +
+					"export successfully");
 		} else {
-			Messages.info(project, "compile error");
-			Notifications.Bus.notify(new Notification(Constants.actionName, Constants.actionName + " status",
-					"compile error", NotificationType.ERROR));
+			MessagesUtils.error(project, "compile error");
+			MessagesUtils.infoNotify(Constants.actionName + " status", "compile error");
 		}
-
 	}
 
 

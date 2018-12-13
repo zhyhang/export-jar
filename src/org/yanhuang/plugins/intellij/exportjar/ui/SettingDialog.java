@@ -1,13 +1,11 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.compiler.ex.CompilerPathsEx;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -19,10 +17,9 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiPackage;
 import com.intellij.util.Consumer;
-import org.yanhuang.plugins.intellij.exportjar.Constants;
-import org.yanhuang.plugins.intellij.exportjar.action.AllPacker;
-import org.yanhuang.plugins.intellij.exportjar.action.Messages;
-import org.yanhuang.plugins.intellij.exportjar.action.Packager;
+import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
+import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
+import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 
 import javax.swing.*;
@@ -37,9 +34,9 @@ import java.util.List;
 import java.util.Properties;
 
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
-import static org.yanhuang.plugins.intellij.exportjar.action.Messages.info;
+import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.info;
 
-public class Settings extends JDialog {
+public class SettingDialog extends JDialog {
     private static File tempFile = null;
     private Properties properties = null;
     private DataContext dataContext;
@@ -53,7 +50,7 @@ public class Settings extends JDialog {
     private JCheckBox fastModeCheckBox;
 
 
-    public Settings(DataContext dataContext) {
+    public SettingDialog(DataContext dataContext) {
         this.dataContext = dataContext;
         setContentPane(contentPane);
         setModal(true);
@@ -167,22 +164,22 @@ public class Settings extends JDialog {
                 //TODO warn
 //                Editor editor = DataKeys.EDITOR.getData(this.dataContext);
 //                HintManager.getInstance().showErrorHint(editor, "not found any selected modules");
-                Messages.info(project, "not found any selected modules");
+                MessagesUtils.error(project, "not found any selected modules");
                 return;
             }
             modules = new Module[]{module};
         }
-        Path exportJarFullName = Paths.get(this.exportDirectoryField.getText().trim());
-        if (!Files.isDirectory(exportJarFullName)) {
-            Path exportJarParentPath = exportJarFullName.getParent();
+        Path exportJarFullPath = Paths.get(this.exportDirectoryField.getText().trim());
+        if (!Files.isDirectory(exportJarFullPath)) {
+            Path exportJarParentPath = exportJarFullPath.getParent();
             if (!Files.exists(exportJarParentPath)) {
                 showErrorDialog(project, "the selected output path is not exists", "");
             } else {
-                String exportJarName = exportJarFullName.getFileName().toString();
+                String exportJarName = exportJarFullPath.getFileName().toString();
                 if (!exportJarName.endsWith(".jar")) {
-                    exportJarName += ".jar";
+	                exportJarFullPath = Paths.get(exportJarFullPath.toString() + ".jar");
                 }
-                Packager packager = new AllPacker(this.dataContext, exportJarParentPath.toString(), exportJarName);
+	            CompileStatusNotification packager = new ExportPacker(this.dataContext, exportJarFullPath);
                 CompilerManager.getInstance(project).make(project, modules, packager);
                 saveOutPutDir(this.exportDirectoryField.getText());
                 saveOutPutJarName(this.exportJarNameField.getText());
