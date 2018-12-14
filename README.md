@@ -11,4 +11,5 @@
 ### show sucessfully complete hint and link to export jar
 ### select path textfield to select list file history
 ### using sdk api to lookup nest class compiled files
-### exlude test files
+### exclude test files
+### when export whole module, export files not for sources? 

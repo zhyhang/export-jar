@@ -40,12 +40,14 @@ public class ExportPacker implements CompileStatusNotification {
 	private Project project;
 	private boolean exportJava;
 	private boolean exportClass;
+	private boolean exportTests;
 
-	public ExportPacker(DataContext dataContext, Path exportJarFullPath, boolean exportJava, boolean exportClass) {
+	public ExportPacker(DataContext dataContext, Path exportJarFullPath, boolean exportJava, boolean exportClass,boolean exportTests) {
 		this.dataContext = dataContext;
 		this.exportJarFullPath = exportJarFullPath;
 		this.exportClass = exportClass;
 		this.exportJava = exportJava;
+		this.exportTests = exportTests;
 		this.project = CommonDataKeys.PROJECT.getData(this.dataContext);
 	}
 
@@ -57,7 +59,7 @@ public class ExportPacker implements CompileStatusNotification {
 		Set<VirtualFile> allVfs = new HashSet();
 		for (int i = 0; i < virtualFiles.length; ++i) {
 			VirtualFile virtualFile = virtualFiles[i];
-			CommonUtils.collectExportFiles(project, allVfs, virtualFile);
+			CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
 		}
 
 		List<Path> filePaths = new ArrayList<>();
@@ -69,6 +71,11 @@ public class ExportPacker implements CompileStatusNotification {
 	}
 
 	private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
+		final boolean inTestSourceContent =
+				ProjectRootManager.getInstance(project).getFileIndex().isInTestSourceContent(virtualFile);
+		if (inTestSourceContent && !exportTests) { // not export test source and resource files
+			return;
+		}
 		// find package name
 		PsiDirectory psiDirectory = PsiManager.getInstance(project).findDirectory(virtualFile.isDirectory() ?
 				virtualFile : virtualFile.getParent());
@@ -90,7 +97,12 @@ public class ExportPacker implements CompileStatusNotification {
 				if (module == null) {
 					throw new RuntimeException("not found module info of file " + virtualFile.getName());
 				}
-				String outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
+				String outPutPath = null;
+				if (inTestSourceContent) {
+					outPutPath = CompilerPathsEx.getModuleOutputPath(module, true);
+				}else {
+					outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
+				}
 				final Path classFilePath = Paths.get(outPutPath).resolve(packagePath);
 				try {
 					Files.walk(classFilePath, 1).forEach(p -> {

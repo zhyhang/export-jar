@@ -62,28 +62,14 @@ public class CommonUtils {
 		}
 	}
 
-	public static void iterateDirectory(Project project, Set<VirtualFile> allVfs, VirtualFile vf) {
-		if (!vf.isDirectory()) {
-			allVfs.add(vf);
-		}
-		final VirtualFile[] children = vf.getChildren();
-		for (VirtualFile child : children) {
-			if (child.isDirectory()) {
-				iterateDirectory(project, allVfs, child);
-			} else {
-				allVfs.add(child);
-			}
-		}
-	}
-
-	public static void collectExportFiles(Project project, Set<VirtualFile> collected, VirtualFile parentVf) {
+	public static void collectExportFilesNest(Project project, Set<VirtualFile> collected, VirtualFile parentVf) {
 		if (!parentVf.isDirectory() && isValidExport(project, parentVf)) {
 			collected.add(parentVf);
 		}
 		final VirtualFile[] children = parentVf.getChildren();
 		for (VirtualFile child : children) {
 			if (child.isDirectory()) {
-				iterateDirectory(project, collected, child);
+				collectExportFilesNest(project, collected, child);
 			} else if (isValidExport(project, child)) {
 				collected.add(child);
 			}
@@ -159,7 +145,7 @@ public class CommonUtils {
 			if (module != null) {
 				return new Module[]{module};
 			}
-			VirtualFile[] virtualFiles = (VirtualFile[]) CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(context);
+			VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(context);
 			if (virtualFiles == null || virtualFiles.length == 0) {
 				return null;
 			}

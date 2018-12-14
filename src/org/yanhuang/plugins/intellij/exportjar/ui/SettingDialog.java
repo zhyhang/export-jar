@@ -42,6 +42,7 @@ public class SettingDialog extends JDialog {
 	private JButton selectPathButton;
 	private JCheckBox exportJavaFileCheckBox;
 	private JCheckBox exportClassFileCheckBox;
+	private JCheckBox exportTestFileCheckBox;
 	private HistoryData historyData;
 
 	public SettingDialog(DataContext dataContext) {
@@ -141,7 +142,8 @@ public class SettingDialog extends JDialog {
 				}
 				writeSaveHistory(exportJarFullPath);
 				CompileStatusNotification packager = new ExportPacker(this.dataContext, exportJarFullPath,
-						exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected());
+						exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected(),
+						exportTestFileCheckBox.isSelected());
 				CompilerManager.getInstance(project).make(project, modules, packager);
 				this.dispose();
 			}
