@@ -12,10 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.*;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
@@ -42,7 +39,8 @@ public class ExportPacker implements CompileStatusNotification {
 	private boolean exportClass;
 	private boolean exportTests;
 
-	public ExportPacker(DataContext dataContext, Path exportJarFullPath, boolean exportJava, boolean exportClass,boolean exportTests) {
+	public ExportPacker(DataContext dataContext, Path exportJarFullPath, boolean exportJava, boolean exportClass,
+	                    boolean exportTests) {
 		this.dataContext = dataContext;
 		this.exportJarFullPath = exportJarFullPath;
 		this.exportClass = exportClass;
@@ -87,8 +85,9 @@ public class ExportPacker implements CompileStatusNotification {
 				collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
 			}
 			// only export java classes
-			if (exportClass && fileName.endsWith(".java")) {
+			if (psiPackage != null && exportClass && fileName.endsWith(".java")) {
 				//lookup class and nested class files
+				final Set<String> localClassNames = findLocalClassName(psiPackage.getClasses(), virtualFile);
 				String outClassNamePrefix = fileName.substring(0, fileName.length() - 5);
 				String outerClassName = outClassNamePrefix + ".class";
 				String nestClassNamePrefix = outClassNamePrefix + "$";
@@ -100,14 +99,15 @@ public class ExportPacker implements CompileStatusNotification {
 				String outPutPath = null;
 				if (inTestSourceContent) {
 					outPutPath = CompilerPathsEx.getModuleOutputPath(module, true);
-				}else {
+				} else {
 					outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
 				}
 				final Path classFilePath = Paths.get(outPutPath).resolve(packagePath);
 				try {
 					Files.walk(classFilePath, 1).forEach(p -> {
 						String className = p.getFileName().toString();
-						if (className.equals(outerClassName) || className.endsWith(".class") && className.startsWith(nestClassNamePrefix)) {
+						if (className.equals(outerClassName) || className.endsWith(".class") && className.startsWith(nestClassNamePrefix)
+								|| localClassNames.contains(className)) {
 							collectExportFile(filePaths, jarEntryNames, packagePath, p);
 						}
 					});
@@ -126,6 +126,23 @@ public class ExportPacker implements CompileStatusNotification {
 		String normalPackagePath = "".equals(packagePath) ? "" : packagePath.endsWith("/") ? packagePath :
 				packagePath + "/";
 		jarEntryNames.add(normalPackagePath + filePath.getFileName());
+	}
+
+	/**
+	 * find local class name define in one java file
+	 *
+	 * @param classes
+	 * @param javaFile
+	 * @return
+	 */
+	private Set<String> findLocalClassName(PsiClass[] classes, VirtualFile javaFile) {
+		Set<String> localClasses = new HashSet<>();
+		for (PsiClass psic : classes) {
+			if (psic.getSourceElement().getContainingFile().getVirtualFile().equals(javaFile)) {
+				localClasses.add(psic.getName() + ".class");
+			}
+		}
+		return localClasses;
 	}
 
 	@Override

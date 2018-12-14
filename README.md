@@ -10,6 +10,6 @@
 ### [OK]show successfully complete hint
 ### show sucessfully complete hint and link to export jar
 ### select path textfield to select list file history
-### using sdk api to lookup nest class compiled files
-### exclude test files
-### when export whole module, export files not for sources? 
+### [OK]using sdk api to lookup nest class compiled files
+### [OK]exclude test files
+### [OK]when export whole module, export files not for sources? 
