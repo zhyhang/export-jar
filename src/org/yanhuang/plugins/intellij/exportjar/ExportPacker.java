@@ -186,7 +186,7 @@ public class ExportPacker implements CompileStatusNotification {
 			try {
 				this.pack();
 			} catch (Exception e) {
-				StringWriter dmsg = new StringWriter();// 详细信息
+				StringWriter dmsg = new StringWriter();
 				PrintWriter pw = new PrintWriter(dmsg);
 				e.printStackTrace(pw);
 				MessagesUtils.error(project, dmsg.toString());
