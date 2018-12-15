@@ -13,6 +13,9 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import org.jetbrains.org.objectweb.asm.ClassReader;
+import org.jetbrains.org.objectweb.asm.ClassVisitor;
+import org.jetbrains.org.objectweb.asm.Opcodes;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
@@ -27,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.intellij.psi.impl.compiled.ClsFileImpl.EMPTY_ATTRIBUTES;
 
 /**
  * after compile successfully, do pack file and export to jar
@@ -49,7 +54,7 @@ public class ExportPacker implements CompileStatusNotification {
 		this.project = CommonDataKeys.PROJECT.getData(this.dataContext);
 	}
 
-	private void pack() throws Exception {
+	private void pack() {
 		MessagesUtils.clear(project);
 		Module module = LangDataKeys.MODULE.getData(this.dataContext);
 		VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(this.dataContext);
@@ -87,27 +92,35 @@ public class ExportPacker implements CompileStatusNotification {
 			// only export java classes
 			if (psiPackage != null && exportClass && fileName.endsWith(".java")) {
 				//lookup class and nested class files
+				String fileNameWithoutJava = fileName.substring(0, fileName.length() - ".java".length());
 				final Set<String> localClassNames = findLocalClassName(psiPackage.getClasses(), virtualFile);
-				String outClassNamePrefix = fileName.substring(0, fileName.length() - 5);
-				String outerClassName = outClassNamePrefix + ".class";
-				String nestClassNamePrefix = outClassNamePrefix + "$";
 				ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
 				final Module module = projectFileIndex.getModuleForFile(virtualFile);
 				if (module == null) {
 					throw new RuntimeException("not found module info of file " + virtualFile.getName());
 				}
-				String outPutPath = null;
+				String outPutPath;
 				if (inTestSourceContent) {
 					outPutPath = CompilerPathsEx.getModuleOutputPath(module, true);
 				} else {
 					outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
 				}
-				final Path classFilePath = Paths.get(outPutPath).resolve(packagePath);
+				//find inner class
+				final Path classFileBasePath = Paths.get(outPutPath).resolve(packagePath);
+				Set<String> offspringClassNames = new HashSet<>();
+				for (String localClassName : localClassNames) {
+					findOffspringClassName(offspringClassNames, classFileBasePath.resolve(localClassName + ".class"));
+				}
 				try {
-					Files.walk(classFilePath, 1).forEach(p -> {
-						String className = p.getFileName().toString();
-						if (className.equals(outerClassName) || className.endsWith(".class") && className.startsWith(nestClassNamePrefix)
-								|| localClassNames.contains(className)) {
+					Files.walk(classFileBasePath, 1).forEach(p -> {
+						String classFileName = p.getFileName().toString();
+						if (!classFileName.endsWith(".class")) {
+							return;
+						}
+						String className = classFileName.substring(0, classFileName.length() - ".class".length());
+						if (localClassNames.contains(className)) {
+							collectExportFile(filePaths, jarEntryNames, packagePath, p);
+						} else if (offspringClassNames.contains(className)) {
 							collectExportFile(filePaths, jarEntryNames, packagePath, p);
 						}
 					});
@@ -131,18 +144,40 @@ public class ExportPacker implements CompileStatusNotification {
 	/**
 	 * find local class name define in one java file
 	 *
-	 * @param classes
-	 * @param javaFile
-	 * @return
+	 * @param classes  psi classes in the package
+	 * @param javaFile current java file
+	 * @return Class name set includes name of the class their source code in the java file
 	 */
 	private Set<String> findLocalClassName(PsiClass[] classes, VirtualFile javaFile) {
 		Set<String> localClasses = new HashSet<>();
-		for (PsiClass psic : classes) {
-			if (psic.getSourceElement().getContainingFile().getVirtualFile().equals(javaFile)) {
-				localClasses.add(psic.getName() + ".class");
+		for (PsiClass psiClass : classes) {
+			if (psiClass.getSourceElement().getContainingFile().getVirtualFile().equals(javaFile)) {
+				localClasses.add(psiClass.getName());
 			}
 		}
 		return localClasses;
+	}
+
+	private void findOffspringClassName(Set<String> offspringClassNames, Path ancestorClassFile) {
+		try {
+			ClassReader reader = new ClassReader(Files.readAllBytes(ancestorClassFile));
+			final String ancestorClassName = reader.getClassName();
+			reader.accept(new ClassVisitor(Opcodes.API_VERSION) {
+				@Override
+				public void visitInnerClass(String name, String outer, String inner, int access) {
+					final int indexSplash = name.lastIndexOf('/');
+					String className = indexSplash >= 0 ? name.substring(indexSplash + 1) : name;
+					if (offspringClassNames.contains(className) || !name.startsWith(ancestorClassName)) {
+						return;
+					}
+					offspringClassNames.add(className);
+					Path innerClassPath = ancestorClassFile.getParent().resolve(className + ".class");
+					findOffspringClassName(offspringClassNames, innerClassPath);
+				}
+			}, EMPTY_ATTRIBUTES, ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
