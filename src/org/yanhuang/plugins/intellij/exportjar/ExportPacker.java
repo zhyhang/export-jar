@@ -2,7 +2,6 @@ package org.yanhuang.plugins.intellij.exportjar;
 
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
@@ -13,16 +12,11 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import org.jetbrains.org.objectweb.asm.ClassReader;
-import org.jetbrains.org.objectweb.asm.ClassVisitor;
-import org.jetbrains.org.objectweb.asm.Opcodes;
+import org.jetbrains.annotations.NotNull;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
-import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,10 +25,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.intellij.psi.impl.compiled.ClsFileImpl.EMPTY_ATTRIBUTES;
+import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.*;
 
 /**
- * after compile successfully, do pack file and export to jar
+ * when compiled successfully, pack file and export to jar
  */
 public class ExportPacker implements CompileStatusNotification {
 	private DataContext dataContext;
@@ -55,16 +49,15 @@ public class ExportPacker implements CompileStatusNotification {
 	}
 
 	private void pack() {
-		MessagesUtils.clear(project);
-		Module module = LangDataKeys.MODULE.getData(this.dataContext);
+		clear(project);
 		VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(this.dataContext);
-
-		Set<VirtualFile> allVfs = new HashSet();
-		for (int i = 0; i < virtualFiles.length; ++i) {
-			VirtualFile virtualFile = virtualFiles[i];
+		if (virtualFiles == null) {
+			virtualFiles = new VirtualFile[0];
+		}
+		Set<VirtualFile> allVfs = new HashSet<>();
+		for (VirtualFile virtualFile : virtualFiles) {
 			CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
 		}
-
 		List<Path> filePaths = new ArrayList<>();
 		List<String> jarEntryNames = new ArrayList<>();
 		for (VirtualFile vf : allVfs) {
@@ -91,9 +84,12 @@ public class ExportPacker implements CompileStatusNotification {
 			}
 			// only export java classes
 			if (psiPackage != null && exportClass && fileName.endsWith(".java")) {
-				//lookup class and nested class files
-				String fileNameWithoutJava = fileName.substring(0, fileName.length() - ".java".length());
-				final Set<String> localClassNames = findLocalClassName(psiPackage.getClasses(), virtualFile);
+				PsiClass[] psiClasses = psiPackage.getClasses();
+				if (psiClasses.length == 0) {
+					warn(project, "not found class info of java file " + virtualFile.getPath());
+					return;// possible only package-info.java or module-info.java in the package, ignore them
+				}
+				final Set<String> localClassNames = CommonUtils.findClassNameDefineIn(psiClasses, virtualFile);
 				ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
 				final Module module = projectFileIndex.getModuleForFile(virtualFile);
 				if (module == null) {
@@ -105,11 +101,15 @@ public class ExportPacker implements CompileStatusNotification {
 				} else {
 					outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
 				}
+				if (outPutPath == null) {
+					throw new RuntimeException("not found module " + module.getName() + " output path");
+				}
 				//find inner class
 				final Path classFileBasePath = Paths.get(outPutPath).resolve(packagePath);
 				Set<String> offspringClassNames = new HashSet<>();
 				for (String localClassName : localClassNames) {
-					findOffspringClassName(offspringClassNames, classFileBasePath.resolve(localClassName + ".class"));
+					CommonUtils.findOffspringClassName(offspringClassNames,
+							classFileBasePath.resolve(localClassName + ".class"));
 				}
 				try {
 					Files.walk(classFileBasePath, 1).forEach(p -> {
@@ -141,66 +141,25 @@ public class ExportPacker implements CompileStatusNotification {
 		jarEntryNames.add(normalPackagePath + filePath.getFileName());
 	}
 
-	/**
-	 * find local class name define in one java file
-	 *
-	 * @param classes  psi classes in the package
-	 * @param javaFile current java file
-	 * @return Class name set includes name of the class their source code in the java file
-	 */
-	private Set<String> findLocalClassName(PsiClass[] classes, VirtualFile javaFile) {
-		Set<String> localClasses = new HashSet<>();
-		for (PsiClass psiClass : classes) {
-			if (psiClass.getSourceElement().getContainingFile().getVirtualFile().equals(javaFile)) {
-				localClasses.add(psiClass.getName());
-			}
-		}
-		return localClasses;
-	}
-
-	private void findOffspringClassName(Set<String> offspringClassNames, Path ancestorClassFile) {
-		try {
-			ClassReader reader = new ClassReader(Files.readAllBytes(ancestorClassFile));
-			final String ancestorClassName = reader.getClassName();
-			reader.accept(new ClassVisitor(Opcodes.API_VERSION) {
-				@Override
-				public void visitInnerClass(String name, String outer, String inner, int access) {
-					final int indexSplash = name.lastIndexOf('/');
-					String className = indexSplash >= 0 ? name.substring(indexSplash + 1) : name;
-					if (offspringClassNames.contains(className) || !name.startsWith(ancestorClassName)) {
-						return;
-					}
-					offspringClassNames.add(className);
-					Path innerClassPath = ancestorClassFile.getParent().resolve(className + ".class");
-					findOffspringClassName(offspringClassNames, innerClassPath);
-				}
-			}, EMPTY_ATTRIBUTES, ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	@Override
-	public void finished(boolean b, int error, int i1, CompileContext compileContext) {
+	public void finished(boolean b, int error, int i1, @NotNull CompileContext compileContext) {
 		if (error == 0) {
 			try {
 				this.pack();
 			} catch (Exception e) {
-				StringWriter dmsg = new StringWriter();
-				PrintWriter pw = new PrintWriter(dmsg);
-				e.printStackTrace(pw);
-				MessagesUtils.error(project, dmsg.toString());
-				MessagesUtils.errorNotify(Constants.actionName + " status", "export jar error, detail in the messages tab");
+				error(project, stackInfo(e));
+				errorNotify(Constants.actionName + " status", "export jar error, detail in the messages" +
+						" " +
+						"tab");
 				return;
 			}
-			MessagesUtils.info(project, exportJarFullPath + " complete export successfully");
-			MessagesUtils.infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete " +
+			info(project, exportJarFullPath + " complete export successfully");
+			infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete " +
 					"export successfully");
 		} else {
-			MessagesUtils.error(project, "compile error");
-			MessagesUtils.infoNotify(Constants.actionName + " status", "compile error, detail in the messages tab");
+			error(project, "compile error");
+			infoNotify(Constants.actionName + " status", "compile error, detail in the messages tab");
 		}
 	}
-
 
 }

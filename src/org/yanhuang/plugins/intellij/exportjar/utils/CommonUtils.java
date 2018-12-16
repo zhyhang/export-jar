@@ -15,10 +15,16 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.org.objectweb.asm.ClassReader;
+import org.jetbrains.org.objectweb.asm.ClassVisitor;
+import org.jetbrains.org.objectweb.asm.Opcodes;
 
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +35,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+
+import static com.intellij.psi.impl.compiled.ClsFileImpl.EMPTY_ATTRIBUTES;
 
 public class CommonUtils {
 
@@ -118,14 +126,10 @@ public class CommonUtils {
 		if (projectFileIndex.isInSourceContent(virtualFile) && virtualFile.isInLocalFileSystem()) {
 			if (virtualFile.isDirectory()) {
 				PsiDirectory vfd = psiManager.findDirectory(virtualFile);
-				if (vfd != null && JavaDirectoryService.getInstance().getPackage(vfd) != null) {
-					return true;
-				}
+				return vfd != null && JavaDirectoryService.getInstance().getPackage(vfd) != null;
 			} else {
-				if (compilerManager.isCompilableFileType(virtualFile.getFileType()) ||
-						compilerConfiguration.isCompilableResourceFile(project, virtualFile)) {
-					return true;
-				}
+				return compilerManager.isCompilableFileType(virtualFile.getFileType()) ||
+						compilerConfiguration.isCompilableResourceFile(project, virtualFile);
 			}
 		}
 		return false;
@@ -160,6 +164,51 @@ public class CommonUtils {
 			return ms.toArray(new Module[0]);
 		} else {
 			return modules;
+		}
+	}
+
+	/**
+	 * find class name define in one java file, not including inner class and anonymous class
+	 *
+	 * @param classes  psi classes in the package
+	 * @param javaFile current java file
+	 * @return class name set includes name of the class their source code in the java file
+	 */
+	public static Set<String> findClassNameDefineIn(PsiClass[] classes, VirtualFile javaFile) {
+		Set<String> localClasses = new HashSet<>();
+		for (PsiClass psiClass : classes) {
+			if (psiClass.getSourceElement().getContainingFile().getVirtualFile().equals(javaFile)) {
+				localClasses.add(psiClass.getName());
+			}
+		}
+		return localClasses;
+	}
+
+	/**
+	 * find inner classes and anonymous classes belong to the ancestor class
+	 * <li>nested call to read the class file, to parse inner classes and anonymous classes</li>
+	 * @param offspringClassNames store of found class name
+	 * @param ancestorClassFile the ancestor class file full path
+	 */
+	public static void findOffspringClassName(@NotNull Set<String> offspringClassNames, Path ancestorClassFile) {
+		try {
+			ClassReader reader = new ClassReader(Files.readAllBytes(ancestorClassFile));
+			final String ancestorClassName = reader.getClassName();
+			reader.accept(new ClassVisitor(Opcodes.API_VERSION) {
+				@Override
+				public void visitInnerClass(String name, String outer, String inner, int access) {
+					final int indexSplash = name.lastIndexOf('/');
+					String className = indexSplash >= 0 ? name.substring(indexSplash + 1) : name;
+					if (offspringClassNames.contains(className) || !name.startsWith(ancestorClassName)) {
+						return;
+					}
+					offspringClassNames.add(className);
+					Path innerClassPath = ancestorClassFile.getParent().resolve(className + ".class");
+					findOffspringClassName(offspringClassNames, innerClassPath);
+				}
+			}, EMPTY_ATTRIBUTES, ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

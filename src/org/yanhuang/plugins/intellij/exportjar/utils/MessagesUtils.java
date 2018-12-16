@@ -13,6 +13,9 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ui.MessageCategory;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class MessagesUtils {
 
 	/**
@@ -109,6 +112,18 @@ public class MessagesUtils {
 	public static void errorNotify(String title, String message) {
 		Notifications.Bus.notify(new Notification(Constants.actionName, title,
 				message, NotificationType.ERROR));
+	}
+
+	/**
+	 * throwable stack tracking print to string
+	 * @param throwable exception
+	 * @return stack tracking info
+	 */
+	public static String stackInfo(Throwable throwable) {
+		StringWriter dmsg = new StringWriter();
+		PrintWriter pw = new PrintWriter(dmsg);
+		throwable.printStackTrace(pw);
+		return dmsg.toString();
 	}
 
 }
