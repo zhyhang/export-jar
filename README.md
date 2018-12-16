@@ -1,16 +1,35 @@
+Plugin of Intellij IDEA for export java project's class, resource, source file to jar, like Eclipse's action of export to jar.
+
 ## features
-### Intellij Idea 2018.2 and later
+- Supports export java, class, resource file in java project classpath and their compiled output directories
+- Supports single file or multi-files selection for export
+- Supports different scopes export: class, package, module, project
+- Supports cross modules export (no duplications selected)
+- Supports export files in test directory
+- Supports custom setting export file type
+
+## require
+- Intellij Idea 2018.2 and later
+
+## usage
+- select files
+- right click mouse
+- select "Export Jar Select Files..." to perform export
+
 ## TODO 
-### [OK]support inner and anonymous class export
-### [OK]support large batch classes  export
-### [OK]support multi module export, exit when encounter duplicate files
-### [OK]fix the issue: export all when select resource folder
-### [OK]support messages log levels
-### [OK]prompt when exporting jar exists
-### [OK]show successfully complete hint
-### show sucessfully complete hint and link to export jar
-### select path textfield to select list file history
-### [OK]using sdk api to lookup nest class compiled files
-### [OK]exclude test files
-### [OK]when export whole module, export files not for sources?
-### add export action to Build memnu 
+- [OK]support inner and anonymous class export
+- [OK]support large batch classes  export
+- [OK]support multi module export, exit when encounter duplicate files
+- [OK]fix the issue: export all when select resource folder
+- [OK]support messages log levels
+- [OK]prompt when exporting jar exists
+- [OK]show successfully complete hint
+- show sucessfully complete hint and link to export jar
+- select path textfield to list all selected history
+- [OK]using sdk api to lookup nest class compiled files
+- [OK]exclude test files (supports already)
+- [OK]when export whole module, export files out scope in sources?
+- add export action to Build menu
+- write document
+- register in Build Menu
+- register key-map and short-cut 

@@ -5,13 +5,18 @@
 	<vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
 	<description><![CDATA[
-      Export selected classes or resources to jar.<br>
-      Like Eclipse's action of export classes to jar.<br>
+      Export java project's class, resource, source file to jar. Like Eclipse's action of export to jar. <br>
+      Usage: <b>select files, right click mouse, select "Export Jar Select Files..." action </b><br>
     ]]></description>
 
 	<change-notes><![CDATA[
-  <b>1.0</b><br>
-      Supports class, package, module, project exporting to a jar.<br>
+    <b>1.0 Features:</b><br>
+    <li>Supports export java, class, resource file in java project classpath and their compiled output directories</li>
+    <li>Supports single file or multi-files selection for export</li>
+    <li>Supports different scopes export: class, package, module, project</li>
+    <li>Supports cross modules export (no duplications selected)</li>
+    <li>Supports export files in test directory</li>
+    <li>Supports custom setting export file type</li>
     ]]>
 	</change-notes>
 
