@@ -13,7 +13,7 @@ Plugin of Intellij IDEA for export java project's class, resource, source file t
 
 ## usage
 - select files
-- right click mouse
+- right click mouse or click Build menu
 - select "Export Jar Select Files..." to perform export
 
 ## TODO 

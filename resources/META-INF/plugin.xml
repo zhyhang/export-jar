@@ -35,8 +35,12 @@
 
 	<actions>
 		<!-- Add your actions here -->
-		<action id="ExportJar" class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="ExportJar" description="Export selected classes or resources to jar">
+		<action id="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"
+		        class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="ExportJar"
+		        description="Export select files to jar">
+			<add-to-group group-id="BuildMenu" anchor="after" relative-to-action="BuildArtifact"/>
 			<add-to-group group-id="ProjectViewCompileGroup" anchor="after" relative-to-action="Compile"/>
+			<keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E" second-keystroke="C" />
 		</action>
 	</actions>
 

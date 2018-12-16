@@ -29,7 +29,7 @@ public class ExportJarAction extends AnAction {
 			}
 
 			VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
-			if (virtualFiles.length == 0) {
+			if (virtualFiles == null || virtualFiles.length == 0) {
 				presentation.setEnabled(false);
 				presentation.setVisible(false);
 				return;
