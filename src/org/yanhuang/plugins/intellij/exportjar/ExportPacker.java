@@ -190,7 +190,7 @@ public class ExportPacker implements CompileStatusNotification {
 				PrintWriter pw = new PrintWriter(dmsg);
 				e.printStackTrace(pw);
 				MessagesUtils.error(project, dmsg.toString());
-				MessagesUtils.errorNotify(Constants.actionName + " status", "export jar error");
+				MessagesUtils.errorNotify(Constants.actionName + " status", "export jar error, detail in the messages tab");
 				return;
 			}
 			MessagesUtils.info(project, exportJarFullPath + " complete export successfully");
@@ -198,7 +198,7 @@ public class ExportPacker implements CompileStatusNotification {
 					"export successfully");
 		} else {
 			MessagesUtils.error(project, "compile error");
-			MessagesUtils.infoNotify(Constants.actionName + " status", "compile error");
+			MessagesUtils.infoNotify(Constants.actionName + " status", "compile error, detail in the messages tab");
 		}
 	}
 
