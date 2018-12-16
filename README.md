@@ -16,6 +16,12 @@ Plugin of Intellij IDEA for export java project's class, resource, source file t
 - right click mouse or click Build menu
 - select "Export Jar Select Files..." to perform export
 
+##screenshot
+![From Build Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-menu.png)
+![From Right Click](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-right-click.png)
+![Setting Dialog](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-pop.png)
+![Export Status](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-result.png)
+
 ## TODO 
 - [OK]support inner and anonymous class export
 - [OK]support large batch classes  export
