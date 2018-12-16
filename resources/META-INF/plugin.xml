@@ -6,7 +6,7 @@
 
 	<description><![CDATA[
       Quickly export java project's class, resource, source file to jar, like Eclipse's action of export to jar. <br>
-      Usage: <b>select files, right click mouse, select "Export Jar Select Files..." to perform export </b><br>
+      Usage: <b>select files, right click mouse, select "Export Jar..." to perform export </b><br>
     ]]></description>
 
 	<change-notes><![CDATA[
@@ -37,11 +37,12 @@
 	<actions>
 		<!-- Add your actions here -->
 		<action id="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"
-		        class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="ExportJar"
-		        description="Export select files to jar">
+		        class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="Export &amp;Jar..."
+		        description="Export select files to jar" >
 			<add-to-group group-id="BuildMenu" anchor="after" relative-to-action="BuildArtifact"/>
 			<add-to-group group-id="ProjectViewCompileGroup" anchor="after" relative-to-action="Compile"/>
-			<keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E" second-keystroke="C" />
+			<!-- throw swing context event exception when trigger by first-keystroke -->
+			<!--<keyboard-shortcut keymap="$default" first-keystroke="control alt F9"/>-->
 		</action>
 	</actions>
 

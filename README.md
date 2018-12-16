@@ -15,7 +15,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ## usage
 - select files
 - right click mouse or click Build menu
-- select "Export Jar Select Files..." to perform export
+- select "Export Jar..." to perform export
 
 ##screenshot
 ![From Build Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-menu.png)
@@ -36,7 +36,9 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]using sdk api to lookup nest class compiled files
 - [OK]exclude test files (supports already)
 - [OK]when export whole module, export files out scope in sources?
-- add export action to Build menu
-- write document
-- register in Build Menu
-- register key-map and short-cut 
+- [OK]add export action to Build menu
+- [OK]write document
+- [OK]register in Build Menu
+- [OK]register key-map and shortcut (shortcut is OK)
+- throw swing context event exception when trigger by first-keystroke (key-map)
+- button component mnemonic not working

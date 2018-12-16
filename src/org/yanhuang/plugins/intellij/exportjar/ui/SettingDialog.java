@@ -27,8 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.intellij.openapi.ui.Messages.showErrorDialog;
-import static com.intellij.openapi.ui.Messages.showYesNoDialog;
+import static com.intellij.openapi.ui.Messages.*;
 
 /**
  * export jar settings dialog (link to SettingDialog.form)
@@ -132,20 +131,19 @@ public class SettingDialog extends JDialog {
 					exportJarFullPath = Paths.get(exportJarFullPath.toString() + ".jar");
 				}
 				if (Files.exists(exportJarFullPath)) {
-					final int answer = showYesNoDialog(exportJarFullPath + " already exists, replace it? ",
-							Constants.actionName
-							, null);
+					final int answer = showDialog(project, exportJarFullPath + " already exists, replace it? ",
+							Constants.actionName, new String[]{YES_BUTTON, NO_BUTTON}, 1, getWarningIcon());
 					if (answer == Messages.NO) {
 						this.dispose();
 						return;
 					}
 				}
+				this.dispose();
 				writeSaveHistory(exportJarFullPath);
 				CompileStatusNotification packager = new ExportPacker(this.dataContext, exportJarFullPath,
 						exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected(),
 						exportTestFileCheckBox.isSelected());
 				CompilerManager.getInstance(project).make(project, modules, packager);
-				this.dispose();
 			}
 		} else {
 			showErrorDialog(project, "please specify export jar file name", Constants.actionName);
