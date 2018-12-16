@@ -1,16 +1,17 @@
 <idea-plugin>
 	<id>org.yanhuang.plugins.intellij.exportjar</id>
-	<name>Export classes to jar</name>
+	<name>Handy Export Jar</name>
 	<version>1.0</version>
 	<vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
 	<description><![CDATA[
-      Export java project's class, resource, source file to jar. Like Eclipse's action of export to jar. <br>
-      Usage: <b>select files, right click mouse, select "Export Jar Select Files..." action </b><br>
+      Quickly export java project's class, resource, source file to jar, like Eclipse's action of export to jar. <br>
+      Usage: <b>select files, right click mouse, select "Export Jar Select Files..." to perform export </b><br>
     ]]></description>
 
 	<change-notes><![CDATA[
     <b>1.0 Features:</b><br>
+    <li>Quick and Handy export</li>
     <li>Supports export java, class, resource file in java project classpath and their compiled output directories</li>
     <li>Supports single file or multi-files selection for export</li>
     <li>Supports different scopes export: class, package, module, project</li>

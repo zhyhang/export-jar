@@ -1,6 +1,7 @@
-Plugin of Intellij IDEA for export java project's class, resource, source file to jar, like Eclipse's action of export to jar.
+Plugin of Intellij IDEA for quickly export java project's class, resource, source file to jar, like Eclipse's action of export to jar. 
 
 ## features
+- Quick and Handy export
 - Supports export java, class, resource file in java project classpath and their compiled output directories
 - Supports single file or multi-files selection for export
 - Supports different scopes export: class, package, module, project
