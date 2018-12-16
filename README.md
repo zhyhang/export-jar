@@ -5,7 +5,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports export java, class, resource file in java project classpath and their compiled output directories
 - Supports single file or multi-files selection for export
 - Supports different scopes export: class, package, module, project
-- Supports cross modules export (no duplications selected)
+- Supports cross modules export (no duplication selected)
 - Supports export files in test directory
 - Supports custom setting export file type
 
@@ -31,7 +31,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]support messages log levels
 - [OK]prompt when exporting jar exists
 - [OK]show successfully complete hint
-- show sucessfully complete hint and link to export jar
+- show successfully complete hint and link to export jar
 - select path textfield to list all selected history
 - [OK]using sdk api to lookup nest class compiled files
 - [OK]exclude test files (supports already)

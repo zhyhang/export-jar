@@ -15,7 +15,7 @@
     <li>Supports export java, class, resource file in java project classpath and their compiled output directories</li>
     <li>Supports single file or multi-files selection for export</li>
     <li>Supports different scopes export: class, package, module, project</li>
-    <li>Supports cross modules export (no duplications selected)</li>
+    <li>Supports cross modules export (no duplication selected)</li>
     <li>Supports export files in test directory</li>
     <li>Supports custom setting export file type</li>
     ]]>
