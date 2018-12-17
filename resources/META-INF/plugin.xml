@@ -10,10 +10,12 @@
     ]]></description>
 
 	<change-notes><![CDATA[
-	<br>
-	<b>1.1 Change:</b><br>
-	<li>fix throw IllegalArgumentException in earlier than version 2018.3 of IntelliJ IDEA</li>
+	<b>1.1 Change Log:</b><br>
+	<li>fix throw IllegalArgumentException in earlier than version 2018.3</li>
 	<li>extend support version scope: compatible with 2017.3 and later</li>
+	<li>support community edition</li>
+	<li>add jackson external dependency</li>
+	<li>ui little improvement</li>
 	<br>
     <b>1.0 Features:</b><br>
     <li>Quick and Handy export</li>
