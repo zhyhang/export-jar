@@ -10,7 +10,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports custom setting export file type
 
 ## require
-- Intellij Idea 2018.2 and later
+- Intellij Idea 2017.3 and later
 
 ## usage
 - select files

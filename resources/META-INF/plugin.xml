@@ -1,7 +1,7 @@
 <idea-plugin>
 	<id>org.yanhuang.plugins.intellij.exportjar</id>
 	<name>Handy Export Jar</name>
-	<version>1.0</version>
+	<version>1.1</version>
 	<vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
 	<description><![CDATA[
@@ -10,6 +10,11 @@
     ]]></description>
 
 	<change-notes><![CDATA[
+	<br>
+	<b>1.1 Change:</b><br>
+	<li>fix throw IllegalArgumentException in earlier than version 2018.3 of IntelliJ IDEA</li>
+	<li>extend support version scope: compatible with 2017.3 and later</li>
+	<br>
     <b>1.0 Features:</b><br>
     <li>Quick and Handy export</li>
     <li>Supports export java, class, resource file in java project classpath and their compiled output directories</li>

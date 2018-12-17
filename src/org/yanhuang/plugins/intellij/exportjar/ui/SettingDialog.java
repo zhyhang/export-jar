@@ -134,7 +134,6 @@ public class SettingDialog extends JDialog {
 					final int answer = showDialog(project, exportJarFullPath + " already exists, replace it? ",
 							Constants.actionName, new String[]{YES_BUTTON, NO_BUTTON}, 1, getWarningIcon());
 					if (answer == Messages.NO) {
-						this.dispose();
 						return;
 					}
 				}
