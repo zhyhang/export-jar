@@ -1,9 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.utils;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.intellij.compiler.CompilerConfiguration;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -43,8 +40,6 @@ public class CommonUtils {
 
 	private static int versionOpcodes;
 
-	private static final ObjectMapper om = new ObjectMapper();
-
 	static {
 		try {
 			final Field apiVersion = Opcodes.class.getField("API_VERSION");
@@ -52,31 +47,14 @@ public class CommonUtils {
 		} catch (Exception e) {
 			versionOpcodes = Opcodes.API_VERSION;
 		}
-		om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-		om.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
 	public static String toJson(Object obj) {
-		if (obj == null) {
-			return null;
-		}
-		try {
-			return om.writeValueAsString(obj);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new Gson().toJson(obj);
 	}
 
 	public static <T> T fromJson(String json, Class<T> cls) {
-		if (json == null || json.trim().isEmpty()) {
-			return null;
-		}
-		try {
-			return om.readValue(json, cls);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new Gson().fromJson(json, cls);
 	}
 
 	public static void collectExportFilesNest(Project project, Set<VirtualFile> collected, VirtualFile parentVf) {
@@ -196,8 +174,9 @@ public class CommonUtils {
 	/**
 	 * find inner classes and anonymous classes belong to the ancestor class
 	 * <li>nested call to read the class file, to parse inner classes and anonymous classes</li>
+	 *
 	 * @param offspringClassNames store of found class name
-	 * @param ancestorClassFile the ancestor class file full path
+	 * @param ancestorClassFile   the ancestor class file full path
 	 */
 	public static void findOffspringClassName(@NotNull Set<String> offspringClassNames, Path ancestorClassFile) {
 		try {
