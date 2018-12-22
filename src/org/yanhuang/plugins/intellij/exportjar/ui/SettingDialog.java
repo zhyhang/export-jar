@@ -9,7 +9,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
@@ -20,7 +19,6 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import javax.swing.*;
-import javax.swing.event.ListDataListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -32,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 import static com.intellij.openapi.ui.Messages.*;
 
@@ -44,8 +41,6 @@ public class SettingDialog extends JDialog {
 	private JPanel contentPane;
 	private JButton buttonOK;
 	private JButton buttonCancel;
-	private JTextField exportDirectoryField;
-	private JButton selectPathButton;
 	private JCheckBox exportJavaFileCheckBox;
 	private JCheckBox exportClassFileCheckBox;
 	private JCheckBox exportTestFileCheckBox;
@@ -69,23 +64,20 @@ public class SettingDialog extends JDialog {
 			}
 		});
 		this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), 1);
-		this.selectPathButton.addActionListener(e -> onSelectPathButtonAction());
 		this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
 
 		readSaveHistory();
 		initComboBox();
 
-		if (historyData != null && historyData.getSavedJarInfos() != null && historyData.getSavedJarInfos().length > 0) {
-			this.exportDirectoryField.setText(historyData.getSavedJarInfos()[0].getPath());
-		}
 	}
 
 	private void initComboBox() {
 		String[] historyFiles = null;
 		if (historyData != null) {
-			historyFiles=Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfos()).orElse(new HistoryData.SavedJarInfo[0]))
+			historyFiles =
+					Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfos()).orElse(new HistoryData.SavedJarInfo[0]))
 					.map(i -> i.getPath()).toArray(String[]::new);
-		}else{
+		} else {
 			historyFiles = new String[0];
 		}
 		ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
@@ -128,14 +120,7 @@ public class SettingDialog extends JDialog {
 		}
 	}
 
-	private void onSelectPathButtonAction() {
-		Project project = CommonDataKeys.PROJECT.getData(this.dataContext);
-		FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-		FileChooserConsumerImpl chooserConsumer = new FileChooserConsumerImpl(this.exportDirectoryField);
-		FileChooser.chooseFile(descriptor, project, null, chooserConsumer);
-	}
-
-	private void onSelectJarFileButton(ActionEvent event){
+	private void onSelectJarFileButton(ActionEvent event) {
 		Project project = CommonDataKeys.PROJECT.getData(this.dataContext);
 		FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
 		Consumer chooserConsumer = new FileChooserConsumerImplForComboBox(this.outPutJarFileComboBox);
@@ -184,19 +169,6 @@ public class SettingDialog extends JDialog {
 		}
 	}
 
-	private class FileChooserConsumerImpl implements Consumer<VirtualFile> {
-		private JTextField ouPutDirectoryField;
-
-		public FileChooserConsumerImpl(JTextField jTextField) {
-			this.ouPutDirectoryField = jTextField;
-		}
-
-		@Override
-		public void consume(VirtualFile virtualFile) {
-			this.ouPutDirectoryField.setText(virtualFile.getPath());
-		}
-	}
-
 	private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {
 		private JComboBox<String> comboBox;
 
@@ -206,11 +178,11 @@ public class SettingDialog extends JDialog {
 
 		@Override
 		public void consume(VirtualFile virtualFile) {
-			String filePath=virtualFile.getPath();
+			String filePath = virtualFile.getPath();
 			if (filePath == null || filePath.trim().length() == 0) {
 				return;
 			}
-			((DefaultComboBoxModel<String>) comboBox.getModel()).insertElementAt(filePath,0);
+			((DefaultComboBoxModel<String>) comboBox.getModel()).insertElementAt(filePath, 0);
 			comboBox.setSelectedIndex(0);
 		}
 	}

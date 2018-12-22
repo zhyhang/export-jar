@@ -31,8 +31,8 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]support messages log levels
 - [OK]prompt when exporting jar exists
 - [OK]show successfully complete hint
-- show successfully complete hint and link to export jar
-- select path textfield to list all selected history
+- [OK]show successfully complete hint and link to export jar(no utility)
+- [OK]select path textfield to list all selected history
 - [OK]using sdk api to lookup nest class compiled files
 - [OK]exclude test files (supports already)
 - [OK]when export whole module, export files out scope in sources?
