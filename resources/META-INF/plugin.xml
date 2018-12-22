@@ -12,6 +12,7 @@
 	<change-notes><![CDATA[
 	<b>1.2 Change Log:</b><br>
 	<li>switch json lib from jackson to gson (already included by platform dependencies)</li>
+	<li>list export jar history in combobox for select</li>
 	<br>
 	<b>1.1 Change Log:</b><br>
 	<li>fix throw IllegalArgumentException in earlier than version 2018.3</li>
