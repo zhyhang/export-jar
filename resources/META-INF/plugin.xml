@@ -10,6 +10,9 @@
     ]]></description>
 
 	<change-notes><![CDATA[
+	<b>1.3 Change Log:</b><br>
+	<li>bug fix: throw null point exception when inputted jar file not including parent path (i.e. exporting to current working directory)</li>
+	<br>
 	<b>1.2 Change Log:</b><br>
 	<li>switch json lib from jackson to gson (already included by platform dependencies)</li>
 	<li>list export jar history in combobox for select</li>

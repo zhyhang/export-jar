@@ -16,6 +16,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.org.objectweb.asm.Attribute;
 import org.jetbrains.org.objectweb.asm.ClassReader;
 import org.jetbrains.org.objectweb.asm.ClassVisitor;
 import org.jetbrains.org.objectweb.asm.Opcodes;
@@ -194,7 +195,7 @@ public class CommonUtils {
 					Path innerClassPath = ancestorClassFile.getParent().resolve(className + ".class");
 					findOffspringClassName(offspringClassNames, innerClassPath);
 				}
-			}, EMPTY_ATTRIBUTES, ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
+			}, new Attribute[0], ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

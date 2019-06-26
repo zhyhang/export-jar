@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
+import org.jetbrains.annotations.SystemIndependent;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.HistoryData;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
@@ -68,7 +69,6 @@ public class SettingDialog extends JDialog {
 
 		readSaveHistory();
 		initComboBox();
-
 	}
 
 	private void initComboBox() {
@@ -76,7 +76,7 @@ public class SettingDialog extends JDialog {
 		if (historyData != null) {
 			historyFiles =
 					Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfos()).orElse(new HistoryData.SavedJarInfo[0]))
-					.map(i -> i.getPath()).toArray(String[]::new);
+							.map(i -> i.getPath()).toArray(String[]::new);
 		} else {
 			historyFiles = new String[0];
 		}
@@ -143,6 +143,15 @@ public class SettingDialog extends JDialog {
 		Path exportJarFullPath = Paths.get(selectedOutputJarFullPath.trim());
 		if (!Files.isDirectory(exportJarFullPath)) {
 			Path exportJarParentPath = exportJarFullPath.getParent();
+			if (exportJarParentPath == null) {// when input file name without parent dir, using current dir as parent dir.
+				@SystemIndependent String basePath = project.getBasePath();
+				if (basePath == null) {
+					exportJarParentPath = Paths.get("./");
+				} else {
+					exportJarParentPath = Paths.get(basePath);
+				}
+				exportJarFullPath = exportJarParentPath.resolve(exportJarFullPath);
+			}
 			if (!Files.exists(exportJarParentPath)) {
 				showErrorDialog(project, "the selected output path is not exists", Constants.actionName);
 			} else {
@@ -186,6 +195,5 @@ public class SettingDialog extends JDialog {
 			comboBox.setSelectedIndex(0);
 		}
 	}
-
 
 }
