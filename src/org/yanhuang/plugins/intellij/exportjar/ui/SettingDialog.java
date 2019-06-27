@@ -29,7 +29,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static com.intellij.openapi.ui.Messages.*;
@@ -72,14 +74,17 @@ public class SettingDialog extends JDialog {
 	}
 
 	private void initComboBox() {
-		String[] historyFiles = null;
+		String[] historyFiles;
 		if (historyData != null) {
 			historyFiles =
 					Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfos()).orElse(new HistoryData.SavedJarInfo[0]))
-							.map(i -> i.getPath()).toArray(String[]::new);
+							.map(HistoryData.SavedJarInfo::getPath).toArray(String[]::new);
 		} else {
 			historyFiles = new String[0];
 		}
+		List<String> l = new ArrayList<>();
+		l.add("a");
+		l.toArray(new String[l.size()]);
 		ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
 		outPutJarFileComboBox.setModel(model);
 	}
@@ -143,7 +148,8 @@ public class SettingDialog extends JDialog {
 		Path exportJarFullPath = Paths.get(selectedOutputJarFullPath.trim());
 		if (!Files.isDirectory(exportJarFullPath)) {
 			Path exportJarParentPath = exportJarFullPath.getParent();
-			if (exportJarParentPath == null) {// when input file name without parent dir, using current dir as parent dir.
+			if (exportJarParentPath == null) {// when input file name without parent dir, using current dir as parent
+				// dir.
 				@SystemIndependent String basePath = project.getBasePath();
 				if (basePath == null) {
 					exportJarParentPath = Paths.get("./");

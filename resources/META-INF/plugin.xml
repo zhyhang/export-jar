@@ -11,7 +11,9 @@
 
 	<change-notes><![CDATA[
 	<b>1.3 Change Log:</b><br>
-	<li>bug fix: throw null point exception when inputted jar file not including parent path (i.e. exporting to current working directory)</li>
+	<li>data collection announcement: <b>This plugin do not collect any personal data then transferring to outside.</b></li>
+	<li>bug fix: throw null point exception when inputted jar file not including parent path (i.e. would export to current working directory)</li>
+	<li>ui experience improve: e.g. pop dialog can be resize</li>
 	<br>
 	<b>1.2 Change Log:</b><br>
 	<li>switch json lib from jackson to gson (already included by platform dependencies)</li>

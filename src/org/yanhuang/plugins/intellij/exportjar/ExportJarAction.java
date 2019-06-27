@@ -30,8 +30,8 @@ public class ExportJarAction extends AnAction {
 	@Override
 	public void actionPerformed(@NotNull AnActionEvent event) {
 		SettingDialog setting = new SettingDialog(event.getDataContext());
-		setting.setResizable(false);
-		setting.setSize(500, 200);
+		setting.setResizable(true);
+		setting.setSize(600, 200);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension frameSize = setting.getSize();
 		if (frameSize.height > screenSize.height) {
@@ -45,6 +45,7 @@ public class ExportJarAction extends AnAction {
 		setting.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
 		setting.setTitle(Constants.actionName);
 		setting.setVisible(true);
+
 	}
 
 }
