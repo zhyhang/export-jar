@@ -9,13 +9,18 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports export files in test directory
 - Supports custom setting export file type
 
-## require
-- Intellij Idea 2017.3 and later
+## runtime require
+- Intellij Idea (U & C) 2017.3 and later
 
 ## usage
 - select files
 - right click mouse or click Build menu
 - select "Export Jar..." to perform export
+
+## plugin developing require
+- when developing with 192+, please add following jars to SDK classpath:
+    - **installed root path/plugin/java/lib/\*.jar**
+    - **installed root path/lib/platform-core-ui.jar**
 
 ##screenshot
 ![From Build Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-menu.png)
