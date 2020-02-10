@@ -18,11 +18,11 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - select "Export Jar..." to perform export
 
 ## plugin developing require
-- when developing with 192+, please add following jars to SDK classpath:
-    - **installed root path/plugin/java/lib/\*.jar**
-    - **installed root path/lib/platform-core-ui.jar**
+- when developing with 192+, please add following jars to SDK classpath:  
+**installed root path/plugin/java/lib/\*.jar**  
+**installed root path/lib/platform-core-ui.jar**  
 
-##screenshot
+## screenshot
 ![From Build Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-menu.png)
 ![From Right Click](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-right-click.png)
 ![Setting Dialog](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-pop.png)
