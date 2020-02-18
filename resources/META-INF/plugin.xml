@@ -10,6 +10,9 @@
     ]]></description>
 
 	<change-notes><![CDATA[
+	<b>1.4 Change Log:</b><br>
+	<li>add module dependencies in plugin.xml conform to Jetbrains plugin rule.</b></li>
+	<br>
 	<b>1.3 Change Log:</b><br>
 	<li>data collection announcement: <b>This plugin do not collect any personal data then transferring to outside.</b></li>
 	<li>bug fix: throw null point exception when inputted jar file not including parent path (i.e. would export to current working directory)</li>
@@ -46,6 +49,7 @@
 	<depends>com.intellij.modules.lang</depends>
 	-->
 	<depends>com.intellij.modules.platform</depends>
+	<depends>com.intellij.modules.vcs</depends>
 	<depends>com.intellij.modules.java</depends>
 
 	<extensions defaultExtensionNs="com.intellij">
