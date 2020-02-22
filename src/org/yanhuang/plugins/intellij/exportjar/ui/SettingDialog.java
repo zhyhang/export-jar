@@ -82,9 +82,6 @@ public class SettingDialog extends JDialog {
 		} else {
 			historyFiles = new String[0];
 		}
-		List<String> l = new ArrayList<>();
-		l.add("a");
-		l.toArray(new String[l.size()]);
 		ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
 		outPutJarFileComboBox.setModel(model);
 	}
@@ -148,9 +145,8 @@ public class SettingDialog extends JDialog {
 		Path exportJarFullPath = Paths.get(selectedOutputJarFullPath.trim());
 		if (!Files.isDirectory(exportJarFullPath)) {
 			Path exportJarParentPath = exportJarFullPath.getParent();
-			if (exportJarParentPath == null) {// when input file name without parent dir, using current dir as parent
-				// dir.
-				@SystemIndependent String basePath = project.getBasePath();
+			if (exportJarParentPath == null) {// when input file without parent dir, current dir as parent dir.
+				String basePath = project.getBasePath();
 				if (basePath == null) {
 					exportJarParentPath = Paths.get("./");
 				} else {
