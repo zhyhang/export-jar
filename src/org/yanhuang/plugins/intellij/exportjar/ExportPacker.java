@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
-import com.intellij.openapi.compiler.ex.CompilerPathsEx;
+import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
@@ -97,9 +97,9 @@ public class ExportPacker implements CompileStatusNotification {
 				}
 				String outPutPath;
 				if (inTestSourceContent) {
-					outPutPath = CompilerPathsEx.getModuleOutputPath(module, true);
+					outPutPath = CompilerPaths.getModuleOutputPath(module, true);
 				} else {
-					outPutPath = CompilerPathsEx.getModuleOutputPath(module, false);
+					outPutPath = CompilerPaths.getModuleOutputPath(module, false);
 				}
 				if (outPutPath == null) {
 					throw new RuntimeException("not found module " + module.getName() + " output path");
