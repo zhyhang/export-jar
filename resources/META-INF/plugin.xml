@@ -70,7 +70,15 @@
                 class="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitAction"
                 text="Export Jar from Local Changes..." description="Export jar from local changes">
             <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"/>
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>
         </action>
     </actions>
+
+    <project-components>
+        <component>
+            <implementation-class>org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitExecutor</implementation-class>
+            <option value="true" name="workspace"/>
+        </component>
+    </project-components>
 
 </idea-plugin>

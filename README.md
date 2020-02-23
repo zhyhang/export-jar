@@ -8,6 +8,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports cross modules export (no duplication selected)
 - Supports export files in test directory
 - Supports custom setting export file type
+- Supports export from vcs commits (local changes) as well as intrinsic "create patch" action 
 
 ## runtime require
 - Intellij Idea (U & C) 2017.3 and later
@@ -45,5 +46,13 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]write document
 - [OK]register in Build Menu
 - [OK]register key-map and shortcut (shortcut is OK)
+- action can be perform from vcs menu as well as create patch
+- action can be perform from local history dialog
+- multi-language
+- help docs
 - throw swing context event exception when trigger by first-keystroke (key-map)
 - button component mnemonic not working
+## Note
+- **导出时注意文件状态，删除，变换目录的等，注意FileStatus类**
+- **com.intellij.ide.actions.RevealFileAction用于在系统上打开文件（show file in system explorer)**
+- **DialogWrapper，ModalityState这个类来分析如果让对话框不关闭**

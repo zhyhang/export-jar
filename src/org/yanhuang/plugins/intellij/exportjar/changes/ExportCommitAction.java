@@ -14,7 +14,7 @@ public class ExportCommitAction extends AbstractCommitChangesAction {
     @Nullable
     @Override
     protected CommitExecutor getExecutor(@NotNull Project project) {
-        return new ExportCommitExecutor(project);
+        return ExportCommitExecutor.getInstance(project);
     }
 
 }
