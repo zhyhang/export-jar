@@ -1,15 +1,15 @@
 <idea-plugin>
-	<id>org.yanhuang.plugins.intellij.exportjar</id>
-	<name>Handy Export Jar</name>
-	<version>1.5</version>
-	<vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
+    <id>org.yanhuang.plugins.intellij.exportjar</id>
+    <name>Handy Export Jar</name>
+    <version>1.5</version>
+    <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
-	<description><![CDATA[
+    <description><![CDATA[
       Quickly export java project's class, resource, source file to jar, like Eclipse's action of export to jar. <br>
       Usage: <b>select files, right click mouse, select "Export Jar..." to perform export </b><br>
     ]]></description>
 
-	<change-notes><![CDATA[
+    <change-notes><![CDATA[
 	<b>1.4 Change Log:</b><br>
 	<li>add module dependencies in plugin.xml conform to Jetbrains plugin rule.</li>
 	<br>
@@ -38,35 +38,39 @@
     <li>Supports export files in test directory</li>
     <li>Supports custom setting export file type</li>
     ]]>
-	</change-notes>
+    </change-notes>
 
-	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-	<idea-version since-build="173.0"/>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="173.0"/>
 
-	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-		 on how to target different products -->
-	<!-- uncomment to enable plugin in all products
-	<depends>com.intellij.modules.lang</depends>
-	-->
-	<depends>com.intellij.modules.platform</depends>
-	<depends>com.intellij.modules.vcs</depends>
-	<depends>com.intellij.modules.java</depends>
-	<depends>com.intellij.modules.vcs</depends>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>com.intellij.modules.java</depends>
 
-	<extensions defaultExtensionNs="com.intellij">
-		<!-- Add your extensions here -->
-	</extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
 
-	<actions>
-		<!-- Add your actions here -->
-		<action id="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"
-		        class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="Export &amp;Jar..."
-		        description="Export select files to jar" >
-			<add-to-group group-id="BuildMenu" anchor="after" relative-to-action="BuildArtifact"/>
-			<add-to-group group-id="ProjectViewCompileGroup" anchor="after" relative-to-action="Compile"/>
-			<!-- throw swing context event exception when trigger by first-keystroke -->
-			<!--<keyboard-shortcut keymap="$default" first-keystroke="control alt F9"/>-->
-		</action>
-	</actions>
+    <actions>
+        <!-- Add your actions here -->
+        <action id="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"
+                class="org.yanhuang.plugins.intellij.exportjar.ExportJarAction" text="Export &amp;Jar..."
+                description="Export select files to jar">
+            <add-to-group group-id="BuildMenu" anchor="after" relative-to-action="BuildArtifact"/>
+            <add-to-group group-id="ProjectViewCompileGroup" anchor="after" relative-to-action="Compile"/>
+            <!-- throw swing context event exception when trigger by first-keystroke -->
+            <!--<keyboard-shortcut keymap="$default" first-keystroke="control alt F9"/>-->
+        </action>
+        <action id="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitAction"
+                class="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitAction"
+                text="Export Jar from Local Changes..." description="Export jar from local changes">
+            <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"/>
+        </action>
+    </actions>
 
 </idea-plugin>
