@@ -6,10 +6,22 @@
 
     <description><![CDATA[
       Quickly export java project's class, resource, source file to jar, like Eclipse's action of export to jar. <br>
-      Usage: <b>select files, right click mouse, select "Export Jar..." to perform export </b><br>
+      <br>
+      Usage: <br>
+      <li><b>select files, right click mouse, click "Export Jar..." to perform export </b></li>
+      <li><b>click VCS menu  "Export Jar from Local Changes..." to export local changes</b></li>
+      <li><b>NOTES: export local changes not include un-version-control changes </b></li>
+      <li><b>in Local Changes dock panel, right click mouse, click "Export Jar from Local Changes..." to export local changes</b></li>
+      <li><b>in normal commit changes dialog, click "Export Jar..." in commit button group to export local changes</b></li>
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>1.5 Change Log:</b><br>
+	<li>supports export jar from local changes like create patch</li>
+	<li><b>add extent action in VCS menu, Version Control Local Changes pop menu and Commit Changes dialog commit button group</b></li>
+	<li>improve compatibility with new version IDEA</li>
+	<li><b>NOTES: export local changes not include un-version-control changes </b></li>
+	<br>
 	<b>1.4 Change Log:</b><br>
 	<li>add module dependencies in plugin.xml conform to Jetbrains plugin rule.</li>
 	<br>

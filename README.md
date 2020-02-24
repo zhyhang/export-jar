@@ -8,7 +8,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports cross modules export (no duplication selected)
 - Supports export files in test directory
 - Supports custom setting export file type
-- Supports export from vcs commits (local changes) as well as intrinsic "create patch" action 
+- Supports export from vcs commits (local changes) as well as intrinsic "Create Patch" action 
 
 ## runtime require
 - Intellij Idea (U & C) 2017.3 and later
@@ -26,6 +26,9 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ## screenshot
 ![From Build Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-menu.png)
 ![From Right Click](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-right-click.png)
+![From VCS Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-local-changes-vcs-menu.png)
+![From Normal Commit](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-local-changes-add-to-commit-button-group.png)
+![From Local Changes Pop Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-local-changes-right-click.png)
 ![Setting Dialog](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-pop.png)
 ![Export Status](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-result.png)
 
@@ -46,13 +49,12 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]write document
 - [OK]register in Build Menu
 - [OK]register key-map and shortcut (shortcut is OK)
-- action can be perform from vcs menu as well as create patch
+- [OK]action can be perform from vcs menu as well as create patch
+- action can be perform from history commit as well as create patch
 - action can be perform from local history dialog
+- use com.intellij.ide.actions.RevealFileAction to show file in system fold
 - multi-language
 - help docs
 - throw swing context event exception when trigger by first-keystroke (key-map)
 - button component mnemonic not working
 ## Note
-- **导出时注意文件状态，删除，变换目录的等，注意FileStatus类**
-- **com.intellij.ide.actions.RevealFileAction用于在系统上打开文件（show file in system explorer)**
-- **DialogWrapper，ModalityState这个类来分析如果让对话框不关闭**
