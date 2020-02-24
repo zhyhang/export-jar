@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 public interface Constants {
     String actionName = "Export Jar";
+    String exportCommitActionName = "Export Jar from Local Changes...";
     String exportCommitButtonName = "Export Jar...";
     String infoTabName = "Packing Export Jar";
     String creator = "yanhuang.org";

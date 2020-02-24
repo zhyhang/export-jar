@@ -15,8 +15,10 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 
 ## usage
 - select files
-- right click mouse or click Build menu
-- select "Export Jar..." to perform export
+    - right click mouse or click Build menu
+    - select "Export Jar..." to perform export
+- or click VCS menu  "Export Jar from Local Changes..."
+- or in normal commit changes dialog, click "Export Jar..." in commit button group
 
 ## plugin developing require
 - when developing with 192+, please add following jars to SDK classpath:  
