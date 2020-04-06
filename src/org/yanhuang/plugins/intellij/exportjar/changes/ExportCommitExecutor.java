@@ -46,7 +46,7 @@ public class ExportCommitExecutor extends LocalCommitExecutor implements Project
 
     @Override
     public void projectOpened() {
-        ChangeListManager manager = project.getComponent(ChangeListManager.class);
+        ChangeListManager manager = ChangeListManager.getInstance(project);
         manager.registerCommitExecutor(this);
     }
 

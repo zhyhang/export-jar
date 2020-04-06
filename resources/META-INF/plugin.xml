@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>org.yanhuang.plugins.intellij.exportjar</id>
     <name>Handy Export Jar</name>
-    <version>1.6</version>
+    <version>1.5.1</version>
     <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
     <description><![CDATA[
@@ -16,6 +16,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>1.5.1 Change Log:</b><br>
+	<li>change open api usage to be compatible with coming 2020 versions</li>
+	<br>
     <b>1.5 Change Log:</b><br>
 	<li>supports export jar from local changes like create patch</li>
 	<li><b>add extent action in VCS menu, Version Control Local Changes pop menu and Commit Changes dialog commit button group</b></li>
