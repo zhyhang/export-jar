@@ -1,8 +1,8 @@
 package org.yanhuang.plugins.intellij.exportjar.changes;
 
-import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.extensions.ExtensionPoint;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
+import com.intellij.openapi.vcs.changes.CommitContext;
 import com.intellij.openapi.vcs.changes.CommitSession;
 import com.intellij.openapi.vcs.changes.LocalCommitExecutor;
 import org.jetbrains.annotations.Nls;
@@ -13,16 +13,17 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 /**
  * view of displaying local changes for export jar
  */
-public class ExportCommitExecutor extends LocalCommitExecutor implements ProjectComponent {
+public class ExportCommitExecutor extends LocalCommitExecutor {
 
-    private Project project;
+    private final Project project;
 
     public ExportCommitExecutor(Project project) {
         this.project = project;
     }
 
     public static ExportCommitExecutor getInstance(Project project) {
-        return project.getComponent(ExportCommitExecutor.class);
+        final ExtensionPoint<LocalCommitExecutor> extPoint = project.getExtensionArea().getExtensionPoint(LOCAL_COMMIT_EXECUTOR.getName());
+        return (ExportCommitExecutor) extPoint.extensions().filter(e -> e.getClass().equals(ExportCommitExecutor.class)).findFirst().get();
     }
 
     @Nullable
@@ -38,16 +39,10 @@ public class ExportCommitExecutor extends LocalCommitExecutor implements Project
         return Constants.exportCommitButtonName;
     }
 
-    @NotNull
     @Override
-    public CommitSession createCommitSession() {
+    public @NotNull
+    CommitSession createCommitSession(@NotNull CommitContext commitContext) {
         return new ExportCommitSession(project);
-    }
-
-    @Override
-    public void projectOpened() {
-        ChangeListManager manager = ChangeListManager.getInstance(project);
-        manager.registerCommitExecutor(this);
     }
 
 }

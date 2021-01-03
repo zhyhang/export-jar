@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>org.yanhuang.plugins.intellij.exportjar</id>
     <name>Handy Export Jar</name>
-    <version>1.6</version>
+    <version>2.0</version>
     <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
     <description><![CDATA[
@@ -69,6 +69,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
+        <vcs.changes.localCommitExecutor
+                implementation="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitExecutor"/>
     </extensions>
 
     <actions>
@@ -88,12 +90,5 @@
             <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>
         </action>
     </actions>
-
-    <project-components>
-        <component>
-            <implementation-class>org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitExecutor</implementation-class>
-            <option value="true" name="workspace"/>
-        </component>
-    </project-components>
 
 </idea-plugin>

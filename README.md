@@ -54,6 +54,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]action can be perform from vcs menu as well as create patch
 - action can be perform from history commit as well as create patch
 - action can be perform from local history dialog
+- Git menu miss export jar... item in 2020.3 community  
 - use com.intellij.ide.actions.RevealFileAction to show file in system fold
 - multi-language
 - help docs
