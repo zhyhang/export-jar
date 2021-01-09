@@ -16,6 +16,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>2.0 Change Log:</b><br>
+    <li>change open api usage to be compatible with 2020.3 versions</li>
+    <br>
     <b>1.5.1 Change Log:</b><br>
 	<li>change open api usage to be compatible with coming 2020 versions</li>
 	<br>
@@ -56,7 +59,7 @@
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="173.0"/>
+    <idea-version since-build="202.0"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
@@ -69,6 +72,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
+        <!-- add button to commit button group-->
         <vcs.changes.localCommitExecutor
                 implementation="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitExecutor"/>
     </extensions>
