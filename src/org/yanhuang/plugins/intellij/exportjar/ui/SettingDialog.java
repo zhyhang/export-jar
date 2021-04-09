@@ -9,6 +9,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.content.MessageView;
 import com.intellij.util.Consumer;
 import com.intellij.util.WaitForProgressToShow;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +54,7 @@ public class SettingDialog extends JDialog {
     private HistoryData historyData;
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
+        MessageView.SERVICE.getInstance(project);//register message tool window to avoid pack error
         this.project = project;
         this.selectedFiles = selectedFiles;
         setContentPane(contentPane);

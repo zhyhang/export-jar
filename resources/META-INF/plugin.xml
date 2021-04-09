@@ -1,7 +1,7 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
     <id>org.yanhuang.plugins.intellij.exportjar</id>
     <name>Handy Export Jar</name>
-    <version>2.0</version>
+    <version>2.1</version>
     <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
     <description><![CDATA[
@@ -16,6 +16,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>2.1 Change Log:</b><br>
+    <li>fix NullPointException in 2021.1</li>
+    <br>
     <b>2.0 Change Log:</b><br>
     <li>change open api usage to be compatible with 2020.3 versions</li>
     <br>
@@ -92,6 +95,7 @@
                 text="Export Jar from Local Changes..." description="Export jar from local changes">
             <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"/>
             <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>
+            <add-to-group group-id="BuildMenu" anchor="last"/>
         </action>
     </actions>
 

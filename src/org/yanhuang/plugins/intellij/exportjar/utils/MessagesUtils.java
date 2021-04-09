@@ -8,9 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.MessageView;
+import com.intellij.ui.content.*;
 import com.intellij.util.ui.MessageCategory;
 
 import java.io.PrintWriter;
@@ -25,15 +23,24 @@ public class MessagesUtils {
      * @return found message view panel(packing export jar), create if absent
      */
     private static ProblemsViewPanel messageViewPanel(Project project) {
-        MessageView messageView = MessageView.SERVICE.getInstance(project);
-        final Content existViewPanel = messageView.getContentManager().findContent(Constants.infoTabName);
+        final MessageView messageView = MessageView.SERVICE.getInstance(project);
+        ContentManager cm;
+        try {
+            cm = messageView.getContentManager();
+        } catch (Exception ignored) {
+            final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
+            cm = toolWindow != null ? toolWindow.getContentManager() : null;
+        }
+        final Content existViewPanel = cm == null ? null : cm.findContent(Constants.infoTabName);
         if (existViewPanel != null) {
             return (ProblemsViewPanel) existViewPanel.getComponent();
         }
         ProblemsViewPanel viewPanel = new ProblemsViewPanel(project);
-        Content content = ContentFactory.SERVICE.getInstance().createContent(viewPanel, Constants.infoTabName, true);
-        messageView.getContentManager().addContent(content);
-        messageView.getContentManager().setSelectedContent(content);
+        if (cm != null) {
+            Content content = ContentFactory.SERVICE.getInstance().createContent(viewPanel, Constants.infoTabName, true);
+            cm.addContent(content);
+            cm.setSelectedContent(content);
+        }
         return viewPanel;
     }
 
@@ -43,10 +50,8 @@ public class MessagesUtils {
      * @param project current panel
      */
     public static void clear(Project project) {
-        MessageView messageView = MessageView.SERVICE.getInstance(project);
-        final Content content = messageView.getContentManager().findContent(Constants.infoTabName);
-        if (content != null) {
-            ((ProblemsViewPanel) content.getComponent()).close();
+        if (ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW) != null) {
+            ContentManagerUtil.cleanupContents(null, project, Constants.infoTabName);
         }
     }
 
