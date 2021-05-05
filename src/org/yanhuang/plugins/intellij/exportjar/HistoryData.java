@@ -14,14 +14,14 @@ public class HistoryData {
 
     private static final int maxHistory = 100;
 
-    private SavedJarInfo[] savedJarInfos;
+    private SavedJarInfo[] savedJarInfo;
 
-    public SavedJarInfo[] getSavedJarInfos() {
-        return savedJarInfos;
+    public SavedJarInfo[] getSavedJarInfo() {
+        return savedJarInfo;
     }
 
-    public void setSavedJarInfos(SavedJarInfo[] savedJarInfos) {
-        this.savedJarInfos = savedJarInfos;
+    public void setSavedJarInfo(SavedJarInfo[] savedJarInfo) {
+        this.savedJarInfo = savedJarInfo;
     }
 
     public void addSavedJarInfo(SavedJarInfo savedJarInfo) {
@@ -30,8 +30,8 @@ public class HistoryData {
         }
         Comparator<Long> comparator = Long::compareTo;
         TreeMap<Long, SavedJarInfo> savedTree = new TreeMap<>(comparator.reversed());
-        if (savedJarInfos != null) {
-            Arrays.stream(savedJarInfos).forEach(s -> {
+        if (this.savedJarInfo != null) {
+            Arrays.stream(this.savedJarInfo).forEach(s -> {
                 if (savedJarInfo.equals(s)) {
                     savedTree.put(savedJarInfo.getCreation(), savedJarInfo);
                 } else {
@@ -40,13 +40,13 @@ public class HistoryData {
             });
         }
         savedTree.put(savedJarInfo.getCreation(), savedJarInfo);
-        this.savedJarInfos = savedTree.values().toArray(new SavedJarInfo[0]);
-        if (savedJarInfos.length > maxHistory) {
-            savedJarInfos = Arrays.copyOf(savedJarInfos, maxHistory);
+        this.savedJarInfo = savedTree.values().toArray(new SavedJarInfo[0]);
+        if (this.savedJarInfo.length > maxHistory) {
+            this.savedJarInfo = Arrays.copyOf(this.savedJarInfo, maxHistory);
         }
     }
 
-    public static class SavedJarInfo implements Comparable {
+    public static class SavedJarInfo implements Comparable<SavedJarInfo> {
         private String path;
         private long creation;
 
@@ -80,12 +80,11 @@ public class HistoryData {
         }
 
         @Override
-        public int compareTo(@NotNull Object o) {
-            if (this == o) {
+        public int compareTo(@NotNull SavedJarInfo that) {
+            if (this == that) {
                 return 0;
             }
-            if (getClass() != o.getClass()) return 1;
-            SavedJarInfo that = (SavedJarInfo) o;
+            if (getClass() != that.getClass()) return 1;
             return Long.compare(this.getCreation(), that.getCreation());
         }
     }

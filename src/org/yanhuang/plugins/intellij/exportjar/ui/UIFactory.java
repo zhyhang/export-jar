@@ -1,12 +1,19 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.history.integration.ui.views.RevisionsList;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.CheckboxTree;
+import com.intellij.ui.SimpleTextAttributes;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * factory for creating setting dialog
@@ -59,6 +66,20 @@ public class UIFactory {
         setting.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
         setting.setTitle(Constants.actionName);
         return setting;
+    }
+
+
+    public static class CheckTreeCellRenderer extends CheckboxTree.CheckboxTreeCellRenderer {
+
+        @Override
+        public void customizeRenderer(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            String text = "";
+            if (value instanceof DefaultMutableTreeNode) {
+                text = Objects.toString(((DefaultMutableTreeNode) value).getUserObject(), "");
+            }
+            getTextRenderer().setIcon(AllIcons.FileTypes.Java);
+            getTextRenderer().append(text, SimpleTextAttributes.SIMPLE_CELL_ATTRIBUTES);
+        }
     }
 
 }

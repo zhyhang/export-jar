@@ -9,9 +9,14 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.CheckboxTree;
+import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.content.MessageView;
+import com.intellij.ui.tree.project.ProjectFileTreeModel;
+import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.Consumer;
 import com.intellij.util.WaitForProgressToShow;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.HistoryData;
@@ -20,6 +25,8 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import javax.swing.*;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -30,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
@@ -39,9 +47,9 @@ import static com.intellij.openapi.ui.Messages.showErrorDialog;
  * export jar settings dialog (link to SettingDialog.form)
  */
 public class SettingDialog extends JDialog {
-    private Project project;
+    private final Project project;
     @Nullable
-    private VirtualFile[] selectedFiles;
+    private final VirtualFile[] selectedFiles;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -51,6 +59,11 @@ public class SettingDialog extends JDialog {
     private JComboBox<String> outPutJarFileComboBox;
     private JButton selectJarFileButton;
     private JPanel settingPanel;
+    private JLabel fileListTreeLabel;
+    private Tree fileListTree;
+    private JTree tree1;
+    private CheckboxTree fileListCheckboxTree;
+    private JScrollPane fileListPanel;
     private HistoryData historyData;
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
@@ -75,6 +88,7 @@ public class SettingDialog extends JDialog {
 
         readSaveHistory();
         initComboBox();
+        initFileListTree();
     }
 
     /**
@@ -90,13 +104,55 @@ public class SettingDialog extends JDialog {
         String[] historyFiles;
         if (historyData != null) {
             historyFiles =
-                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfos()).orElse(new HistoryData.SavedJarInfo[0]))
+                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfo()).orElse(new HistoryData.SavedJarInfo[0]))
                             .map(HistoryData.SavedJarInfo::getPath).toArray(String[]::new);
         } else {
             historyFiles = new String[0];
         }
         ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
         outPutJarFileComboBox.setModel(model);
+    }
+
+    private void initFileListTree(){
+        TreeModel tmDefault = tree1.getModel();
+        fileListTree.setModel(tmDefault);
+//        TreeModel tmProject = new ProjectFileTreeModel(this.project);
+        Container parent = fileListCheckboxTree.getParent();
+        parent.remove(fileListCheckboxTree);
+        fileListCheckboxTree = new CheckboxTree(new UIFactory.CheckTreeCellRenderer(), (CheckedTreeNode) convertCheckedTreeModel(tmDefault).getRoot());
+        parent.add(fileListCheckboxTree);
+        fileListCheckboxTree.getEmptyText().setText("Empty item");
+        fileListCheckboxTree.setSelectionModel(new DefaultTreeSelectionModel());
+        fileListCheckboxTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        TreeUtil.installActions(fileListCheckboxTree);
+        TreeUtil.promiseSelectFirst(fileListCheckboxTree);
+        fileListCheckboxTree.setRootVisible(true);
+        fileListCheckboxTree.setShowsRootHandles(true);
+        fileListCheckboxTree.setEnabled(true);
+    }
+
+    private TreeModel convertCheckedTreeModel(TreeModel tm) {
+        if (tm == null || tm.getRoot()==null || tm.getRoot() instanceof CheckedTreeNode) {
+            return tm;
+        }
+        DefaultMutableTreeNode originParent= (DefaultMutableTreeNode) tm.getRoot();
+        CheckedTreeNode newParent = new CheckedTreeNode(originParent.getUserObject());
+        newParent.setChecked(false);
+        convertCheckedTreeNodes(originParent, newParent);
+        return new DefaultTreeModel(newParent);
+    }
+
+    private void convertCheckedTreeNodes(DefaultMutableTreeNode originParent, CheckedTreeNode newParent) {
+        if (originParent.getChildCount() == 0) {
+            return;
+        }
+        for (int i = 0; i < originParent.getChildCount(); i++) {
+            DefaultMutableTreeNode originChild = (DefaultMutableTreeNode) originParent.getChildAt(i);
+            CheckedTreeNode newChild = new CheckedTreeNode(originChild.getUserObject());
+            newChild.setChecked(false);
+            newParent.add(newChild);
+            convertCheckedTreeNodes(originChild, newChild);
+        }
     }
 
     private void readSaveHistory() {
@@ -106,7 +162,7 @@ public class SettingDialog extends JDialog {
         Constants.cachePath.toFile().mkdirs();
         if (Files.exists(Constants.historyFilePath)) {
             try {
-                String historyJson = new String(Files.readAllBytes(Constants.historyFilePath), StandardCharsets.UTF_8);
+                String historyJson = Files.readString(Constants.historyFilePath);
                 historyData = CommonUtils.fromJson(historyJson, HistoryData.class);
             } catch (Exception e) {
                 MessagesUtils.warn(project, e.getMessage());
@@ -135,7 +191,7 @@ public class SettingDialog extends JDialog {
 
     private void onSelectJarFileButton(ActionEvent event) {
         FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-        Consumer chooserConsumer = new FileChooserConsumerImplForComboBox(this.outPutJarFileComboBox);
+        Consumer<VirtualFile> chooserConsumer = new FileChooserConsumerImplForComboBox(this.outPutJarFileComboBox);
         FileChooser.chooseFile(descriptor, project, null, chooserConsumer);
     }
 
@@ -152,7 +208,7 @@ public class SettingDialog extends JDialog {
         final Module[] modules = CommonUtils.findModule(project, exportFiles);
         String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
         if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().length() == 0) {
-            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "the selected output path should not empty", Constants.actionName));
+            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "The selected output path should not empty", Constants.actionName));
             return;
         }
         Path exportJarFullPath = Paths.get(selectedOutputJarFullPath.trim());
@@ -160,15 +216,11 @@ public class SettingDialog extends JDialog {
             Path exportJarParentPath = exportJarFullPath.getParent();
             if (exportJarParentPath == null) {// when input file without parent dir, current dir as parent dir.
                 String basePath = project.getBasePath();
-                if (basePath == null) {
-                    exportJarParentPath = Paths.get("./");
-                } else {
-                    exportJarParentPath = Paths.get(basePath);
-                }
+                exportJarParentPath = Paths.get(Objects.requireNonNullElse(basePath, "./"));
                 exportJarFullPath = exportJarParentPath.resolve(exportJarFullPath);
             }
             if (!Files.exists(exportJarParentPath)) {
-                WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "the selected output path is not exists", Constants.actionName));
+                WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "The selected output path is not exists", Constants.actionName));
             } else {
                 String exportJarName = exportJarFullPath.getFileName().toString();
                 if (!exportJarName.endsWith(".jar")) {
@@ -193,12 +245,13 @@ public class SettingDialog extends JDialog {
                         CompilerManager.getInstance(project).make(project, modules, packager));
             }
         } else {
-            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "please specify export jar file name", Constants.actionName));
+            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "Please specify export jar file name", Constants.actionName));
         }
     }
 
+
     private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {
-        private JComboBox<String> comboBox;
+        private final JComboBox<String> comboBox;
 
         public FileChooserConsumerImplForComboBox(JComboBox<String> comboBox) {
             this.comboBox = comboBox;

@@ -13,7 +13,7 @@ public interface Constants {
     String creator = "yanhuang.org";
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
     Path historyFilePath = cachePath.resolve("select_history.json");
-    Dimension settingDialogSize = new Dimension(600, 200);
+    Dimension settingDialogSize = new Dimension(600, 400);
     Dimension settingPanelSize = new Dimension(600, 80);
 
 }

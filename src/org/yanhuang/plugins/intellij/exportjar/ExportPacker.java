@@ -29,12 +29,12 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.*;
  * when compiled successfully, pack file and export to jar
  */
 public class ExportPacker implements CompileStatusNotification {
-    private Project project;
-    private VirtualFile[] selectedFiles;
-    private Path exportJarFullPath;
-    private boolean exportJava;
-    private boolean exportClass;
-    private boolean exportTests;
+    private final Project project;
+    private final VirtualFile[] selectedFiles;
+    private final Path exportJarFullPath;
+    private final boolean exportJava;
+    private final boolean exportClass;
+    private final boolean exportTests;
 
     public ExportPacker(Project project, VirtualFile[] selectedFiles, Path exportJarFullPath, boolean exportJava, boolean exportClass, boolean exportTests) {
         this.project = project;
