@@ -68,7 +68,9 @@ public class UIFactory {
         return setting;
     }
 
-
+    /**
+     * Example for checkbox tree render
+     */
     public static class CheckTreeCellRenderer extends CheckboxTree.CheckboxTreeCellRenderer {
 
         @Override

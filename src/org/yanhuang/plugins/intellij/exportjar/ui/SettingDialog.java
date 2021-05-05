@@ -8,15 +8,16 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.CheckboxTree;
-import com.intellij.ui.CheckedTreeNode;
+import com.intellij.ui.SeparatorFactory;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.content.MessageView;
-import com.intellij.ui.tree.project.ProjectFileTreeModel;
-import com.intellij.ui.treeStructure.Tree;
+import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.Consumer;
 import com.intellij.util.WaitForProgressToShow;
-import com.intellij.util.ui.tree.TreeUtil;
+import com.intellij.util.ui.components.BorderLayoutPanel;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.HistoryData;
@@ -25,7 +26,6 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import javax.swing.*;
-import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -37,11 +37,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
+import static com.intellij.util.ui.JBUI.Panels.simplePanel;
+import static javax.swing.BorderFactory.createEmptyBorder;
 
 /**
  * export jar settings dialog (link to SettingDialog.form)
@@ -49,7 +52,7 @@ import static com.intellij.openapi.ui.Messages.showErrorDialog;
 public class SettingDialog extends JDialog {
     private final Project project;
     @Nullable
-    private final VirtualFile[] selectedFiles;
+    private VirtualFile[] selectedFiles;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -59,12 +62,13 @@ public class SettingDialog extends JDialog {
     private JComboBox<String> outPutJarFileComboBox;
     private JButton selectJarFileButton;
     private JPanel settingPanel;
-    private JLabel fileListTreeLabel;
-    private Tree fileListTree;
-    private JTree tree1;
-    private CheckboxTree fileListCheckboxTree;
-    private JScrollPane fileListPanel;
+    private JPanel fileListPanel;
+    private JButton debugButton;
+    private JPanel actionPanel;
+    private JPanel debugPanel;
     private HistoryData historyData;
+    private SelectFilesDialog fileListDialog;
+    private BorderLayoutPanel fileListLabel;
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
         MessageView.SERVICE.getInstance(project);//register message tool window to avoid pack error
@@ -75,6 +79,7 @@ public class SettingDialog extends JDialog {
         getRootPane().setDefaultButton(buttonOK);
         this.buttonOK.addActionListener(e -> onOK());
         this.buttonCancel.addActionListener(e -> onCancel());
+        this.debugButton.addActionListener(e -> onDebug());
 
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
@@ -83,12 +88,14 @@ public class SettingDialog extends JDialog {
                 onCancel();
             }
         });
-        this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), 1);
+        this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
 
         readSaveHistory();
         initComboBox();
-        initFileListTree();
+        createFileListTree();
+
+//        uiDebug();
     }
 
     /**
@@ -113,46 +120,33 @@ public class SettingDialog extends JDialog {
         outPutJarFileComboBox.setModel(model);
     }
 
-    private void initFileListTree(){
-        TreeModel tmDefault = tree1.getModel();
-        fileListTree.setModel(tmDefault);
-//        TreeModel tmProject = new ProjectFileTreeModel(this.project);
-        Container parent = fileListCheckboxTree.getParent();
-        parent.remove(fileListCheckboxTree);
-        fileListCheckboxTree = new CheckboxTree(new UIFactory.CheckTreeCellRenderer(), (CheckedTreeNode) convertCheckedTreeModel(tmDefault).getRoot());
-        parent.add(fileListCheckboxTree);
-        fileListCheckboxTree.getEmptyText().setText("Empty item");
-        fileListCheckboxTree.setSelectionModel(new DefaultTreeSelectionModel());
-        fileListCheckboxTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        TreeUtil.installActions(fileListCheckboxTree);
-        TreeUtil.promiseSelectFirst(fileListCheckboxTree);
-        fileListCheckboxTree.setRootVisible(true);
-        fileListCheckboxTree.setShowsRootHandles(true);
-        fileListCheckboxTree.setEnabled(true);
+    private void createFileListTree(){
+        //remove old component
+        if (this.fileListLabel != null) {
+            fileListPanel.remove(fileListLabel);
+        }
+        if(this.fileListDialog!=null){
+            fileListPanel.remove(fileListDialog.getContentPanel());
+        }
+        //create new component
+        this.fileListDialog = createFilesDialog();
+        final JComponent listPanel = fileListDialog.getContentPanel();
+        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.msgFileList, listPanel);
+        final JPanel separatorPanel = simplePanel().addToBottom(mySeparator).addToTop(Box.createVerticalGlue());
+        this.fileListLabel = simplePanel(separatorPanel).withBorder(createEmptyBorder());
+        this.fileListPanel.add(fileListLabel, BorderLayout.NORTH);
+        this.fileListPanel.add(listPanel,BorderLayout.CENTER);
     }
 
-    private TreeModel convertCheckedTreeModel(TreeModel tm) {
-        if (tm == null || tm.getRoot()==null || tm.getRoot() instanceof CheckedTreeNode) {
-            return tm;
-        }
-        DefaultMutableTreeNode originParent= (DefaultMutableTreeNode) tm.getRoot();
-        CheckedTreeNode newParent = new CheckedTreeNode(originParent.getUserObject());
-        newParent.setChecked(false);
-        convertCheckedTreeNodes(originParent, newParent);
-        return new DefaultTreeModel(newParent);
+    @NotNull
+    private FileListDialog createFilesDialog() {
+        return new FileListDialog(this.project, null == this.selectedFiles ? List.of() : List.of(this.selectedFiles), null, null, true, false);
     }
 
-    private void convertCheckedTreeNodes(DefaultMutableTreeNode originParent, CheckedTreeNode newParent) {
-        if (originParent.getChildCount() == 0) {
-            return;
-        }
-        for (int i = 0; i < originParent.getChildCount(); i++) {
-            DefaultMutableTreeNode originChild = (DefaultMutableTreeNode) originParent.getChildAt(i);
-            CheckedTreeNode newChild = new CheckedTreeNode(originChild.getUserObject());
-            newChild.setChecked(false);
-            newParent.add(newChild);
-            convertCheckedTreeNodes(originChild, newChild);
-        }
+    private void uiDebug(){
+        debugButton.setVisible(true);
+        SelectFilesDialog filesDialog = createFilesDialog();
+        debugPanel.add(filesDialog.getContentPanel(),new GridConstraints());
     }
 
     private void readSaveHistory() {
@@ -200,8 +194,21 @@ public class SettingDialog extends JDialog {
         this.dispose();
     }
 
-    private void onOK() {
-        doExport(this.selectedFiles);
+    public void onOK() {
+        final VirtualFile[] finalSelectFiles = fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
+        doExport(finalSelectFiles);
+    }
+
+    private void onDebug(){
+        SelectFilesDialog filesDialog = createFilesDialog();
+        filesDialog.getContentPanel();
+        filesDialog.getContentPane();
+        filesDialog.show();
+    }
+
+    public void setSelectedFiles(VirtualFile[] selectedFiles){
+        this.selectedFiles = selectedFiles;
+        createFileListTree();
     }
 
     public void doExport(VirtualFile[] exportFiles) {

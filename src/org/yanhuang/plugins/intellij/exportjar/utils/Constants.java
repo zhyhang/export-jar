@@ -10,10 +10,12 @@ public interface Constants {
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
     String infoTabName = "Packing Export Jar";
+    String msgFileList = "Select files";
     String creator = "yanhuang.org";
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
     Path historyFilePath = cachePath.resolve("select_history.json");
-    Dimension settingDialogSize = new Dimension(600, 400);
-    Dimension settingPanelSize = new Dimension(600, 80);
+    Dimension settingDialogSize = new Dimension(600, 300);
+    Dimension settingPanelSize = new Dimension(600, 240);
+    Dimension defaultSize = new Dimension(-1, -1);
 
 }
