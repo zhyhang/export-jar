@@ -40,6 +40,7 @@ public class ExportCommitSession implements CommitSession {
     @Override
     public void execute(@NotNull Collection<Change> changes, @Nullable String commitMessage) {
         settingDialog.onOK();
+        settingDialog.dispose();
     }
 
     @NotNull

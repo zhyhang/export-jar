@@ -13,7 +13,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.content.MessageView;
-import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.Consumer;
 import com.intellij.util.WaitForProgressToShow;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -36,10 +35,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
@@ -65,9 +62,8 @@ public class SettingDialog extends JDialog {
     private JPanel fileListPanel;
     private JButton debugButton;
     private JPanel actionPanel;
-    private JPanel debugPanel;
     private HistoryData historyData;
-    private SelectFilesDialog fileListDialog;
+    private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
@@ -120,33 +116,36 @@ public class SettingDialog extends JDialog {
         outPutJarFileComboBox.setModel(model);
     }
 
-    private void createFileListTree(){
+    private void createFileListTree() {
         //remove old component
         if (this.fileListLabel != null) {
             fileListPanel.remove(fileListLabel);
         }
-        if(this.fileListDialog!=null){
-            fileListPanel.remove(fileListDialog.getContentPanel());
+        if (this.fileListDialog != null) {
+            fileListPanel.remove(this.fileListDialog.getCenterPanel());
+            disposeFileListDialog();
         }
-        //create new component
+        //create new components
         this.fileListDialog = createFilesDialog();
-        final JComponent listPanel = fileListDialog.getContentPanel();
-        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.msgFileList, listPanel);
+        final JComponent selectTreePanel = fileListDialog.getCenterPanel();
+        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.msgFileList, selectTreePanel);
         final JPanel separatorPanel = simplePanel().addToBottom(mySeparator).addToTop(Box.createVerticalGlue());
         this.fileListLabel = simplePanel(separatorPanel).withBorder(createEmptyBorder());
         this.fileListPanel.add(fileListLabel, BorderLayout.NORTH);
-        this.fileListPanel.add(listPanel,BorderLayout.CENTER);
+        this.fileListPanel.add(selectTreePanel, BorderLayout.CENTER);
     }
 
     @NotNull
     private FileListDialog createFilesDialog() {
-        return new FileListDialog(this.project, null == this.selectedFiles ? List.of() : List.of(this.selectedFiles), null, null, true, false);
+        final Set<VirtualFile> allVfs = new HashSet<>();
+        for (VirtualFile virtualFile : Optional.ofNullable(this.selectedFiles).orElse(new VirtualFile[0])) {
+            CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
+        }
+        return new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false);
     }
 
-    private void uiDebug(){
+    private void uiDebug() {
         debugButton.setVisible(true);
-        SelectFilesDialog filesDialog = createFilesDialog();
-        debugPanel.add(filesDialog.getContentPanel(),new GridConstraints());
     }
 
     private void readSaveHistory() {
@@ -199,14 +198,12 @@ public class SettingDialog extends JDialog {
         doExport(finalSelectFiles);
     }
 
-    private void onDebug(){
+    private void onDebug() {
         SelectFilesDialog filesDialog = createFilesDialog();
-        filesDialog.getContentPanel();
-        filesDialog.getContentPane();
         filesDialog.show();
     }
 
-    public void setSelectedFiles(VirtualFile[] selectedFiles){
+    public void setSelectedFiles(VirtualFile[] selectedFiles) {
         this.selectedFiles = selectedFiles;
         createFileListTree();
     }
@@ -256,6 +253,25 @@ public class SettingDialog extends JDialog {
         }
     }
 
+    @Override
+    public void dispose() {
+        disposeFileListDialog();
+        super.dispose();
+    }
+
+    private void disposeFileListDialog() {
+        if (this.fileListDialog == null || this.fileListDialog.isDisposed()) {
+            return;
+        }
+        if (EventQueue.isDispatchThread()) {
+            this.fileListDialog.disposeIfNeeded();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(() -> this.fileListDialog.disposeIfNeeded());
+            } catch (Exception ignored) {
+            }
+        }
+    }
 
     private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {
         private final JComboBox<String> comboBox;

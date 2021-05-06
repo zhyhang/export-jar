@@ -14,14 +14,23 @@ import java.util.List;
  * Dialog extend from SelectFilesDialog without the buttons. It is used to show select files.
  */
 public class FileListDialog extends SelectFilesDialog {
+
+    private JComponent centerPanel;
+
     public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt, @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles, boolean deletableFiles) {
         super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
         init();
     }
 
     @Override
-    protected JComponent createSouthPanel() {
-        // do not render the buttons panel
-        return null;
+    protected @Nullable
+    JComponent createCenterPanel() {
+        this.centerPanel = super.createCenterPanel();
+        return this.centerPanel;
+    }
+
+
+    public JComponent getCenterPanel() {
+        return centerPanel;
     }
 }

@@ -9,7 +9,7 @@
       <br>
       Usage: <br>
       <li><b>select files, right click mouse, click "Export Jar..." to perform export </b></li>
-      <li><b>click VCS menu  "Export Jar from Local Changes..." to export local changes</b></li>
+      <li><b>click Build menu item  "Export Jar from Local Changes..." to export local changes</b></li>
       <li><b>NOTES: export local changes not include un-version-control changes </b></li>
       <li><b>in Local Changes dock panel, right click mouse, click "Export Jar from Local Changes..." to export local changes</b></li>
       <li><b>in normal commit changes dialog, click "Export Jar..." in commit button group to export local changes</b></li>
