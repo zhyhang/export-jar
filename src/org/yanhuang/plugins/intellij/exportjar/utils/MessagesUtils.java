@@ -5,6 +5,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -59,14 +60,18 @@ public class MessagesUtils {
      * show info message in message view panel
      *
      * @param project current project
-     * @param string  message
+     * @param text  message
      */
-    public static void info(Project project, String string) {
+    public static void info(Project project, String text) {
+        infoAndMore(project, text, null);
+    }
+
+    public static void infoAndMore(Project project, String text, VirtualFile file) {
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
         if (toolWindow != null) {
             toolWindow.activate(null, false);
         }
-        messageViewPanel(project).addMessage(MessageCategory.INFORMATION, new String[]{string}, null, -1, -1, null);
+        messageViewPanel(project).addMessage(MessageCategory.INFORMATION, new String[]{text}, file, -1, -1, null);
     }
 
     /**

@@ -10,6 +10,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -71,7 +73,7 @@ public class CommonUtils {
     }
 
     public static void createNewJar(Project project, Path jarFileFullPath, List<Path> filePaths,
-                                    List<String> entryNames) {
+                                    List<String> entryNames, Map<Path, VirtualFile> filePathVfMap) {
         final Manifest manifest = new Manifest();
         Attributes mainAttributes = manifest.getMainAttributes();
         mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -90,7 +92,9 @@ public class CommonUtils {
                     jos.write(Files.readAllBytes(filePath));
                 }
                 jos.closeEntry();
-                MessagesUtils.info(project, "packed " + filePath + " to jar");
+//                MessagesUtils.info(project, "packed " + filePath + " to jar");
+                VirtualFile vf = filePathVfMap.get(filePath);
+                MessagesUtils.infoAndMore(project, "packed " + filePath + " to jar", vf);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

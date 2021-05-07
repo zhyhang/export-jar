@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.*;
 
@@ -56,11 +53,16 @@ public class ExportPacker implements CompileStatusNotification {
             CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
         }
         List<Path> filePaths = new ArrayList<>();
+        Map<Path, VirtualFile> filePathVfMap = new HashMap<>();
         List<String> jarEntryNames = new ArrayList<>();
         for (VirtualFile vf : allVfs) {
+            final int startIndex = filePaths.size();
             collectExportVirtualFile(filePaths, jarEntryNames, vf);
+            for (int i = startIndex; i < filePaths.size(); i++) {
+                filePathVfMap.put(filePaths.get(i), vf);
+            }
         }
-        CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames);
+        CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames, filePathVfMap);
     }
 
     private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
