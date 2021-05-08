@@ -128,7 +128,7 @@ public class SettingDialog extends JDialog {
         //create new components
         this.fileListDialog = createFilesDialog();
         final JComponent selectTreePanel = fileListDialog.getCenterPanel();
-        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.msgFileList, selectTreePanel);
+        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.titteFileList, selectTreePanel);
         final JPanel separatorPanel = simplePanel().addToBottom(mySeparator).addToTop(Box.createVerticalGlue());
         this.fileListLabel = simplePanel(separatorPanel).withBorder(createEmptyBorder());
         this.fileListPanel.add(fileListLabel, BorderLayout.NORTH);

@@ -16,6 +16,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>2.2 Change Log:</b><br>
+    <li>List the select files in export setting dialog and can re-select them</li>
+    <li>Add copy to clipboard and show jar file in system explorer actions in notifications</li>
+    <br>
     <b>2.1 Change Log:</b><br>
     <li>fix NullPointException in 2021.1</li>
     <br>

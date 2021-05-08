@@ -13,6 +13,8 @@ import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
+import org.yanhuang.plugins.intellij.exportjar.utils.action.CopyTextToClipboardAction;
+import org.yanhuang.plugins.intellij.exportjar.utils.action.ShowInExplorerAction;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -147,14 +149,11 @@ public class ExportPacker implements CompileStatusNotification {
                 this.pack();
             } catch (Exception e) {
                 error(project, stackInfo(e));
-                errorNotify(Constants.actionName + " status", "export jar error, detail in the messages" +
-                        " " +
-                        "tab");
+                errorNotify(Constants.actionName + " status", "export jar error, detail in the messages tab");
                 return;
             }
             info(project, exportJarFullPath + " complete export successfully");
-            infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete " +
-                    "export successfully");
+            infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete export successfully", List.of(new CopyTextToClipboardAction(exportJarFullPath.toString()), new ShowInExplorerAction(exportJarFullPath)));
         } else {
             error(project, "compile error");
             infoNotify(Constants.actionName + " status", "compile error, detail in the messages tab");

@@ -10,7 +10,9 @@ public interface Constants {
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
     String infoTabName = "Packing Export Jar";
-    String msgFileList = "Select files";
+    String titteFileList = "Select files";
+    String actionNameExplorer = "Explorer";
+    String actionNameCopy = "Copy";
     String creator = "yanhuang.org";
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
     Path historyFilePath = cachePath.resolve("select_history.json");

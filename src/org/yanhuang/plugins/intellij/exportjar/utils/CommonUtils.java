@@ -58,10 +58,12 @@ public class CommonUtils {
         return new Gson().fromJson(json, cls);
     }
 
+
     public static void collectExportFilesNest(Project project, Set<VirtualFile> collected, VirtualFile parentVf) {
         if (!parentVf.isDirectory() && isValidExport(project, parentVf)) {
             collected.add(parentVf);
         }
+        //try to use com.intellij.openapi.vfs.VfsUtilCore.visitChildrenRecursively
         final VirtualFile[] children = parentVf.getChildren();
         for (VirtualFile child : children) {
             if (child.isDirectory()) {
@@ -92,7 +94,6 @@ public class CommonUtils {
                     jos.write(Files.readAllBytes(filePath));
                 }
                 jos.closeEntry();
-//                MessagesUtils.info(project, "packed " + filePath + " to jar");
                 VirtualFile vf = filePathVfMap.get(filePath);
                 MessagesUtils.infoAndMore(project, "packed " + filePath + " to jar", vf);
             }
