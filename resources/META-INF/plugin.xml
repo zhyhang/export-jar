@@ -1,7 +1,7 @@
 <idea-plugin require-restart="false">
     <id>org.yanhuang.plugins.intellij.exportjar</id>
     <name>Handy Export Jar</name>
-    <version>2.1</version>
+    <version>2.2</version>
     <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
     <description><![CDATA[
@@ -9,13 +9,17 @@
       <br>
       Usage: <br>
       <li><b>select files, right click mouse, click "Export Jar..." to perform export </b></li>
-      <li><b>click VCS menu  "Export Jar from Local Changes..." to export local changes</b></li>
+      <li><b>click Build menu item  "Export Jar from Local Changes..." to export local changes</b></li>
       <li><b>NOTES: export local changes not include un-version-control changes </b></li>
       <li><b>in Local Changes dock panel, right click mouse, click "Export Jar from Local Changes..." to export local changes</b></li>
       <li><b>in normal commit changes dialog, click "Export Jar..." in commit button group to export local changes</b></li>
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>2.2 Change Log:</b><br>
+    <li>List the select files in export setting dialog and can re-select them</li>
+    <li>Add copy to clipboard and show jar file in system explorer actions in notifications</li>
+    <br>
     <b>2.1 Change Log:</b><br>
     <li>fix NullPointException in 2021.1</li>
     <br>

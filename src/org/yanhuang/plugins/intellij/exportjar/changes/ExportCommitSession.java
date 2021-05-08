@@ -27,6 +27,8 @@ public class ExportCommitSession implements CommitSession {
     @Nullable
     @Override
     public JComponent getAdditionalConfigurationUI(@NotNull Collection<Change> changes, @Nullable String commitMessage) {
+        final VirtualFile[] changeFiles = getVirtualFiles(changes);
+        settingDialog.setSelectedFiles(changeFiles);
         return settingDialog.getSettingPanel();
     }
 
@@ -37,8 +39,13 @@ public class ExportCommitSession implements CommitSession {
 
     @Override
     public void execute(@NotNull Collection<Change> changes, @Nullable String commitMessage) {
-        final VirtualFile[] changeFiles = changes.stream().map(Change::getVirtualFile).filter(Objects::nonNull).toArray(VirtualFile[]::new);
-        settingDialog.doExport(changeFiles);
+        settingDialog.onOK();
+        settingDialog.dispose();
+    }
+
+    @NotNull
+    private VirtualFile[] getVirtualFiles(@NotNull Collection<Change> changes) {
+        return changes.stream().map(Change::getVirtualFile).filter(Objects::nonNull).toArray(VirtualFile[]::new);
     }
 
     @Override

@@ -1,18 +1,23 @@
 package org.yanhuang.plugins.intellij.exportjar.utils;
 
 import com.intellij.compiler.impl.ProblemsViewPanel;
+import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.*;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.MessageCategory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 public class MessagesUtils {
 
@@ -59,14 +64,18 @@ public class MessagesUtils {
      * show info message in message view panel
      *
      * @param project current project
-     * @param string  message
+     * @param text  message
      */
-    public static void info(Project project, String string) {
+    public static void info(Project project, String text) {
+        infoAndMore(project, text, null);
+    }
+
+    public static void infoAndMore(Project project, String text, VirtualFile file) {
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
         if (toolWindow != null) {
             toolWindow.activate(null, false);
         }
-        messageViewPanel(project).addMessage(MessageCategory.INFORMATION, new String[]{string}, null, -1, -1, null);
+        messageViewPanel(project).addMessage(MessageCategory.INFORMATION, new String[]{text}, file, -1, -1, null);
     }
 
     /**
@@ -104,9 +113,21 @@ public class MessagesUtils {
      * @param message message showing in popup, can be html snippet
      */
     public static void infoNotify(String title, String message) {
-        Notifications.Bus.notify(new Notification(Constants.actionName, title,
-                message, NotificationType.INFORMATION));
+        infoNotify(title, message, List.of());
     }
+
+    /**
+     * show info notification popup with actions
+     * @param title title
+     * @param message content
+     * @param actions actions show in popup and event log window
+     */
+    public static void infoNotify(String title, String message, List<AnAction> actions) {
+        final Notification notification = new Notification(Constants.actionName, title, message, NotificationType.INFORMATION);
+        ContainerUtil.notNullize(actions).forEach(notification::addAction);
+        Notifications.Bus.notify(notification);
+    }
+
 
     /**
      * show error notification popup
@@ -115,9 +136,21 @@ public class MessagesUtils {
      * @param message message showing in popup, can be html snippet
      */
     public static void errorNotify(String title, String message) {
-        Notifications.Bus.notify(new Notification(Constants.actionName, title,
-                message, NotificationType.ERROR));
+        errorNotify(title, message, List.of());
     }
+
+    /**
+     * show error notification popup
+     * @param title title
+     * @param message content
+     * @param actions actions show in popup and event log window
+     */
+    public static void errorNotify(String title, String message, List<AnAction> actions) {
+        final Notification notification = new Notification(Constants.actionName, title, message, NotificationType.ERROR);
+        ContainerUtil.notNullize(actions).forEach(notification::addAction);
+        Notifications.Bus.notify(notification);
+    }
+
 
     /**
      * throwable stack tracking print to string
