@@ -1,7 +1,7 @@
 <idea-plugin require-restart="false">
     <id>org.yanhuang.plugins.intellij.exportjar</id>
     <name>Handy Export Jar</name>
-    <version>2.2</version>
+    <version>2.3</version>
     <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
     <description><![CDATA[
@@ -16,6 +16,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <b>2.3 Change Log:</b><br>
+    <li>Fix throw exception when select empty files</li>
+    <li>Disable the OK button when select empty files</li>
+    <br>
     <b>2.2 Change Log:</b><br>
     <li>List the select files in export setting dialog and can re-select them</li>
     <li>Add copy to clipboard and show jar file in system explorer actions in notifications</li>

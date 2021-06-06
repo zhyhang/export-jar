@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.beans.PropertyChangeEvent;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Dialog extend from SelectFilesDialog without the buttons. It is used to show select files.
@@ -32,5 +34,9 @@ public class FileListDialog extends SelectFilesDialog {
 
     public JComponent getCenterPanel() {
         return centerPanel;
+    }
+
+    public void addFileTreeChangeListener(BiConsumer<FileListDialog, PropertyChangeEvent> listener) {
+        getFileList().addPropertyChangeListener(e-> listener.accept(this,e));
     }
 }
