@@ -15,6 +15,7 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.Consumer;
 import com.intellij.util.WaitForProgressToShow;
+import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -263,14 +264,7 @@ public class SettingDialog extends JDialog {
         if (this.fileListDialog == null || this.fileListDialog.isDisposed()) {
             return;
         }
-        if (EventQueue.isDispatchThread()) {
-            this.fileListDialog.disposeIfNeeded();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(() -> this.fileListDialog.disposeIfNeeded());
-            } catch (Exception ignored) {
-            }
-        }
+        UIUtil.invokeAndWaitIfNeeded((Runnable) () -> this.fileListDialog.disposeIfNeeded());
     }
 
     private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {
