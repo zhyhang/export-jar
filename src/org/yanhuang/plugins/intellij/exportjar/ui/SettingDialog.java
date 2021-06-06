@@ -36,8 +36,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
@@ -142,7 +142,12 @@ public class SettingDialog extends JDialog {
         for (VirtualFile virtualFile : Optional.ofNullable(this.selectedFiles).orElse(new VirtualFile[0])) {
             CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
         }
-        return new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false);
+        final FileListDialog dialog = new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false);
+        dialog.addFileTreeChangeListener((d, e) -> {
+            final Collection<VirtualFile> files = d.getSelectedFiles();
+            this.buttonOK.setEnabled(null != files && !files.isEmpty());
+        });
+        return dialog;
     }
 
     private void uiDebug() {
@@ -194,6 +199,14 @@ public class SettingDialog extends JDialog {
         this.dispose();
     }
 
+    /**
+     * final selected files to export
+     * @return selected files, always not null, possible length=0
+     */
+    public VirtualFile[] getSelectedFiles() {
+        return fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
+    }
+
     public void onOK() {
         final VirtualFile[] finalSelectFiles = fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
         doExport(finalSelectFiles);
@@ -210,6 +223,9 @@ public class SettingDialog extends JDialog {
     }
 
     public void doExport(VirtualFile[] exportFiles) {
+        if (isEmpty(exportFiles)) {
+            return;
+        }
         final Module[] modules = CommonUtils.findModule(project, exportFiles);
         String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
         if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().length() == 0) {
@@ -247,11 +263,19 @@ public class SettingDialog extends JDialog {
                         exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected(),
                         exportTestFileCheckBox.isSelected());
                 WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() ->
-                        CompilerManager.getInstance(project).make(project, modules, packager));
+                        CompilerManager.getInstance(project).make(project, null == modules ? new Module[0] : modules, packager));
             }
         } else {
             WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "Please specify export jar file name", Constants.actionName));
         }
+    }
+
+    private boolean isEmpty(VirtualFile[] exportFiles) {
+        if (exportFiles == null || exportFiles.length == 0) {
+            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "Export files is empty, please select them first", Constants.actionName));
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -34,7 +34,8 @@ public class ExportCommitSession implements CommitSession {
 
     @Override
     public boolean canExecute(Collection<Change> changes, String commitMessage) {
-        return changes != null && changes.size() > 0;
+        final VirtualFile[] selectedFiles = settingDialog.getSelectedFiles();
+        return changes != null && changes.size() > 0 && selectedFiles != null && selectedFiles.length > 0;
     }
 
     @Override
