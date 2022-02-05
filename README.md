@@ -1,3 +1,4 @@
+<!-- Plugin description -->
 Plugin of Intellij IDEA for quickly export java project's class, resource, source file to jar, like Eclipse's action of export to jar. 
 
 ## features
@@ -10,29 +11,33 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports custom setting export file type
 - Supports export from vcs commits (local changes) as well as intrinsic "Create Patch" action 
 
-## runtime require
-- Intellij Idea (U & C) 2017.3 and later
-
 ## usage
 - select files
-    - right click mouse or click Build menu
-    - select "Export Jar..." to perform export
+  - right click mouse or click Build menu
+  - select "Export Jar..." to perform export
 - or click VCS menu  "Export Jar from Local Changes..."
 - or in normal commit changes dialog, click "Export Jar..." in commit button group
+<!-- Plugin description end -->
+
+## runtime require
+- v1: Intellij Idea (U & C) 2017.3 and later
+- v2: Intellij Idea (U & C) 2020.2 and later
 
 ## plugin developing require
+- [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
+- [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
 - when developing with 192+, please add following jars to SDK classpath:  
 **installed root path/plugin/java/lib/\*.jar**  
 **installed root path/lib/platform-core-ui.jar**  
 
 ## screenshot
-![From Build Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-menu.png)
-![From Right Click](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-right-click.png)
-![From VCS Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-local-changes-vcs-menu.png)
-![From Normal Commit](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-local-changes-add-to-commit-button-group.png)
-![From Local Changes Pop Menu](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-local-changes-right-click.png)
-![Setting Dialog](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-pop.png)
-![Export Status](https://raw.githubusercontent.com/zhyhang/export-jar/master/image/export-jar-result.png)
+![From Build Menu](image/export-jar-menu.png)
+![From Right Click](image/export-jar-right-click.png)
+![From VCS Menu](image/export-jar-local-changes-vcs-menu.png)
+![From Normal Commit](image/export-jar-local-changes-add-to-commit-button-group.png)
+![From Local Changes Pop Menu](image/export-jar-local-changes-right-click.png)
+![Setting Dialog](image/export-jar-pop.png)
+![Export Status](image/export-jar-result.png)
 
 ## TODO 
 - [OK]support inner and anonymous class export
