@@ -24,3 +24,7 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+### ide plugin template
+.gradle
+.qodana
