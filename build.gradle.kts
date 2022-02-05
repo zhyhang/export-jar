@@ -19,10 +19,6 @@ plugins {
 group = properties("pluginGroup")
 version = properties("pluginVersion")
 
-sourceSets{
-
-}
-
 // Configure project's dependencies
 repositories {
     //TODO 每次根据开发环境改变
@@ -74,7 +70,7 @@ tasks {
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set(properties("pluginUntilBuild"))
+//        untilBuild.set(properties("pluginUntilBuild"))
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(
