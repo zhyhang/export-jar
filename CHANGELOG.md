@@ -1,4 +1,5 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
+<!-- Will refresh plugin.xml change-notes section by gradle's building -->
 
 # Changelogs
 
