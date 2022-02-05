@@ -20,9 +20,12 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 <!-- Plugin description end -->
 
 ## runtime require
-- Intellij Idea (U & C) 2017.3 and later
+- v1: Intellij Idea (U & C) 2017.3 and later
+- v2: Intellij Idea (U & C) 2020.2 and later
 
 ## plugin developing require
+- [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
+- [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
 - when developing with 192+, please add following jars to SDK classpath:  
 **installed root path/plugin/java/lib/\*.jar**  
 **installed root path/lib/platform-core-ui.jar**  
