@@ -22,7 +22,8 @@ version = properties("pluginVersion")
 // Configure project's dependencies
 repositories {
     //TODO 每次根据开发环境改变
-    maven { url=uri("https://www.jetbrains.com/intellij-repository/snapshots") }
+    maven { url=uri("https://www.jetbrains.com/intellij-repository/releases") }
+    //maven { url=uri("https://www.jetbrains.com/intellij-repository/snapshots") }
     maven { url=uri("https://cache-redirector.jetbrains.com/intellij-dependencies") }
     mavenCentral()
 }
@@ -70,7 +71,7 @@ tasks {
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))
-//        untilBuild.set(properties("pluginUntilBuild"))
+        untilBuild.set(properties("pluginUntilBuild"))
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(

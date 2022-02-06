@@ -1,7 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.utils;
 
 import com.intellij.compiler.impl.ProblemsViewPanel;
-import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;

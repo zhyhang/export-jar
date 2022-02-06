@@ -1,6 +1,5 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
-import com.intellij.history.integration.ui.views.RevisionsList;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;

@@ -1,5 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -14,7 +16,6 @@ import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.Consumer;
-import com.intellij.util.WaitForProgressToShow;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
@@ -226,10 +227,11 @@ public class SettingDialog extends JDialog {
         if (isEmpty(exportFiles)) {
             return;
         }
+        final Application app = ApplicationManager.getApplication();
         final Module[] modules = CommonUtils.findModule(project, exportFiles);
         String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
         if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().length() == 0) {
-            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "The selected output path should not empty", Constants.actionName));
+            app.invokeAndWait(() -> showErrorDialog(project, "The selected output path should not empty", Constants.actionName));
             return;
         }
         Path exportJarFullPath = Paths.get(selectedOutputJarFullPath.trim());
@@ -241,7 +243,7 @@ public class SettingDialog extends JDialog {
                 exportJarFullPath = exportJarParentPath.resolve(exportJarFullPath);
             }
             if (!Files.exists(exportJarParentPath)) {
-                WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "The selected output path is not exists", Constants.actionName));
+                app.invokeAndWait(() -> showErrorDialog(project, "The selected output path is not exists", Constants.actionName));
             } else {
                 String exportJarName = exportJarFullPath.getFileName().toString();
                 if (!exportJarName.endsWith(".jar")) {
@@ -250,9 +252,8 @@ public class SettingDialog extends JDialog {
                 if (Files.exists(exportJarFullPath)) {
                     final int[] result = new int[1];
                     final Path finalJarPath = exportJarFullPath;
-                    WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(
-                            () -> result[0] = Messages.showYesNoDialog(project, finalJarPath + " already exists, replace it? ",
-                                    Constants.actionName, getWarningIcon()));
+                    app.invokeAndWait(() -> result[0] = Messages.showYesNoDialog(project, finalJarPath + " already exists, replace it? ",
+                            Constants.actionName, getWarningIcon()));
                     if (result[0] == Messages.NO) {
                         return;
                     }
@@ -262,17 +263,16 @@ public class SettingDialog extends JDialog {
                 final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath,
                         exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected(),
                         exportTestFileCheckBox.isSelected());
-                WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() ->
-                        CompilerManager.getInstance(project).make(project, null == modules ? new Module[0] : modules, packager));
+                app.invokeAndWait(() -> CompilerManager.getInstance(project).make(project, null == modules ? new Module[0] : modules, packager));
             }
         } else {
-            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "Please specify export jar file name", Constants.actionName));
+            app.invokeAndWait(() -> showErrorDialog(project, "Please specify export jar file name", Constants.actionName));
         }
     }
 
     private boolean isEmpty(VirtualFile[] exportFiles) {
         if (exportFiles == null || exportFiles.length == 0) {
-            WaitForProgressToShow.runOrInvokeAndWaitAboveProgress(() -> showErrorDialog(project, "Export files is empty, please select them first", Constants.actionName));
+            ApplicationManager.getApplication().invokeAndWait(() -> showErrorDialog(project, "Export files is empty, please select them first", Constants.actionName));
             return true;
         }
         return false;
