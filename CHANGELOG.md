@@ -6,7 +6,8 @@
 ## [Unreleased]
 
 ## [2.4.0]
-- Build framework change to gradle
+- Compatible with coming version 2022
+- Build tool change to gradle
 
 ## [2.3.0]
 - Fix throw exception when select empty files  
