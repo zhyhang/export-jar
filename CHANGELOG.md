@@ -5,6 +5,10 @@
 
 ## [Unreleased]
 
+## [2.4.0]
+- Supports add directory entries option 
+- Remember export options
+
 ## [2.3.1]
 - Compatible with coming version 2022
 - Build tool change to gradle

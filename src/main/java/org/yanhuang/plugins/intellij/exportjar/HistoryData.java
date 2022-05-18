@@ -12,9 +12,11 @@ import java.util.TreeMap;
  */
 public class HistoryData {
 
-    private static final int maxHistory = 100;
+    private static final int maxHistory = 2022;
 
     private SavedJarInfo[] savedJarInfo;
+
+    private ExportOptions[] lastExportOptions;
 
     public SavedJarInfo[] getSavedJarInfo() {
         return savedJarInfo;
@@ -22,6 +24,14 @@ public class HistoryData {
 
     public void setSavedJarInfo(SavedJarInfo[] savedJarInfo) {
         this.savedJarInfo = savedJarInfo;
+    }
+
+    public ExportOptions[] getLastExportOptions() {
+        return lastExportOptions;
+    }
+
+    public void setLastExportOptions(ExportOptions[] lastExportOptions) {
+        this.lastExportOptions = lastExportOptions;
     }
 
     public void addSavedJarInfo(SavedJarInfo savedJarInfo) {
@@ -87,5 +97,9 @@ public class HistoryData {
             if (getClass() != that.getClass()) return 1;
             return Long.compare(this.getCreation(), that.getCreation());
         }
+    }
+
+    public enum ExportOptions {
+        export_java,export_class,export_test,add_directory
     }
 }

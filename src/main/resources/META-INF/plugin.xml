@@ -1,7 +1,7 @@
 <idea-plugin require-restart="false">
     <id>org.yanhuang.plugins.intellij.exportjar</id>
     <name>Handy Export Jar</name>
-    <version>2.3.1</version>
+    <version>2.4.0</version>
     <vendor email="zhyhang1978@gmail.com" url="https://github.com/zhyhang/export-jar">Yanhuang</vendor>
 
     <!-- The description will replace by gradle's generated from README.md -->
@@ -17,6 +17,7 @@
     ]]></description>
 
     <!-- The change-notes will replace by gradle's generated from CHANGELOG.md -->
+    <!-- You should not change following content anyway -->
     <change-notes><![CDATA[
     <b>2.3 Change Log:</b><br>
     <li>Fix throw exception when select empty files</li>

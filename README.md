@@ -68,4 +68,12 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - help docs
 - throw swing context event exception when trigger by first-keystroke (key-map)
 - button component mnemonic not working
-## Note
+## Build
+
+```shell
+# win
+.\gradlew.bat clean build
+
+# linux/macos
+.\gradlew clean build
+```
