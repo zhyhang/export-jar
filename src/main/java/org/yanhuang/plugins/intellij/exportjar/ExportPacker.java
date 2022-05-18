@@ -11,6 +11,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
+import org.yanhuang.plugins.intellij.exportjar.HistoryData.ExportOptions;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.action.CopyTextToClipboardAction;
@@ -21,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.*;
 
@@ -31,17 +33,13 @@ public class ExportPacker implements CompileStatusNotification {
     private final Project project;
     private final VirtualFile[] selectedFiles;
     private final Path exportJarFullPath;
-    private final boolean exportJava;
-    private final boolean exportClass;
-    private final boolean exportTests;
+    private final Set<ExportOptions> exportOptionSet;
 
-    public ExportPacker(Project project, VirtualFile[] selectedFiles, Path exportJarFullPath, boolean exportJava, boolean exportClass, boolean exportTests) {
+    public ExportPacker(Project project, VirtualFile[] selectedFiles, Path exportJarFullPath, ExportOptions[] exportOptions) {
         this.project = project;
         this.selectedFiles = selectedFiles;
         this.exportJarFullPath = exportJarFullPath;
-        this.exportClass = exportClass;
-        this.exportJava = exportJava;
-        this.exportTests = exportTests;
+        this.exportOptionSet = Arrays.stream(exportOptions).collect(Collectors.toSet());
     }
 
     private void pack() {
@@ -64,13 +62,36 @@ public class ExportPacker implements CompileStatusNotification {
                 filePathVfMap.put(filePaths.get(i), vf);
             }
         }
+        if (exportOptionSet.contains(ExportOptions.add_directory)) {
+            addDirectoryEntries(filePaths, jarEntryNames);
+        }
         CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames, filePathVfMap);
+    }
+
+    private void addDirectoryEntries(List<Path> filePaths, List<String> entryNames) {
+        final var added = new HashSet<String>();
+        final int size = entryNames.size();
+        for (int i = 0; i < size; i++) {
+            addDirectoryEntry(filePaths, entryNames, entryNames.get(i), added);
+        }
+    }
+
+    private void addDirectoryEntry(List<Path> filePaths, List<String> entryNames, String entryName, HashSet<String> added) {
+        int spIndex = entryName.indexOf("/");
+        while (spIndex > 0) {
+            final String dir = entryName.substring(0, spIndex + 1);
+            if (added.add(dir)) {
+                filePaths.add(null);
+                entryNames.add(dir);
+            }
+            spIndex = entryName.indexOf("/", spIndex + 1);
+        }
     }
 
     private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
         final boolean inTestSourceContent =
                 ProjectRootManager.getInstance(project).getFileIndex().isInTestSourceContent(virtualFile);
-        if (inTestSourceContent && !exportTests) { // not export test source and resource files
+        if (inTestSourceContent && !exportOptionSet.contains(ExportOptions.export_test)) { // not export test source and resource files
             return;
         }
         // find package name
@@ -80,11 +101,11 @@ public class ExportPacker implements CompileStatusNotification {
         String packagePath = psiPackage == null ? "" : psiPackage.getQualifiedName().replaceAll("\\.", "/");
         String fileName = virtualFile.getName();
         if (CompilerManager.getInstance(project).isCompilableFileType(virtualFile.getFileType())) {
-            if (exportJava) {
+            if (exportOptionSet.contains(ExportOptions.export_java)) {
                 collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
             }
             // only export java classes
-            if (psiPackage != null && exportClass && fileName.endsWith(".java")) {
+            if (psiPackage != null && exportOptionSet.contains(ExportOptions.export_class) && fileName.endsWith(".java")) {
                 PsiClass[] psiClasses = psiPackage.getClasses();
                 if (psiClasses.length == 0) {
                     warn(project, "not found class info of java file " + virtualFile.getPath());

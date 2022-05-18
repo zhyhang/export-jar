@@ -50,6 +50,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 
 /**
  * export jar settings dialog (link to SettingDialog.form)
+ * <li><b>In UIDesigner: export options JCheckBox's name is same as HistoryData.ExportOptions</b></li>
  */
 public class SettingDialog extends JDialog {
     private final Project project;
@@ -61,6 +62,7 @@ public class SettingDialog extends JDialog {
     private JCheckBox exportJavaFileCheckBox;
     private JCheckBox exportClassFileCheckBox;
     private JCheckBox exportTestFileCheckBox;
+    private JCheckBox exportAddDirectoryCheckBox;
     private JComboBox<String> outPutJarFileComboBox;
     private JButton selectJarFileButton;
     private JPanel settingPanel;
@@ -301,9 +303,7 @@ public class SettingDialog extends JDialog {
                 }
                 this.dispose();
                 writeSaveHistory(exportJarFullPath);
-                final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath,
-                        exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected(),
-                        exportTestFileCheckBox.isSelected());
+                final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath, pickExportOptions());
                 app.invokeAndWait(() -> CompilerManager.getInstance(project).make(project, null == modules ? new Module[0] : modules, packager));
             }
         } else {

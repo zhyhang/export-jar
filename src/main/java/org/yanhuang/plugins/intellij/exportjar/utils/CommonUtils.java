@@ -86,15 +86,17 @@ public class CommonUtils {
                 String entryName = entryNames.get(i);
                 JarEntry je = new JarEntry(entryName);
                 Path filePath = filePaths.get(i);
-                // using origin entry(file) last modified time
-                je.setLastModifiedTime(Files.getLastModifiedTime(filePath));
                 jos.putNextEntry(je);
-                if (!Files.isDirectory(filePath)) {
+                if (filePath != null && Files.isRegularFile(filePath)) {
+                    // using origin entry(file) last modified time
+                    je.setLastModifiedTime(Files.getLastModifiedTime(filePath));
                     jos.write(Files.readAllBytes(filePath));
                 }
                 jos.closeEntry();
                 VirtualFile vf = filePathVfMap.get(filePath);
-                MessagesUtils.infoAndMore(project, "packed " + filePath + " to jar", vf);
+                if (vf != null) {
+                    MessagesUtils.infoAndMore(project, "packed " + filePath + " to jar", vf);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
