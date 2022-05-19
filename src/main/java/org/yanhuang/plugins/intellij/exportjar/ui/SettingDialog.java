@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.HistoryData;
+import org.yanhuang.plugins.intellij.exportjar.HistoryData.ExportOptions;
+import org.yanhuang.plugins.intellij.exportjar.HistoryData.SavedJarInfo;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
@@ -39,6 +41,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
@@ -47,6 +50,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 
 /**
  * export jar settings dialog (link to SettingDialog.form)
+ * <li><b>In UIDesigner: export options JCheckBox's name is same as HistoryData.ExportOptions</b></li>
  */
 public class SettingDialog extends JDialog {
     private final Project project;
@@ -58,12 +62,14 @@ public class SettingDialog extends JDialog {
     private JCheckBox exportJavaFileCheckBox;
     private JCheckBox exportClassFileCheckBox;
     private JCheckBox exportTestFileCheckBox;
+    private JCheckBox exportAddDirectoryCheckBox;
     private JComboBox<String> outPutJarFileComboBox;
     private JButton selectJarFileButton;
     private JPanel settingPanel;
     private JPanel fileListPanel;
     private JButton debugButton;
     private JPanel actionPanel;
+    private JPanel optionsPanel;
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
@@ -91,6 +97,7 @@ public class SettingDialog extends JDialog {
 
         readSaveHistory();
         initComboBox();
+        initOptionCheckBox();
         createFileListTree();
 
 //        uiDebug();
@@ -109,13 +116,32 @@ public class SettingDialog extends JDialog {
         String[] historyFiles;
         if (historyData != null) {
             historyFiles =
-                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfo()).orElse(new HistoryData.SavedJarInfo[0]))
-                            .map(HistoryData.SavedJarInfo::getPath).toArray(String[]::new);
+                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfo()).orElse(new SavedJarInfo[0]))
+                            .map(SavedJarInfo::getPath).toArray(String[]::new);
         } else {
             historyFiles = new String[0];
         }
         ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
         outPutJarFileComboBox.setModel(model);
+    }
+
+    private void initOptionCheckBox(){
+        final Component[] components = optionsPanel.getComponents();
+        final Set<String> optionSet = Optional.ofNullable(historyData.getLastExportOptions()).stream().flatMap(Arrays::stream)
+                .map(ExportOptions::name)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        if (optionSet.size() == 0) {
+            return;
+        }
+        //set select state according to last saved
+        for (Component c : components) {
+            if (c instanceof JCheckBox && optionSet.contains(c.getName().toLowerCase())) {
+                ((JCheckBox) c).setSelected(true);
+            } else if (c instanceof JCheckBox) {
+                ((JCheckBox) c).setSelected(false);
+            }
+        }
     }
 
     private void createFileListTree() {
@@ -174,7 +200,8 @@ public class SettingDialog extends JDialog {
         if (historyData == null) {
             this.historyData = new HistoryData();
         }
-        HistoryData.SavedJarInfo savedJar = new HistoryData.SavedJarInfo();
+        this.historyData.setLastExportOptions(pickExportOptions());
+        SavedJarInfo savedJar = new SavedJarInfo();
         savedJar.setCreation(System.currentTimeMillis());
         savedJar.setPath(exportJarName.toString());
         historyData.addSavedJarInfo(savedJar);
@@ -187,6 +214,22 @@ public class SettingDialog extends JDialog {
                 MessagesUtils.warn(project, e.getMessage());
             }
         }
+    }
+
+    private ExportOptions[] pickExportOptions(){
+        final Component[] components = optionsPanel.getComponents();
+        return Arrays.stream(components).filter(c -> c instanceof JCheckBox)
+                .filter(c->((JCheckBox) c).isSelected())
+                .map(Component::getName)
+                .map(String::toLowerCase)
+                .filter(n -> {
+                    try {
+                        ExportOptions.valueOf(n);
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }).map(ExportOptions::valueOf).toArray(ExportOptions[]::new);
     }
 
     private void onSelectJarFileButton(ActionEvent event) {
@@ -260,9 +303,7 @@ public class SettingDialog extends JDialog {
                 }
                 this.dispose();
                 writeSaveHistory(exportJarFullPath);
-                final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath,
-                        exportJavaFileCheckBox.isSelected(), exportClassFileCheckBox.isSelected(),
-                        exportTestFileCheckBox.isSelected());
+                final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath, pickExportOptions());
                 app.invokeAndWait(() -> CompilerManager.getInstance(project).make(project, null == modules ? new Module[0] : modules, packager));
             }
         } else {
