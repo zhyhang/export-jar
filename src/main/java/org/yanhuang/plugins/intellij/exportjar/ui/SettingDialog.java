@@ -193,6 +193,8 @@ public class SettingDialog extends JDialog {
             } catch (Exception e) {
                 MessagesUtils.warn(project, e.getMessage());
             }
+        }else{
+            this.historyData = new HistoryData();
         }
     }
 

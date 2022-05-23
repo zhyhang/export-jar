@@ -5,6 +5,9 @@
 
 ## [Unreleased]
 
+## [2.4.1]
+- Fix NullPointException when first use this plugin
+
 ## [2.4.0]
 - Supports add directory entries option 
 - Remember export options
