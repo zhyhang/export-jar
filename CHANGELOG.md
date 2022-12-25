@@ -5,6 +5,9 @@
 
 ## [Unreleased]
 
+## [2.4.2]
+- Make compatible with new version of Intellij IDE
+
 ## [2.4.1]
 - Fix NullPointException when first use this plugin
 

@@ -72,8 +72,8 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 
 ```shell
 # win
-.\gradlew.bat clean build
+.\gradlew.bat clean buildPlugin
 
 # linux/macos
-.\gradlew clean build
+.\gradlew clean buildPlugin
 ```

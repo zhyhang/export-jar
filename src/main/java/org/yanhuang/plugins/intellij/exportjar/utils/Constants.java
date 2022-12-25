@@ -10,7 +10,7 @@ public interface Constants {
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
     String infoTabName = "Packing Export Jar";
-    String titteFileList = "Select files";
+    String titleFileList = "Select files";
     String actionNameExplorer = "Explorer";
     String actionNameCopy = "Copy";
     String creator = "yanhuang.org";

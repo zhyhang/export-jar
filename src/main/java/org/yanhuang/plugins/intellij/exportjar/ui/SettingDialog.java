@@ -14,7 +14,6 @@ import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.TitledSeparator;
-import com.intellij.ui.content.MessageView;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -75,7 +74,7 @@ public class SettingDialog extends JDialog {
     private BorderLayoutPanel fileListLabel;
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
-        MessageView.SERVICE.getInstance(project);//register message tool window to avoid pack error
+        MessagesUtils.getMessageView(project);//register message tool window to avoid pack error
         this.project = project;
         this.selectedFiles = selectedFiles;
         setContentPane(contentPane);
@@ -156,7 +155,7 @@ public class SettingDialog extends JDialog {
         //create new components
         this.fileListDialog = createFilesDialog();
         final JComponent selectTreePanel = fileListDialog.getCenterPanel();
-        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.titteFileList, selectTreePanel);
+        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.titleFileList, selectTreePanel);
         final JPanel separatorPanel = simplePanel().addToBottom(mySeparator).addToTop(Box.createVerticalGlue());
         this.fileListLabel = simplePanel(separatorPanel).withBorder(createEmptyBorder());
         this.fileListPanel.add(fileListLabel, BorderLayout.NORTH);
@@ -292,7 +291,7 @@ public class SettingDialog extends JDialog {
             } else {
                 String exportJarName = exportJarFullPath.getFileName().toString();
                 if (!exportJarName.endsWith(".jar")) {
-                    exportJarFullPath = Paths.get(exportJarFullPath.toString() + ".jar");
+                    exportJarFullPath = Paths.get(exportJarFullPath + ".jar");
                 }
                 if (Files.exists(exportJarFullPath)) {
                     final int[] result = new int[1];
