@@ -69,6 +69,7 @@ public class SettingDialog extends JDialog {
     private JButton debugButton;
     private JPanel actionPanel;
     private JPanel optionsPanel;
+    private TitledSeparator optionTitle;
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
@@ -109,6 +110,10 @@ public class SettingDialog extends JDialog {
      */
     public JPanel getSettingPanel() {
         return this.settingPanel;
+    }
+
+    public JPanel getFileListPanel() {
+        return fileListPanel;
     }
 
     private void initComboBox() {
@@ -331,6 +336,10 @@ public class SettingDialog extends JDialog {
             return;
         }
         UIUtil.invokeAndWaitIfNeeded((Runnable) () -> this.fileListDialog.disposeIfNeeded());
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 
     private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {

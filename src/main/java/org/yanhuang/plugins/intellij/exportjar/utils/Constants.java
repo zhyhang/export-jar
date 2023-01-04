@@ -16,8 +16,9 @@ public interface Constants {
     String creator = "yanhuang.org";
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
     Path historyFilePath = cachePath.resolve("select_history.json");
-    Dimension settingDialogSize = new Dimension(660, 420);
-    Dimension settingPanelSize = new Dimension(660, 360);
+    Dimension settingDialogSize = new Dimension(800, 480);
+    Dimension settingPanelSize = new Dimension(360, 430);
+    Dimension fileListPanelSize = new Dimension(680, 430);
     Dimension defaultSize = new Dimension(-1, -1);
 
 }

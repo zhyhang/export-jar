@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.yanhuang.plugins.intellij.exportjar.ui.SettingDialog">
-  <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="54" width="674" height="285"/>
+      <xy x="48" y="54" width="731" height="356"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -11,7 +11,7 @@
       <grid id="e3588" binding="settingPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
@@ -19,7 +19,9 @@
           <grid id="85d72" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <preferred-size width="530" height="42"/>
+              </grid>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -27,7 +29,7 @@
               <component id="8d1ff" class="javax.swing.JComboBox" binding="outPutJarFileComboBox">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <minimum-size width="360" height="-1"/>
+                    <minimum-size width="280" height="-1"/>
                   </grid>
                 </constraints>
                 <properties>
@@ -48,13 +50,13 @@
                 </constraints>
                 <properties>
                   <selected value="false"/>
-                  <text value="&amp;Browse..."/>
+                  <text value="..."/>
                   <toolTipText value="select output jar storage path"/>
                 </properties>
               </component>
             </children>
           </grid>
-          <grid id="e0128" binding="optionsPanel" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="e0128" binding="optionsPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -62,9 +64,38 @@
             <properties/>
             <border type="none"/>
             <children>
+              <component id="18a82" class="javax.swing.JCheckBox" binding="exportAddDirectoryCheckBox">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <name value="add_directory"/>
+                  <selected value="false"/>
+                  <text value="Add directory entries"/>
+                </properties>
+              </component>
+              <component id="5d560" class="javax.swing.JCheckBox" binding="exportTestFileCheckBox" default-binding="true">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <name value="export_test"/>
+                  <text value="Export &amp;test file"/>
+                </properties>
+              </component>
+              <component id="c418c" class="javax.swing.JCheckBox" binding="exportClassFileCheckBox">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <name value="export_class"/>
+                  <selected value="true"/>
+                  <text value="Export &amp;class file"/>
+                </properties>
+              </component>
               <component id="3aee4" class="javax.swing.JCheckBox" binding="exportJavaFileCheckBox">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <enabled value="true"/>
@@ -73,63 +104,36 @@
                   <text value="Export &amp;java file"/>
                 </properties>
               </component>
-              <component id="c418c" class="javax.swing.JCheckBox" binding="exportClassFileCheckBox">
+              <component id="aedc6" class="com.intellij.ui.TitledSeparator" binding="optionTitle">
                 <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <name value="export_class"/>
-                  <selected value="true"/>
-                  <text value="Export &amp;class file"/>
-                </properties>
-              </component>
-              <component id="5d560" class="javax.swing.JCheckBox" binding="exportTestFileCheckBox" default-binding="true">
-                <constraints>
-                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <name value="export_test"/>
-                  <text value="Export &amp;test file"/>
-                </properties>
-              </component>
-              <component id="18a82" class="javax.swing.JCheckBox" binding="exportAddDirectoryCheckBox">
-                <constraints>
-                  <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <name value="add_directory"/>
-                  <selected value="false"/>
-                  <text value="Add directory entries"/>
+                  <text value="Options"/>
                 </properties>
               </component>
             </children>
           </grid>
-          <vspacer id="543c1">
+          <vspacer id="a4756">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
-          <grid id="2ef79" binding="fileListPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children/>
-          </grid>
         </children>
       </grid>
       <grid id="9538f" binding="actionPanel" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
         <children>
           <component id="e7465" class="javax.swing.JButton" binding="buttonOK">
             <constraints>
-              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="98" height="72"/>
+              </grid>
             </constraints>
             <properties>
               <text value="&amp;OK"/>
@@ -137,7 +141,9 @@
           </component>
           <component id="5723f" class="javax.swing.JButton" binding="buttonCancel">
             <constraints>
-              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="98" height="72"/>
+              </grid>
             </constraints>
             <properties>
               <text value="C&amp;ancel"/>
@@ -145,12 +151,16 @@
           </component>
           <hspacer id="17de7">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="14" height="72"/>
+              </grid>
             </constraints>
           </hspacer>
           <component id="89b5e" class="javax.swing.JButton" binding="debugButton" default-binding="true">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="98" height="72"/>
+              </grid>
             </constraints>
             <properties>
               <enabled value="true"/>
@@ -160,6 +170,22 @@
           </component>
         </children>
       </grid>
+      <grid id="2ef79" binding="fileListPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="176" height="0"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <component id="b36" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
     </children>
   </grid>
 </form>
