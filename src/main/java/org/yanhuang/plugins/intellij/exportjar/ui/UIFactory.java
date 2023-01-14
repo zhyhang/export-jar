@@ -50,6 +50,7 @@ public class UIFactory {
     public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles) {
         SettingDialog setting = new SettingDialog(project, selectedFiles);
         setting.getSettingPanel().setPreferredSize(Constants.settingPanelSize);
+        setting.getFileListPanel().setPreferredSize(Constants.fileListPanelSize);
         setting.setResizable(true);
         setting.setSize(Constants.settingDialogSize);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

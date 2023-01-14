@@ -68,6 +68,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - help docs
 - throw swing context event exception when trigger by first-keystroke (key-map)
 - button component mnemonic not working
+- remember dialog size
 ## Build
 
 ```shell

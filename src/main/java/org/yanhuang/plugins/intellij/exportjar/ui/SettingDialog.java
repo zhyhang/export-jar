@@ -69,7 +69,6 @@ public class SettingDialog extends JDialog {
     private JButton debugButton;
     private JPanel actionPanel;
     private JPanel optionsPanel;
-    private TitledSeparator optionTitle;
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
