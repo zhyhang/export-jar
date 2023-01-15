@@ -12,8 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.SeparatorFactory;
-import com.intellij.ui.TitledSeparator;
+import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -69,6 +68,7 @@ public class SettingDialog extends JDialog {
     private JButton debugButton;
     private JPanel actionPanel;
     private JPanel optionsPanel;
+    private JPanel jarFilePanel;
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
@@ -98,7 +98,8 @@ public class SettingDialog extends JDialog {
         initComboBox();
         initOptionCheckBox();
         createFileListTree();
-
+        createJarFilePanelSeparator();
+        createOptionPanelSeparator();
 //        uiDebug();
     }
 
@@ -126,6 +127,11 @@ public class SettingDialog extends JDialog {
         }
         ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
         outPutJarFileComboBox.setModel(model);
+        if (historyFiles.length > 0) {
+            outPutJarFileComboBox.setToolTipText(historyFiles[0]);
+        }else{
+            outPutJarFileComboBox.setToolTipText("no export jar file");
+        }
     }
 
     private void initOptionCheckBox(){
@@ -159,8 +165,7 @@ public class SettingDialog extends JDialog {
         //create new components
         this.fileListDialog = createFilesDialog();
         final JComponent selectTreePanel = fileListDialog.getCenterPanel();
-        final TitledSeparator mySeparator = SeparatorFactory.createSeparator(Constants.titleFileList, selectTreePanel);
-        final JPanel separatorPanel = simplePanel().addToBottom(mySeparator).addToTop(Box.createVerticalGlue());
+        final JPanel separatorPanel = UIFactory.createTitledSeparatorPanel(Constants.titleFileList, selectTreePanel);
         this.fileListLabel = simplePanel(separatorPanel).withBorder(createEmptyBorder());
         this.fileListPanel.add(fileListLabel, BorderLayout.NORTH);
         this.fileListPanel.add(selectTreePanel, BorderLayout.CENTER);
@@ -178,6 +183,24 @@ public class SettingDialog extends JDialog {
             this.buttonOK.setEnabled(null != files && !files.isEmpty());
         });
         return dialog;
+    }
+
+    private void createJarFilePanelSeparator(){
+        final JPanel separatorPanel = UIFactory.createTitledSeparatorPanel(Constants.titleJarFileSeparator, this.jarFilePanel);
+        final GridConstraints gc = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST,
+                GridConstraints.FILL_HORIZONTAL,
+                GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_FIXED, null,
+                null, null);
+        this.settingPanel.add(separatorPanel,gc);
+    }
+
+    private void createOptionPanelSeparator(){
+        final JPanel separatorPanel = UIFactory.createTitledSeparatorPanel(Constants.titleOptionSeparator, this.optionsPanel);
+        final GridConstraints gc = new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST,
+                GridConstraints.FILL_HORIZONTAL,
+                GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_FIXED, null,
+                null, null);
+        this.settingPanel.add(separatorPanel,gc);
     }
 
     private void uiDebug() {

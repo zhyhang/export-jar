@@ -6,13 +6,17 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.CheckboxTree;
+import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.TitledSeparator;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.util.Objects;
+
+import static com.intellij.util.ui.JBUI.Panels.simplePanel;
 
 /**
  * factory for creating setting dialog
@@ -50,7 +54,7 @@ public class UIFactory {
     public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles) {
         SettingDialog setting = new SettingDialog(project, selectedFiles);
         setting.getSettingPanel().setPreferredSize(Constants.settingPanelSize);
-        setting.getFileListPanel().setPreferredSize(Constants.fileListPanelSize);
+//        setting.getFileListPanel().setPreferredSize(Constants.fileListPanelSize);
         setting.setResizable(true);
         setting.setSize(Constants.settingDialogSize);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -66,6 +70,17 @@ public class UIFactory {
         setting.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
         setting.setTitle(Constants.actionName);
         return setting;
+    }
+
+    /**
+     * build a new titled separator panel
+     * @param title title for located at left with separator
+     * @param forComp related component of separator
+     * @return panel created
+     */
+    public static JPanel createTitledSeparatorPanel(String title, JComponent forComp) {
+        final TitledSeparator separator = SeparatorFactory.createSeparator(title, forComp);
+        return simplePanel().addToBottom(separator).addToTop(Box.createVerticalGlue());
     }
 
     /**

@@ -11,14 +11,16 @@ public interface Constants {
     String exportCommitButtonName = "Export Jar...";
     String infoTabName = "Packing Export Jar";
     String titleFileList = "Select files";
+    String titleJarFileSeparator = "Jar file";
+    String titleOptionSeparator = "Options";
     String actionNameExplorer = "Explorer";
     String actionNameCopy = "Copy";
     String creator = "yanhuang.org";
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
     Path historyFilePath = cachePath.resolve("select_history.json");
-    Dimension settingDialogSize = new Dimension(800, 480);
-    Dimension settingPanelSize = new Dimension(280, 450);
-    Dimension fileListPanelSize = new Dimension(500, 450);
+    Dimension settingDialogSize = new Dimension(800, 420);
+    Dimension settingPanelSize = new Dimension(400, 400);
+    Dimension fileListPanelSize = new Dimension(500, 400);
     Dimension defaultSize = new Dimension(-1, -1);
 
 }
