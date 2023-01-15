@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.JBSplitter;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
@@ -69,6 +70,7 @@ public class SettingDialog extends JDialog {
     private JPanel actionPanel;
     private JPanel optionsPanel;
     private JPanel jarFilePanel;
+    private JBSplitter fileListSettingSplitPanel;
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
@@ -100,6 +102,7 @@ public class SettingDialog extends JDialog {
         createFileListTree();
         createJarFilePanelSeparator();
         createOptionPanelSeparator();
+        updateFileListSettingSplitPanel();
 //        uiDebug();
     }
 
@@ -202,6 +205,12 @@ public class SettingDialog extends JDialog {
                 null, null);
         this.settingPanel.add(separatorPanel,gc);
     }
+
+    private void updateFileListSettingSplitPanel(){
+        this.fileListSettingSplitPanel.setFirstComponent(this.fileListPanel);
+        this.fileListSettingSplitPanel.setSecondComponent(this.settingPanel);
+    }
+
 
     private void uiDebug() {
         debugButton.setVisible(true);
