@@ -70,6 +70,10 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - button component mnemonic not working
 - remember dialog size
 ## Build
+- config java homes for gradle to lookup JDK 11 and JDK 17
+  - JAVA_HOME=path_to_jdk11
+  - JAVA11_HOME=path_to_jdk11
+  - JAVA17_HOME=path_to_jdk17
 
 ```shell
 # win
