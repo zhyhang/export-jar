@@ -103,7 +103,7 @@ public class SettingDialog extends JDialog {
         createJarFilePanelSeparator();
         createOptionPanelSeparator();
         updateFileListSettingSplitPanel();
-//        uiDebug();
+        uiDebug();
     }
 
     /**

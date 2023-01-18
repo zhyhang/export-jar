@@ -149,22 +149,15 @@
         <border type="none"/>
         <children/>
       </grid>
-      <grid id="c54e4" layout-manager="BorderLayout" hgap="0" vgap="0">
+      <component id="440a2" class="com.intellij.ui.JBSplitter" binding="fileListSettingSplitPanel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
-        <border type="none"/>
-        <children>
-          <component id="440a2" class="com.intellij.ui.JBSplitter" binding="fileListSettingSplitPanel">
-            <constraints border-constraint="Center"/>
-            <properties>
-              <showDividerControls value="true"/>
-              <useViewportViewSizes value="false"/>
-            </properties>
-          </component>
-        </children>
-      </grid>
+        <properties>
+          <showDividerControls value="true"/>
+          <useViewportViewSizes value="false"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>
