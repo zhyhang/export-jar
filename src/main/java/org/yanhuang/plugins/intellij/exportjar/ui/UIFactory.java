@@ -55,6 +55,7 @@ public class UIFactory {
         SettingDialog setting = new SettingDialog(project, selectedFiles);
         setting.setResizable(true);
         setting.setSize(Constants.settingDialogSize);
+        setting.getFileListSettingSplitPanel().setPreferredSize(Constants.fileListSettingSplitPanelSize);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {

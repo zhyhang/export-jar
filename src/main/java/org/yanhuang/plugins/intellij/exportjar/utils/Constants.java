@@ -19,6 +19,7 @@ public interface Constants {
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
     Path historyFilePath = cachePath.resolve("select_history.json");
     Dimension settingDialogSize = new Dimension(800, 420);
+    Dimension fileListSettingSplitPanelSize = new Dimension(780, 380);
     Dimension defaultSize = new Dimension(-1, -1);
 
 }

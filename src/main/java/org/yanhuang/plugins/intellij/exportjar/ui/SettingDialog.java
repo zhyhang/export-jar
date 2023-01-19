@@ -103,7 +103,7 @@ public class SettingDialog extends JDialog {
         createJarFilePanelSeparator();
         createOptionPanelSeparator();
         updateFileListSettingSplitPanel();
-        uiDebug();
+//        uiDebug();
     }
 
     /**
@@ -117,6 +117,10 @@ public class SettingDialog extends JDialog {
 
     public JPanel getFileListPanel() {
         return fileListPanel;
+    }
+
+    public JBSplitter getFileListSettingSplitPanel() {
+        return fileListSettingSplitPanel;
     }
 
     private void initComboBox() {
