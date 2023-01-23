@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.yanhuang.plugins.intellij.exportjar.ui.SettingDialog">
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-    <margin top="5" left="5" bottom="5" right="5"/>
+    <margin top="5" left="10" bottom="5" right="10"/>
     <constraints>
       <xy x="48" y="54" width="741" height="454"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="e3588" binding="settingPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e3588" binding="settingPanel" layout-manager="GridLayoutManager" row-count="7" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
@@ -18,7 +18,7 @@
         <children>
           <grid id="85d72" binding="jarFilePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -46,7 +46,7 @@
           <grid id="e0128" binding="optionsPanel" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -58,7 +58,7 @@
                 <properties>
                   <name value="add_directory"/>
                   <selected value="false"/>
-                  <text value="Add directory entries"/>
+                  <text value="Add d&amp;irectory entries"/>
                 </properties>
               </component>
               <component id="5d560" class="javax.swing.JCheckBox" binding="exportTestFileCheckBox" default-binding="true">
@@ -95,9 +95,83 @@
           </grid>
           <vspacer id="5104c">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
+          <grid id="56b9c" binding="templatePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <enabled value="true"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="e98e2" class="javax.swing.JComboBox" binding="templateSelectComBox">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <editable value="true"/>
+                </properties>
+              </component>
+              <grid id="89146" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="East"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="88c5c" class="javax.swing.JButton" binding="templateSaveButton">
+                    <constraints border-constraint="West"/>
+                    <properties>
+                      <preferredSize width="48" height="-1"/>
+                      <text value="&amp;Save"/>
+                    </properties>
+                  </component>
+                  <component id="ab417" class="javax.swing.JButton" binding="templateDelButton">
+                    <constraints border-constraint="East"/>
+                    <properties>
+                      <preferredSize width="38" height="-1"/>
+                      <text value="&amp;Del"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="41d68" binding="templateTitlePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <enabled value="true"/>
+              <toolTipText value="Save settings to template"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="e570d" class="javax.swing.JCheckBox" binding="templateEnableCheckBox">
+                <constraints border-constraint="East"/>
+                <properties>
+                  <hideActionText value="false"/>
+                  <text value=""/>
+                  <toolTipText value="enable/disable template"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="928d7" binding="outputJarTitlePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
+          <grid id="4ac8d" binding="optionTitlePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
         </children>
       </grid>
       <grid id="9538f" binding="actionPanel" layout-manager="GridLayoutManager" row-count="2" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

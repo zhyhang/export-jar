@@ -13,7 +13,8 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
-import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.ui.SeparatorFactory;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -29,10 +30,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -71,6 +69,14 @@ public class SettingDialog extends JDialog {
     private JPanel optionsPanel;
     private JPanel jarFilePanel;
     private JBSplitter fileListSettingSplitPanel;
+    private JPanel templatePanel;
+    private JComboBox templateSelectComBox;
+    private JButton templateSaveButton;
+    private JPanel templateTitlePanel;
+    private JCheckBox templateEnableCheckBox;
+    private JPanel outputJarTitlePanel;
+    private JPanel optionTitlePanel;
+    private JButton templateDelButton;
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
@@ -97,11 +103,10 @@ public class SettingDialog extends JDialog {
         this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
 
         readSaveHistory();
-        initComboBox();
+        initExportJarComboBox();
         initOptionCheckBox();
         createFileListTree();
-        createJarFilePanelSeparator();
-        createOptionPanelSeparator();
+        updateSettingPanelComponents();
         updateFileListSettingSplitPanel();
 //        uiDebug();
     }
@@ -123,7 +128,7 @@ public class SettingDialog extends JDialog {
         return fileListSettingSplitPanel;
     }
 
-    private void initComboBox() {
+    private void initExportJarComboBox() {
         String[] historyFiles;
         if (historyData != null) {
             historyFiles =
@@ -136,12 +141,13 @@ public class SettingDialog extends JDialog {
         outPutJarFileComboBox.setModel(model);
         if (historyFiles.length > 0) {
             outPutJarFileComboBox.setToolTipText(historyFiles[0]);
-        }else{
-            outPutJarFileComboBox.setToolTipText("no export jar file");
+        } else {
+            outPutJarFileComboBox.setToolTipText("");
         }
+        outPutJarFileComboBox.addItemListener(e -> setComBoxTooltip(e, outPutJarFileComboBox));
     }
 
-    private void initOptionCheckBox(){
+    private void initOptionCheckBox() {
         final Component[] components = optionsPanel.getComponents();
         final Set<String> optionSet = Optional.ofNullable(historyData.getLastExportOptions()).stream().flatMap(Arrays::stream)
                 .map(ExportOptions::name)
@@ -192,25 +198,30 @@ public class SettingDialog extends JDialog {
         return dialog;
     }
 
-    private void createJarFilePanelSeparator(){
-        final JPanel separatorPanel = UIFactory.createTitledSeparatorPanel(Constants.titleJarFileSeparator, this.jarFilePanel);
-        final GridConstraints gc = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST,
-                GridConstraints.FILL_HORIZONTAL,
-                GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_FIXED, null,
-                null, null);
-        this.settingPanel.add(separatorPanel,gc);
+    private void updateSettingPanelComponents() {
+        createTemplatePanelTitledSeparator();
+        createJarOutputPanelTiledSeparator();
+        createOptionPanelTitledSeparator();
     }
 
-    private void createOptionPanelSeparator(){
-        final JPanel separatorPanel = UIFactory.createTitledSeparatorPanel(Constants.titleOptionSeparator, this.optionsPanel);
-        final GridConstraints gc = new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST,
-                GridConstraints.FILL_HORIZONTAL,
-                GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_FIXED, null,
-                null, null);
-        this.settingPanel.add(separatorPanel,gc);
+    private void createTemplatePanelTitledSeparator(){
+        createTitledSeparatorForPanel(this.templateTitlePanel,Constants.titleTemplateSetting, this.templatePanel);
     }
 
-    private void updateFileListSettingSplitPanel(){
+    private void createJarOutputPanelTiledSeparator() {
+        createTitledSeparatorForPanel(this.outputJarTitlePanel,Constants.titleJarFileSeparator, this.jarFilePanel);
+    }
+
+    private void createOptionPanelTitledSeparator() {
+        createTitledSeparatorForPanel(this.optionTitlePanel,Constants.titleOptionSeparator, this.optionsPanel);
+    }
+
+    private void createTitledSeparatorForPanel(JPanel borderContainer,String title, JComponent separatorForComp) {
+        final TitledSeparator separator = SeparatorFactory.createSeparator(title, separatorForComp);
+        borderContainer.add(separator, BorderLayout.CENTER);
+    }
+
+    private void updateFileListSettingSplitPanel() {
         this.fileListSettingSplitPanel.setFirstComponent(this.fileListPanel);
         this.fileListSettingSplitPanel.setSecondComponent(this.settingPanel);
     }
@@ -232,7 +243,7 @@ public class SettingDialog extends JDialog {
             } catch (Exception e) {
                 MessagesUtils.warn(project, e.getMessage());
             }
-        }else{
+        } else {
             this.historyData = new HistoryData();
         }
     }
@@ -257,10 +268,10 @@ public class SettingDialog extends JDialog {
         }
     }
 
-    private ExportOptions[] pickExportOptions(){
+    private ExportOptions[] pickExportOptions() {
         final Component[] components = optionsPanel.getComponents();
         return Arrays.stream(components).filter(c -> c instanceof JCheckBox)
-                .filter(c->((JCheckBox) c).isSelected())
+                .filter(c -> ((JCheckBox) c).isSelected())
                 .map(Component::getName)
                 .map(String::toLowerCase)
                 .filter(n -> {
@@ -286,6 +297,7 @@ public class SettingDialog extends JDialog {
 
     /**
      * final selected files to export
+     *
      * @return selected files, always not null, possible length=0
      */
     public VirtualFile[] getSelectedFiles() {
@@ -375,6 +387,11 @@ public class SettingDialog extends JDialog {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
+    }
+
+    private void setComBoxTooltip(ItemEvent ie, JComponent cbox) {
+        final Object item = ie.getItem();
+        cbox.setToolTipText(item != null ? item.toString() : null);
     }
 
     private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {
