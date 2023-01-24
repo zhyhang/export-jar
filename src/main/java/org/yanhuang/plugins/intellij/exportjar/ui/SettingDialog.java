@@ -10,7 +10,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.SeparatorFactory;
@@ -22,11 +21,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.HistoryData;
-import org.yanhuang.plugins.intellij.exportjar.HistoryData.ExportOptions;
-import org.yanhuang.plugins.intellij.exportjar.HistoryData.SavedJarInfo;
+import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
+import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
+import org.yanhuang.plugins.intellij.exportjar.model.UISizes;
+import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
+import org.yanhuang.plugins.intellij.exportjar.utils.UpgradeManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,7 +53,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * <li><b>In UIDesigner: export options JCheckBox's name is same as HistoryData.ExportOptions</b></li>
  */
 public class SettingDialog extends JDialog {
-    private final Project project;
+    protected final Project project;
     @Nullable
     private VirtualFile[] selectedFiles;
     private JPanel contentPane;
@@ -60,7 +63,7 @@ public class SettingDialog extends JDialog {
     private JCheckBox exportClassFileCheckBox;
     private JCheckBox exportTestFileCheckBox;
     private JCheckBox exportAddDirectoryCheckBox;
-    private JComboBox<String> outPutJarFileComboBox;
+    protected JComboBox<String> outPutJarFileComboBox;
     private JButton selectJarFileButton;
     private JPanel settingPanel;
     private JPanel fileListPanel;
@@ -70,23 +73,26 @@ public class SettingDialog extends JDialog {
     private JPanel jarFilePanel;
     private JBSplitter fileListSettingSplitPanel;
     private JPanel templatePanel;
-    private JComboBox templateSelectComBox;
-    private JButton templateSaveButton;
+    protected JCheckBox templateEnableCheckBox;
+    protected JComboBox<String> templateSelectComBox;
+    protected JButton templateSaveButton;
+    protected JButton templateDelButton;
     private JPanel templateTitlePanel;
-    private JCheckBox templateEnableCheckBox;
     private JPanel outputJarTitlePanel;
     private JPanel optionTitlePanel;
-    private JButton templateDelButton;
+
     private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
+    private final HistoryDao historyDao = new HistoryDao();
+
+    private final TemplateEventHandler templateHandler = new TemplateEventHandler(this);
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
         MessagesUtils.getMessageView(project);//register message tool window to avoid pack error
         this.project = project;
         this.selectedFiles = selectedFiles;
         setContentPane(contentPane);
-        setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         this.buttonOK.addActionListener(e -> onOK());
         this.buttonCancel.addActionListener(e -> onCancel());
@@ -102,26 +108,32 @@ public class SettingDialog extends JDialog {
         this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
 
+        migrateSavedHistory();
+        historyDao.initV2023();
         readSaveHistory();
         initExportJarComboBox();
         initOptionCheckBox();
         createFileListTree();
         updateSettingPanelComponents();
         updateFileListSettingSplitPanel();
-//        uiDebug();
+        uiDebug();
+        updateComponentState();
+        this.templateEnableCheckBox.addChangeListener(templateHandler::templateEnableChanged);
+        this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
+
     }
 
-    /**
-     * get setting panel which contains components except ok and cancel buttons.
-     *
-     * @return
-     */
-    public JPanel getSettingPanel() {
-        return this.settingPanel;
-    }
-
-    public JPanel getFileListPanel() {
-        return fileListPanel;
+    private void updateComponentState(){
+        this.setModal(true);
+        this.setResizable(true);
+        final SettingHistory history = historyDao.readOrDefault();
+        final Dimension splitPanelSize = Optional.ofNullable(history.getUi()).map(UISizes::getFileSettingSplitPanel).orElse(Constants.fileListSettingSplitPanelSize);
+        final float splitPanelRatio = Optional.ofNullable(history.getUi()).map(UISizes::getFileSettingSplitRatio).orElse(0.5f);
+        this.fileListSettingSplitPanel.setPreferredSize(splitPanelSize);
+        this.fileListSettingSplitPanel.setProportion(splitPanelRatio);
+        final Dimension dialogSize = Optional.ofNullable(history.getUi()).map(UISizes::getExportDialog).orElse(Constants.settingDialogSize);
+        this.setSize(dialogSize);
+        this.templateHandler.initByHistory(history);
     }
 
     public JBSplitter getFileListSettingSplitPanel() {
@@ -132,8 +144,8 @@ public class SettingDialog extends JDialog {
         String[] historyFiles;
         if (historyData != null) {
             historyFiles =
-                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfo()).orElse(new SavedJarInfo[0]))
-                            .map(SavedJarInfo::getPath).toArray(String[]::new);
+                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfo()).orElse(new ExportJarInfo[0]))
+                            .map(ExportJarInfo::getPath).toArray(String[]::new);
         } else {
             historyFiles = new String[0];
         }
@@ -231,6 +243,10 @@ public class SettingDialog extends JDialog {
         debugButton.setVisible(true);
     }
 
+    private void migrateSavedHistory(){
+        UpgradeManager.migrateHistoryToV2023();
+    }
+
     private void readSaveHistory() {
         if (historyData != null) { // already initialized
             return;
@@ -253,7 +269,7 @@ public class SettingDialog extends JDialog {
             this.historyData = new HistoryData();
         }
         this.historyData.setLastExportOptions(pickExportOptions());
-        SavedJarInfo savedJar = new SavedJarInfo();
+        ExportJarInfo savedJar = new ExportJarInfo();
         savedJar.setCreation(System.currentTimeMillis());
         savedJar.setPath(exportJarName.toString());
         historyData.addSavedJarInfo(savedJar);
@@ -268,7 +284,7 @@ public class SettingDialog extends JDialog {
         }
     }
 
-    private ExportOptions[] pickExportOptions() {
+    public ExportOptions[] pickExportOptions() {
         final Component[] components = optionsPanel.getComponents();
         return Arrays.stream(components).filter(c -> c instanceof JCheckBox)
                 .filter(c -> ((JCheckBox) c).isSelected())
@@ -310,8 +326,16 @@ public class SettingDialog extends JDialog {
     }
 
     private void onDebug() {
-        SelectFilesDialog filesDialog = createFilesDialog();
-        filesDialog.show();
+//        SelectFilesDialog filesDialog = createFilesDialog();
+//        filesDialog.show();
+        Messages.showInfoMessage(this.project,"name: "+ this.project.getName()
+                        +", basePath: "+this.project.getBasePath()
+                        +", file: "+this.project.getProjectFile()
+                        +", filePath: "+this.project.getProjectFilePath()
+                        +", locationHash: "+this.project.getLocationHash()
+                        +", workspaceFile: "+this.project.getWorkspaceFile()
+                +", url: "+this.project.getPresentableUrl(),
+                "Project Info");
     }
 
     public void setSelectedFiles(VirtualFile[] selectedFiles) {

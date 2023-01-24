@@ -52,12 +52,9 @@ public class UIFactory {
      * @return SettingDialog
      */
     public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles) {
-        SettingDialog setting = new SettingDialog(project, selectedFiles);
-        setting.setResizable(true);
-        setting.setSize(Constants.settingDialogSize);
-        setting.getFileListSettingSplitPanel().setPreferredSize(Constants.fileListSettingSplitPanelSize);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension frameSize = setting.getSize();
+        final SettingDialog setting = new SettingDialog(project, selectedFiles);
+        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        final Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
         }

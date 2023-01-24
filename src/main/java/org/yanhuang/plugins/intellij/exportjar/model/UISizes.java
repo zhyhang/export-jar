@@ -10,12 +10,12 @@ public class UISizes {
     static {
         DEFAULT_UI.exportDialog= Constants.settingDialogSize;
         DEFAULT_UI.fileSettingSplitPanel = Constants.fileListSettingSplitPanelSize;
-        DEFAULT_UI.fileSettingSplitRatio = 0.5;
+        DEFAULT_UI.fileSettingSplitRatio = 0.5f;
     }
 
     private Dimension exportDialog;
     private Dimension fileSettingSplitPanel;
-    private double fileSettingSplitRatio;
+    private float fileSettingSplitRatio;
 
     public Dimension getExportDialog() {
         return exportDialog;
@@ -33,11 +33,11 @@ public class UISizes {
         this.fileSettingSplitPanel = fileSettingSplitPanel;
     }
 
-    public double getFileSettingSplitRatio() {
+    public float getFileSettingSplitRatio() {
         return fileSettingSplitRatio;
     }
 
-    public void setFileSettingSplitRatio(final double fileSettingSplitRatio) {
+    public void setFileSettingSplitRatio(final float fileSettingSplitRatio) {
         this.fileSettingSplitRatio = fileSettingSplitRatio;
     }
 }
