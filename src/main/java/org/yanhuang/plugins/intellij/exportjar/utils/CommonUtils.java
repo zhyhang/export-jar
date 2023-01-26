@@ -10,6 +10,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
@@ -217,6 +218,10 @@ public class CommonUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public VirtualFile fromOsFile(String osFilePath) {
+        return LocalFileSystem.getInstance().findFileByPath(osFilePath);
     }
 
 }
