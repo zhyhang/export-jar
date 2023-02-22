@@ -30,4 +30,10 @@ public interface Constants {
     Dimension settingDialogSize = new Dimension(800, 420);
     Dimension fileListSettingSplitPanelSize = new Dimension(780, 410);
 
+    String messageTemplateSaveSuccess = "template %s saved successfully";
+    String messageTemplateNameNull = "Please specify template name";
+    String messageTemplateStoreSelectsError = "write select files to store %s error\n %s";
+    String messageTemplateReadSelectsError = "read select files from store %s error\n %s";
+
+    String[] templateDefaultName = {"template-001"};
 }

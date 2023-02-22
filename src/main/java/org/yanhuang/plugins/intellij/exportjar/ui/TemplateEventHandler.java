@@ -5,23 +5,18 @@ import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingTemplate;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
-import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
-import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
-import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
+import static com.intellij.openapi.ui.Messages.showInfoMessage;
+import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 
 /**
  * handle template related events
@@ -49,6 +44,7 @@ public class TemplateEventHandler {
             updateUIData();
         }else{
             // TODO updateUIDataDisableTemplate();
+            // read options to from global template and etc.
         }
     }
 
@@ -68,7 +64,7 @@ public class TemplateEventHandler {
             if (templateList != null && templateList.size()>0) {
                 updateUIDataBy(templateList);
             } else {
-                final ComboBoxModel<String> model = new DefaultComboBoxModel<>(new String[]{"template-001"});
+                final ComboBoxModel<String> model = new DefaultComboBoxModel<>(templateDefaultName);
                 settingDialog.templateSelectComBox.setModel(model);
             }
         }
@@ -78,14 +74,14 @@ public class TemplateEventHandler {
         final String[] names = templateList.stream().map(SettingTemplate::getName).toArray(String[]::new);
         final ComboBoxModel<String> model = new DefaultComboBoxModel<>(names);
         settingDialog.templateSelectComBox.setModel(model);
-        // TODO update select files panel
+        // TODO update select files panel, setModel fire the change event, use listener to update select files
         // TODO update checkbox(options) panel
     }
 
     public void saveTemplate(ActionEvent e){
         final Object name = settingDialog.templateSelectComBox.getSelectedItem();
         if (name == null || name.toString().isBlank()) {
-            showErrorDialog("Please specify template name", Constants.titleTemplateMessageDialog);
+            showErrorDialog(messageTemplateNameNull, titleTemplateMessageDialog);
         }else{
             final SettingTemplate curTemplate = new SettingTemplate();
             final String templateName = name.toString();
@@ -95,10 +91,10 @@ public class TemplateEventHandler {
             curTemplate.setName(templateName);
             curTemplate.setExportJar(getExportJar());
             curTemplate.setOptions(settingDialog.pickExportOptions());
-            final Path selectStore = getSelectFilesStorePath(templateName);
+            final Path selectStore = storeSelectFiles(templateName);
             curTemplate.setSelectFilesStore(selectStore.toString());
-            storeSelectFiles(selectStore);
             historyDao.saveProject(settingDialog.project.getName(), curTemplate);
+            showInfoMessage(String.format(messageTemplateSaveSuccess, templateName), titleTemplateMessageDialog);
         }
 
     }
@@ -115,18 +111,13 @@ public class TemplateEventHandler {
         }
     }
 
-    private Path getSelectFilesStorePath(String templateName) {
-        return Constants.cachePath.resolve(Constants.historySelectsFilePathPrefix2023
-                + settingDialog.project.getName() + "_" + templateName + Constants.historySelectsFilePathSuffix2023);
+    private Path storeSelectFiles(final String templateName){
+        return this.historyDao.saveSelectFiles(settingDialog.project.getName(), templateName,
+                settingDialog.getSelectedFiles());
     }
 
-    private void storeSelectFiles(final Path selectStore){
-        final List<String> selectFiles = Arrays.stream(settingDialog.getSelectedFiles()).map(VirtualFile::getPath).collect(Collectors.toList());
-        try {
-            Files.writeString(selectStore, CommonUtils.toJson(selectFiles));
-        } catch (IOException e) {
-            MessagesUtils.errorNotify(Constants.titleTemplateMessageDialog, "write select files to store error\n " + e.getMessage());
-        }
+    private VirtualFile[] readStoredSelectFiles(final String templateName) {
+        return null;//TODO
     }
 
 }
