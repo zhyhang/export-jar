@@ -69,7 +69,7 @@ public class SettingDialog extends JDialog {
     private JPanel fileListPanel;
     private JButton debugButton;
     private JPanel actionPanel;
-    private JPanel optionsPanel;
+    protected JPanel optionsPanel;
     private JPanel jarFilePanel;
     private JBSplitter fileListSettingSplitPanel;
     private JPanel templatePanel;
@@ -110,7 +110,7 @@ public class SettingDialog extends JDialog {
 
         migrateSavedHistory();
         historyDao.initV2023();
-        readSaveHistory();
+        readSaveHistory(); //TODO change to read v2023 or abandoned
         initExportJarComboBox();
         initOptionCheckBox();
         createFileListTree();
@@ -120,6 +120,7 @@ public class SettingDialog extends JDialog {
         updateComponentState();
         this.templateEnableCheckBox.addChangeListener(templateHandler::templateEnableChanged);
         this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
+        this.templateSelectComBox.addItemListener(templateHandler::templateSelectChanged);
 
     }
 

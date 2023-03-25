@@ -142,7 +142,7 @@
             </constraints>
             <properties>
               <enabled value="true"/>
-              <toolTipText value="Save settings to template"/>
+              <toolTipText value="Save export files and settings to template"/>
             </properties>
             <border type="none"/>
             <children>

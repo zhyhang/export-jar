@@ -22,7 +22,7 @@ public class UpgradeManager {
     }
 
     private static void migrateV2023(){
-
+        //TODO do migrate
     }
 
 }
