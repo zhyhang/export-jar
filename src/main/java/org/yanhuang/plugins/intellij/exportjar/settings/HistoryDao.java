@@ -36,7 +36,6 @@ public class HistoryDao {
 		history.setCreateTime(ts);
 		history.setUpdateTime(ts);
 		history.setUi(UISizes.DEFAULT_UI);
-		history.setTemplateEnable(false);
 		history.setGlobal(defaultGlobalTemplate());
 		return history;
 	}

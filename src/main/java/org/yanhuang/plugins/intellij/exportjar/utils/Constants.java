@@ -35,5 +35,8 @@ public interface Constants {
     String messageTemplateStoreSelectsError = "write select files to store %s error\n %s";
     String messageTemplateReadSelectsError = "read select files from store %s error\n %s";
 
-    String[] templateDefaultName = {"template-001"};
+    String[] templateDefaultName = {""};
+    String templateGlobalName = "template-global";
+
+    String toolTipEmptyTemplate = "Please enter the template name";
 }

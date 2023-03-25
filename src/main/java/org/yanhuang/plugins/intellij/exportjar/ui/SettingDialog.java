@@ -110,7 +110,7 @@ public class SettingDialog extends JDialog {
 
         migrateSavedHistory();
         historyDao.initV2023();
-        readSaveHistory(); //TODO change to read v2023 or remove
+//        readSaveHistory(); //TODO change to read v2023 or remove
 //        initExportJarComboBox(); //TODO remove
 //        initOptionCheckBox(); // TODO remove
         createFileListTree();
@@ -134,7 +134,7 @@ public class SettingDialog extends JDialog {
         this.fileListSettingSplitPanel.setProportion(splitPanelRatio);
         final Dimension dialogSize = Optional.ofNullable(history.getUi()).map(UISizes::getExportDialog).orElse(Constants.settingDialogSize);
         this.setSize(dialogSize);
-        this.templateHandler.initByHistory(history);
+        this.templateHandler.initUI(history, null);
     }
 
     public JBSplitter getFileListSettingSplitPanel() {
@@ -382,7 +382,10 @@ public class SettingDialog extends JDialog {
                     }
                 }
                 this.dispose();
-                writeSaveHistory(exportJarFullPath);
+                //TODO remove
+//                writeSaveHistory(exportJarFullPath);
+                templateHandler.saveCurTemplate();
+                templateHandler.saveGlobalTemplate();
                 final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath, pickExportOptions());
                 app.invokeAndWait(() -> CompilerManager.getInstance(project).make(project, null == modules ? new Module[0] : modules, packager));
             }

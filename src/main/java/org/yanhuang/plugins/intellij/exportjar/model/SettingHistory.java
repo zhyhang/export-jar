@@ -7,7 +7,6 @@ public class SettingHistory {
     private long createTime;
     private long updateTime;
     private UISizes ui;
-    private boolean templateEnable;
     private SettingTemplate global;
     private Map<String, List<SettingTemplate>> projects;
 
@@ -33,14 +32,6 @@ public class SettingHistory {
 
     public void setUi(final UISizes ui) {
         this.ui = ui;
-    }
-
-    public boolean isTemplateEnable() {
-        return templateEnable;
-    }
-
-    public void setTemplateEnable(final boolean templateEnable) {
-        this.templateEnable = templateEnable;
     }
 
     public SettingTemplate getGlobal() {

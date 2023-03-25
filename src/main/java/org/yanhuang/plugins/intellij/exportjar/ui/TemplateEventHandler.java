@@ -28,49 +28,54 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.warn;
 public class TemplateEventHandler {
 	private final HistoryDao historyDao = new HistoryDao();
 	private final SettingDialog settingDialog;
+	/**
+	 * Transient template for storing no-template-name settings
+	 */
+	private VirtualFile[] transientTemplateSelectFiles;
+	private final SettingTemplate transientTemplate = new SettingTemplate();
 
 	public TemplateEventHandler(final SettingDialog settingDialog) {
 		this.settingDialog = settingDialog;
 	}
 
-	public void initByHistory(SettingHistory history) {
-		settingDialog.templateEnableCheckBox.setSelected(history.isTemplateEnable());
-		updateUI(history);
+	public void initUI(SettingHistory history, String curTemplate) {
+		updateUI(history, curTemplate);
 		//TODO setting history uiSize already used to init, do not handle again
+		//TODO test saved select files include deleted files
 	}
 
 	public void templateEnableChanged(ChangeEvent e) {
-		updateUI(historyDao.readOrDefault());
+		updateUI(historyDao.readOrDefault(), null);
 	}
 
 	public void templateSelectChanged(ItemEvent e) {
-		if (ItemEvent.DESELECTED == e.getStateChange()) {
-			return;
-		}
 		final Object item = e.getItem();
 		final String name = Objects.toString(item);
-		updateTemplateListTooltip(name);
-		final SettingHistory history = historyDao.readOrDefault();
-		final List<SettingTemplate> templates = getProjectTemplates(history);
-		final Optional<SettingTemplate> template = getTemplateByName(templates, name);
-		template.ifPresent(this::updateUIOptions);
-		template.ifPresent(this::updateUIExportJar);
-		template.ifPresent(this::updateUISelectFiles);
+		if (name.isBlank()) {
+			transientTemplateChanged(e);
+		} else if (ItemEvent.SELECTED == e.getStateChange()) {
+			updateTemplateListTooltip(name);
+			final SettingHistory history = historyDao.readOrDefault();
+			final List<SettingTemplate> templates = getProjectTemplates(history);
+			final Optional<SettingTemplate> template = getTemplateByName(templates, name);
+			template.ifPresent(this::updateUIOptions);
+			template.ifPresent(this::updateUIExportJar);
+			template.ifPresent(this::updateUISelectFiles);
+		}
 	}
 
 	public void exportJarChanged(ItemEvent e) {
-		if (ItemEvent.DESELECTED == e.getStateChange()) {
-			return;
+		if (ItemEvent.SELECTED == e.getStateChange()) {
+			final Object item = e.getItem();
+			final String name = Objects.toString(item);
+			settingDialog.outPutJarFileComboBox.setToolTipText(name);
 		}
-		final Object item = e.getItem();
-		final String name = Objects.toString(item);
-		settingDialog.outPutJarFileComboBox.setToolTipText(name);
 	}
 
-	private void updateUI(SettingHistory history) {
+	private void updateUI(SettingHistory history, String curTemplate) {
 		final boolean templateEnable = updateUIState();
 		if (templateEnable) {
-			updateUIDataEnableTemplate(history);
+			updateUIDataEnableTemplate(history, curTemplate);
 		} else {
 			updateUIDataDisableTemplate(history);
 		}
@@ -85,13 +90,17 @@ public class TemplateEventHandler {
 	}
 
 	private void updateTemplateListTooltip(String tooltip) {
-		settingDialog.templateSelectComBox.setToolTipText(tooltip);
+		if (tooltip != null && !tooltip.isBlank()) {
+			settingDialog.templateSelectComBox.setToolTipText(tooltip);
+		} else {
+			settingDialog.templateSelectComBox.setToolTipText(toolTipEmptyTemplate);
+		}
 	}
 
-	private void updateUIDataEnableTemplate(SettingHistory history) {
+	private void updateUIDataEnableTemplate(SettingHistory history, String curTemplate) {
 		final Object item = settingDialog.templateSelectComBox.getSelectedItem();
 		if (item == null || item.toString().isBlank()) {
-			updateUITemplateList(history);
+			updateUITemplateList(history, curTemplate);
 		}
 		final String itemName = settingDialog.templateSelectComBox.getSelectedItem().toString();
 		updateTemplateListTooltip(itemName);
@@ -101,6 +110,18 @@ public class TemplateEventHandler {
 		template.ifPresent(this::updateUIExportJar);
 		template.ifPresent(this::updateUISelectFiles);
 		// TODO update select files panel, setModel fire the change event, use listener to update select files
+	}
+
+	private void updateUITemplateList(SettingHistory history, String selectedTemplateName) {
+		final var selectedTemplate = new SettingTemplate();
+		selectedTemplate.setName(selectedTemplateName == null ? templateDefaultName[0] : selectedTemplateName);
+		final var curTemplateList = new ArrayList<SettingTemplate>();
+		curTemplateList.add(selectedTemplate);
+		final List<SettingTemplate> savedTemplateList = getProjectTemplates(history);
+		if (savedTemplateList != null && savedTemplateList.size() > 0) {
+			curTemplateList.addAll(savedTemplateList);
+		}
+		updateUITemplateList(curTemplateList);
 	}
 
 	private void updateUITemplateList(SettingHistory history) {
@@ -179,19 +200,29 @@ public class TemplateEventHandler {
 		// TODO update export jar list  from global template and select file list and etc.
 	}
 
-
 	public void saveTemplate(ActionEvent e) {
 		final Object name = settingDialog.templateSelectComBox.getSelectedItem();
 		if (name == null || name.toString().isBlank()) {
 			showErrorDialog(messageTemplateNameNull, titleTemplateMessageDialog);
 		} else {
+			final SettingHistory savedHistory = saveCurTemplate();
+			if (savedHistory != null) {
+				showInfoMessage(String.format(messageTemplateSaveSuccess, name), titleTemplateMessageDialog);
+				saveGlobalTemplate();
+			}
+		}
+	}
+
+	public SettingHistory saveCurTemplate() {
+		final Object name = settingDialog.templateSelectComBox.getSelectedItem();
+		if (name != null && !name.toString().isBlank()) {
 			final SettingTemplate curTemplate = new SettingTemplate();
 			final String templateName = name.toString();
 			final long ts = System.currentTimeMillis();
 			curTemplate.setCreateTime(ts);
 			curTemplate.setUpdateTime(ts);
 			curTemplate.setName(templateName);
-			curTemplate.setExportJar(createExportJar());
+			curTemplate.setExportJar(buildExportJarArray());
 			curTemplate.setOptions(settingDialog.pickExportOptions());
 			final Path selectStore = storeSelectFiles(templateName);
 			curTemplate.setSelectFilesStore(selectStore.toString());
@@ -199,12 +230,23 @@ public class TemplateEventHandler {
 			if (savedHistory != null) {
 				updateUITemplateList(savedHistory);
 			}
-			showInfoMessage(String.format(messageTemplateSaveSuccess, templateName), titleTemplateMessageDialog);
+			return savedHistory;
 		}
-
+		return null;
 	}
 
-	private ExportJarInfo[] createExportJar() {
+	public void saveGlobalTemplate() {
+		final SettingTemplate globalTemplate = new SettingTemplate();
+		final long ts = System.currentTimeMillis();
+		globalTemplate.setCreateTime(ts);
+		globalTemplate.setUpdateTime(ts);
+		globalTemplate.setName(templateGlobalName);
+		globalTemplate.setExportJar(buildExportJarArray());
+		globalTemplate.setOptions(settingDialog.pickExportOptions());
+		this.historyDao.saveGlobal(globalTemplate);
+	}
+
+	private ExportJarInfo[] buildExportJarArray() {
 		final Object jarFile = settingDialog.outPutJarFileComboBox.getSelectedItem();
 		if (jarFile == null || jarFile.toString().isBlank()) {
 			return new ExportJarInfo[0];
@@ -234,6 +276,22 @@ public class TemplateEventHandler {
 			}
 		}
 		return fs.toArray(new VirtualFile[0]);
+	}
+
+	private void transientTemplateChanged(ItemEvent e) {
+		if (ItemEvent.DESELECTED == e.getStateChange()) {
+			saveTransientTemplate();
+		} else if (this.transientTemplateSelectFiles != null) {
+			updateUIOptions(this.transientTemplate);
+			updateUIExportJar(this.transientTemplate);
+			this.settingDialog.setSelectedFiles(this.transientTemplateSelectFiles);
+		}
+	}
+
+	private void saveTransientTemplate() {
+		this.transientTemplateSelectFiles = settingDialog.getSelectedFiles();
+		this.transientTemplate.setOptions(settingDialog.pickExportOptions());
+		this.transientTemplate.setExportJar(buildExportJarArray());
 	}
 
 }
