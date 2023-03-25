@@ -82,28 +82,28 @@ public class MessagesUtils {
      * show error message in message view panel
      *
      * @param project current project
-     * @param string  error message
+     * @param message  error message
      */
-    public static void error(Project project, String string) {
+    public static void error(Project project, String message) {
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
         if (toolWindow != null) {
             toolWindow.activate(null, false);
         }
-        messageViewPanel(project).addMessage(MessageCategory.ERROR, new String[]{string}, null, -1, -1, null);
+        messageViewPanel(project).addMessage(MessageCategory.ERROR, new String[]{message}, null, -1, -1, null);
     }
 
     /**
      * show warn message in message view panel
      *
      * @param project current project
-     * @param string  warn message
+     * @param message  warn message
      */
-    public static void warn(Project project, String string) {
+    public static void warn(Project project, String message) {
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
         if (toolWindow != null) {
             toolWindow.activate(null, false);
         }
-        messageViewPanel(project).addMessage(MessageCategory.WARNING, new String[]{string}, null, -1, -1, null);
+        messageViewPanel(project).addMessage(MessageCategory.WARNING, new String[]{message}, null, -1, -1, null);
     }
 
     /**

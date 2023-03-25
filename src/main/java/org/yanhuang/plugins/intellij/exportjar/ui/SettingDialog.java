@@ -110,9 +110,9 @@ public class SettingDialog extends JDialog {
 
         migrateSavedHistory();
         historyDao.initV2023();
-        readSaveHistory(); //TODO change to read v2023 or abandoned
-        initExportJarComboBox();
-        initOptionCheckBox();
+        readSaveHistory(); //TODO change to read v2023 or remove
+//        initExportJarComboBox(); //TODO remove
+//        initOptionCheckBox(); // TODO remove
         createFileListTree();
         updateSettingPanelComponents();
         updateFileListSettingSplitPanel();
@@ -121,7 +121,7 @@ public class SettingDialog extends JDialog {
         this.templateEnableCheckBox.addChangeListener(templateHandler::templateEnableChanged);
         this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
         this.templateSelectComBox.addItemListener(templateHandler::templateSelectChanged);
-
+        this.outPutJarFileComboBox.addItemListener(templateHandler::exportJarChanged);
     }
 
     private void updateComponentState(){
@@ -141,6 +141,7 @@ public class SettingDialog extends JDialog {
         return fileListSettingSplitPanel;
     }
 
+    //TODO remove
     private void initExportJarComboBox() {
         String[] historyFiles;
         if (historyData != null) {
@@ -160,6 +161,7 @@ public class SettingDialog extends JDialog {
         outPutJarFileComboBox.addItemListener(e -> setComBoxTooltip(e, outPutJarFileComboBox));
     }
 
+    //TODO remove
     private void initOptionCheckBox() {
         final Component[] components = optionsPanel.getComponents();
         final Set<String> optionSet = Optional.ofNullable(historyData.getLastExportOptions()).stream().flatMap(Arrays::stream)

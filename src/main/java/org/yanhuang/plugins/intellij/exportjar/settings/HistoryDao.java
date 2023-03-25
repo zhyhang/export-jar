@@ -41,15 +41,17 @@ public class HistoryDao {
 		return history;
 	}
 
-	private void save(SettingHistory history) {
+	private SettingHistory save(SettingHistory history) {
 		if (!Constants.cachePath.toFile().exists()) {
 			final boolean ignoredMkdirs = Constants.cachePath.toFile().mkdirs();
 		}
 		try {
 			final String json = CommonUtils.toJson(history);
 			Files.writeString(Constants.historyFilePath2023, json);
+			return history;
 		} catch (IOException e) {
 			MessagesUtils.errorNotify("Save History Error", e.getMessage());
+			return null;
 		}
 	}
 
@@ -73,7 +75,13 @@ public class HistoryDao {
 		save(history);
 	}
 
-	public void saveProject(String project, SettingTemplate newTemplate) {
+	/**
+	 * save project's setting
+	 * @param project project
+	 * @param newTemplate new setting template
+	 * @return when success, return saved history, or else null.
+	 */
+	public SettingHistory saveProject(String project, SettingTemplate newTemplate) {
 		final SettingHistory history = readOrDefault();
 		final Map<String, List<SettingTemplate>> projectTemplateMap =
 				new HashMap<>(Optional.ofNullable(history.getProjects()).orElse(Map.of()));
@@ -83,7 +91,7 @@ public class HistoryDao {
 		projectTemplateMap.put(project, newTemplates);
 		history.setProjects(projectTemplateMap);
 		history.setUpdateTime(System.currentTimeMillis());
-		save(history);
+		return save(history);
 	}
 
 	private List<SettingTemplate> updateOrAddTemplate(List<SettingTemplate> savedTemplates,
