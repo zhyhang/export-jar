@@ -8,18 +8,18 @@ import org.yanhuang.plugins.intellij.exportjar.model.SettingTemplate;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.nio.file.Path;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
 import static com.intellij.openapi.ui.Messages.showInfoMessage;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
+import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorNotify;
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.warn;
 
 /**
@@ -36,21 +36,21 @@ public class TemplateEventHandler {
 
 	public TemplateEventHandler(final SettingDialog settingDialog) {
 		this.settingDialog = settingDialog;
+		// do not save transient template in constructor, will lead logic error!!
 	}
 
 	public void initUI(SettingHistory history, String curTemplate) {
 		updateUI(history, curTemplate);
 		//TODO setting history uiSize already used to init, do not handle again
-		//TODO test saved select files include deleted files
+		//TODO save uiSize in save template/export actions
 	}
 
-	public void templateEnableChanged(ChangeEvent e) {
+	public void templateEnableChanged(ItemEvent e) {
 		updateUI(historyDao.readOrDefault(), null);
 	}
 
 	public void templateSelectChanged(ItemEvent e) {
-		final Object item = e.getItem();
-		final String name = Objects.toString(item);
+		final String name = Objects.toString(e.getItem());
 		if (name.isBlank()) {
 			transientTemplateChanged(e);
 		} else if (ItemEvent.SELECTED == e.getStateChange()) {
@@ -66,8 +66,7 @@ public class TemplateEventHandler {
 
 	public void exportJarChanged(ItemEvent e) {
 		if (ItemEvent.SELECTED == e.getStateChange()) {
-			final Object item = e.getItem();
-			final String name = Objects.toString(item);
+			final String name = Objects.toString(e.getItem());
 			settingDialog.outPutJarFileComboBox.setToolTipText(name);
 		}
 	}
@@ -75,6 +74,7 @@ public class TemplateEventHandler {
 	private void updateUI(SettingHistory history, String curTemplate) {
 		final boolean templateEnable = updateUIState();
 		if (templateEnable) {
+			saveTransientTemplate();
 			updateUIDataEnableTemplate(history, curTemplate);
 		} else {
 			updateUIDataDisableTemplate(history);
@@ -192,12 +192,12 @@ public class TemplateEventHandler {
 	}
 
 	private void updateUIDataDisableTemplate(SettingHistory history) {
-		updateUIOptions(history.getGlobal());
-		updateUIExportJar(history.getGlobal());
-		updateUIOptions(history.getGlobal());
-		// TODO save template to memory before enable template, restore it when disable template again
-		// TODO when start with not enable template, read template from global.
-		// TODO update export jar list  from global template and select file list and etc.
+		if (this.transientTemplateSelectFiles != null) {
+			updateUIByTransientTemplate();
+		} else {
+			updateUIOptions(history.getGlobal());
+			updateUIExportJar(history.getGlobal());
+		}
 	}
 
 	public void saveTemplate(ActionEvent e) {
@@ -207,13 +207,18 @@ public class TemplateEventHandler {
 		} else {
 			final SettingHistory savedHistory = saveCurTemplate();
 			if (savedHistory != null) {
-				showInfoMessage(String.format(messageTemplateSaveSuccess, name), titleTemplateMessageDialog);
+				updateUITemplateList(savedHistory);
 				saveGlobalTemplate();
+				showInfoMessage(String.format(messageTemplateSaveSuccess, name), titleTemplateMessageDialog);
 			}
 		}
 	}
 
 	public SettingHistory saveCurTemplate() {
+		final boolean templateEnable = settingDialog.templateEnableCheckBox.isSelected();
+		if (!templateEnable) {
+			return null;
+		}
 		final Object name = settingDialog.templateSelectComBox.getSelectedItem();
 		if (name != null && !name.toString().isBlank()) {
 			final SettingTemplate curTemplate = new SettingTemplate();
@@ -226,11 +231,7 @@ public class TemplateEventHandler {
 			curTemplate.setOptions(settingDialog.pickExportOptions());
 			final Path selectStore = storeSelectFiles(templateName);
 			curTemplate.setSelectFilesStore(selectStore.toString());
-			final SettingHistory savedHistory = historyDao.saveProject(settingDialog.project.getName(), curTemplate);
-			if (savedHistory != null) {
-				updateUITemplateList(savedHistory);
-			}
-			return savedHistory;
+			return historyDao.saveProject(settingDialog.project.getName(), curTemplate);
 		}
 		return null;
 	}
@@ -272,7 +273,8 @@ public class TemplateEventHandler {
 			if (fileEntry.getValue() != null) {
 				fs.add(fileEntry.getValue());
 			} else {
-				warn(settingDialog.project, fileEntry.getKey() + " not found, possible removed after last exporting.");
+				warn(settingDialog.project, fileEntry.getKey() +
+						String.format(messageTemplateFileNotFound, templateName));
 			}
 		}
 		return fs.toArray(new VirtualFile[0]);
@@ -281,7 +283,13 @@ public class TemplateEventHandler {
 	private void transientTemplateChanged(ItemEvent e) {
 		if (ItemEvent.DESELECTED == e.getStateChange()) {
 			saveTransientTemplate();
-		} else if (this.transientTemplateSelectFiles != null) {
+		} else {
+			updateUIByTransientTemplate();
+		}
+	}
+
+	private void updateUIByTransientTemplate() {
+		if (this.transientTemplateSelectFiles != null) {
 			updateUIOptions(this.transientTemplate);
 			updateUIExportJar(this.transientTemplate);
 			this.settingDialog.setSelectedFiles(this.transientTemplateSelectFiles);
@@ -292,6 +300,17 @@ public class TemplateEventHandler {
 		this.transientTemplateSelectFiles = settingDialog.getSelectedFiles();
 		this.transientTemplate.setOptions(settingDialog.pickExportOptions());
 		this.transientTemplate.setExportJar(buildExportJarArray());
+	}
+
+	public void delTemplate(ActionEvent e) {
+		final String template = String.valueOf(settingDialog.templateSelectComBox.getSelectedItem());
+		final SettingHistory savedHistory = historyDao.removeTemplate(settingDialog.project.getName(), template);
+		if (savedHistory != null) {
+			updateUITemplateList(savedHistory);
+			showInfoMessage(String.format(messageTemplateDelSuccess, template), titleTemplateMessageDialog);
+		} else {
+			errorNotify(titleTemplateMessageDialog, String.format(messageTemplateDelError, template));
+		}
 	}
 
 }

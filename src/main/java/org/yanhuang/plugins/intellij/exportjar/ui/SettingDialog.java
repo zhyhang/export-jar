@@ -20,8 +20,6 @@ import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
-import org.yanhuang.plugins.intellij.exportjar.HistoryData;
-import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
 import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
 import org.yanhuang.plugins.intellij.exportjar.model.UISizes;
@@ -33,15 +31,15 @@ import org.yanhuang.plugins.intellij.exportjar.utils.UpgradeManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
@@ -80,8 +78,6 @@ public class SettingDialog extends JDialog {
     private JPanel templateTitlePanel;
     private JPanel outputJarTitlePanel;
     private JPanel optionTitlePanel;
-
-    private HistoryData historyData;
     private FileListDialog fileListDialog;
     private BorderLayoutPanel fileListLabel;
     private final HistoryDao historyDao = new HistoryDao();
@@ -110,16 +106,14 @@ public class SettingDialog extends JDialog {
 
         migrateSavedHistory();
         historyDao.initV2023();
-//        readSaveHistory(); //TODO change to read v2023 or remove
-//        initExportJarComboBox(); //TODO remove
-//        initOptionCheckBox(); // TODO remove
         createFileListTree();
         updateSettingPanelComponents();
         updateFileListSettingSplitPanel();
         uiDebug();
         updateComponentState();
-        this.templateEnableCheckBox.addChangeListener(templateHandler::templateEnableChanged);
+        this.templateEnableCheckBox.addItemListener(templateHandler::templateEnableChanged);
         this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
+        this.templateDelButton.addActionListener(templateHandler::delTemplate);
         this.templateSelectComBox.addItemListener(templateHandler::templateSelectChanged);
         this.outPutJarFileComboBox.addItemListener(templateHandler::exportJarChanged);
     }
@@ -139,46 +133,6 @@ public class SettingDialog extends JDialog {
 
     public JBSplitter getFileListSettingSplitPanel() {
         return fileListSettingSplitPanel;
-    }
-
-    //TODO remove
-    private void initExportJarComboBox() {
-        String[] historyFiles;
-        if (historyData != null) {
-            historyFiles =
-                    Arrays.stream(Optional.ofNullable(historyData.getSavedJarInfo()).orElse(new ExportJarInfo[0]))
-                            .map(ExportJarInfo::getPath).toArray(String[]::new);
-        } else {
-            historyFiles = new String[0];
-        }
-        ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
-        outPutJarFileComboBox.setModel(model);
-        if (historyFiles.length > 0) {
-            outPutJarFileComboBox.setToolTipText(historyFiles[0]);
-        } else {
-            outPutJarFileComboBox.setToolTipText("");
-        }
-        outPutJarFileComboBox.addItemListener(e -> setComBoxTooltip(e, outPutJarFileComboBox));
-    }
-
-    //TODO remove
-    private void initOptionCheckBox() {
-        final Component[] components = optionsPanel.getComponents();
-        final Set<String> optionSet = Optional.ofNullable(historyData.getLastExportOptions()).stream().flatMap(Arrays::stream)
-                .map(ExportOptions::name)
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
-        if (optionSet.size() == 0) {
-            return;
-        }
-        //set select state according to last saved
-        for (Component c : components) {
-            if (c instanceof JCheckBox && optionSet.contains(c.getName().toLowerCase())) {
-                ((JCheckBox) c).setSelected(true);
-            } else if (c instanceof JCheckBox) {
-                ((JCheckBox) c).setSelected(false);
-            }
-        }
     }
 
     private void createFileListTree() {
@@ -247,44 +201,7 @@ public class SettingDialog extends JDialog {
     }
 
     private void migrateSavedHistory(){
-        UpgradeManager.migrateHistoryToV2023();
-    }
-
-    private void readSaveHistory() {
-        if (historyData != null) { // already initialized
-            return;
-        }
-        Constants.cachePath.toFile().mkdirs();
-        if (Files.exists(Constants.historyFilePath)) {
-            try {
-                String historyJson = Files.readString(Constants.historyFilePath);
-                historyData = CommonUtils.fromJson(historyJson, HistoryData.class);
-            } catch (Exception e) {
-                MessagesUtils.warn(project, e.getMessage());
-            }
-        } else {
-            this.historyData = new HistoryData();
-        }
-    }
-
-    private void writeSaveHistory(Path exportJarName) {
-        if (historyData == null) {
-            this.historyData = new HistoryData();
-        }
-        this.historyData.setLastExportOptions(pickExportOptions());
-        ExportJarInfo savedJar = new ExportJarInfo();
-        savedJar.setCreation(System.currentTimeMillis());
-        savedJar.setPath(exportJarName.toString());
-        historyData.addSavedJarInfo(savedJar);
-        Constants.cachePath.toFile().mkdirs();
-        final String json = CommonUtils.toJson(historyData);
-        if (json != null) {
-            try {
-                Files.write(Constants.historyFilePath, json.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                MessagesUtils.warn(project, e.getMessage());
-            }
-        }
+        UpgradeManager.migrateHistoryToV2023(this.project);
     }
 
     public ExportOptions[] pickExportOptions() {
@@ -382,8 +299,6 @@ public class SettingDialog extends JDialog {
                     }
                 }
                 this.dispose();
-                //TODO remove
-//                writeSaveHistory(exportJarFullPath);
                 templateHandler.saveCurTemplate();
                 templateHandler.saveGlobalTemplate();
                 final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath, pickExportOptions());
@@ -417,11 +332,6 @@ public class SettingDialog extends JDialog {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-    }
-
-    private void setComBoxTooltip(ItemEvent ie, JComponent cbox) {
-        final Object item = ie.getItem();
-        cbox.setToolTipText(item != null ? item.toString() : null);
     }
 
     private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {

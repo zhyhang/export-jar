@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
@@ -49,7 +50,7 @@ public class HistoryDao {
 			Files.writeString(Constants.historyFilePath2023, json);
 			return history;
 		} catch (IOException e) {
-			MessagesUtils.errorNotify("Save History Error", e.getMessage());
+			MessagesUtils.errorNotify(Constants.titleHistorySaveErr, e.getMessage());
 			return null;
 		}
 	}
@@ -57,7 +58,7 @@ public class HistoryDao {
 	public SettingTemplate defaultGlobalTemplate() {
 		final long ts = System.currentTimeMillis();
 		final SettingTemplate globalTemplate = new SettingTemplate();
-		globalTemplate.setName("global");
+		globalTemplate.setName(Constants.templateGlobalName);
 		globalTemplate.setOptions(SettingTemplate.DEFAULT_OPTIONS);
 		globalTemplate.setCreateTime(ts);
 		globalTemplate.setUpdateTime(ts);
@@ -76,7 +77,8 @@ public class HistoryDao {
 
 	/**
 	 * save project's setting
-	 * @param project project
+	 *
+	 * @param project     project
 	 * @param newTemplate new setting template
 	 * @return when success, return saved history, or else null.
 	 */
@@ -166,11 +168,13 @@ public class HistoryDao {
 
 	/**
 	 * read template's select files to export from store file.
-	 * @param projectName project name
+	 *
+	 * @param projectName  project name
 	 * @param templateName template name
-	 * @return os file string mapping VirtualFile, if not exists the os file, the entry value is null. return map Always not null.
+	 * @return os file string mapping VirtualFile, if not exists the os file, the entry value is null. return map
+	 * Always not null.
 	 */
-	public Map<String,VirtualFile> readStoredSelectFiles(String projectName, String templateName) {
+	public Map<String, VirtualFile> readStoredSelectFiles(String projectName, String templateName) {
 		final Path selectStore = getSelectFilesStorePath(projectName, templateName);
 		if (selectStore.toFile().exists()) {
 			try {
@@ -186,7 +190,7 @@ public class HistoryDao {
 		}
 	}
 
-	private Map<String,VirtualFile> readSelectVirtualFiles(final String[] storeFiles) {
+	private Map<String, VirtualFile> readSelectVirtualFiles(final String[] storeFiles) {
 		if (storeFiles != null && storeFiles.length > 0) {
 			final Map<String, VirtualFile> virtualFileMap = new HashMap<>();
 			for (String storeFile : storeFiles) {
@@ -194,7 +198,7 @@ public class HistoryDao {
 				virtualFileMap.put(storeFile, vf);
 			}
 			return virtualFileMap;
-		}else{
+		} else {
 			return Map.of();
 		}
 	}
@@ -202,6 +206,23 @@ public class HistoryDao {
 	private Path getSelectFilesStorePath(String projectName, String templateName) {
 		return cachePath.resolve(historySelectsFilePathPrefix2023
 				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
+	}
+
+	public SettingHistory removeTemplate(String project, String template) {
+		final SettingHistory history = readOrDefault();
+		final var orgProjectTemplates = history.getProjects();
+		final var orgTemplates = Optional.ofNullable(orgProjectTemplates).orElse(Map.of()).get(project);
+		final var savingTemplates = Optional.ofNullable(orgTemplates).orElse(List.of()).stream()
+				.filter(Predicate.not(t -> t.getName().equalsIgnoreCase(template))).collect(Collectors.toList());
+		if (orgTemplates != null && orgTemplates.size() > savingTemplates.size()) {
+			final var savingProjectTemplates = new HashMap<>(orgProjectTemplates != null ? orgProjectTemplates :
+					Map.of());
+			savingProjectTemplates.put(project, savingTemplates);
+			history.setProjects(savingProjectTemplates);
+			return save(history);
+		} else {
+			return null;
+		}
 	}
 
 }

@@ -4,6 +4,9 @@
 # Changelogs
 
 ## [Unreleased]
+- Add template CRUD for largely improve export performance.
+- Remove the Created-By entry from MANIFEST.MF.
+- Many refactors.
 
 ## [2.4.2]
 - Make compatible with new version of Intellij IDE

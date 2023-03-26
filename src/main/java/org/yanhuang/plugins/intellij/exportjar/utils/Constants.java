@@ -18,6 +18,8 @@ public interface Constants {
     String titleTemplateMessageDialog = "Template";
     String titleJarFileSeparator = "Jar file";
     String titleOptionSeparator = "Options";
+    String titleHistorySaveErr = "Save History Error";
+
     String actionNameExplorer = "Explorer";
     String actionNameCopy = "Copy";
     String creator = "yanhuang.org";
@@ -26,17 +28,23 @@ public interface Constants {
     Path historyFilePath2023 = cachePath.resolve("history_v2023.json");
     String historySelectsFilePathPrefix2023 = "history_v2023_";
     String historySelectsFilePathSuffix2023 = "_selects.json";
-    Path historyFileOperationLock = cachePath.resolve("history_operation.lck");
     Dimension settingDialogSize = new Dimension(800, 420);
     Dimension fileListSettingSplitPanelSize = new Dimension(780, 410);
 
-    String messageTemplateSaveSuccess = "template %s saved successfully";
+    String messageTemplateSaveSuccess = "template %s save successfully";
+    String messageTemplateDelSuccess = "template %s delete successfully";
+    String messageTemplateDelError = "template %s delete failure, possible not exists";
     String messageTemplateNameNull = "Please specify template name";
     String messageTemplateStoreSelectsError = "write select files to store %s error\n %s";
     String messageTemplateReadSelectsError = "read select files from store %s error\n %s";
 
     String[] templateDefaultName = {""};
     String templateGlobalName = "template-global";
-
     String toolTipEmptyTemplate = "Please enter the template name";
+
+    String messageTemplateFileNotFound = " in template [%s] not found, possible removed after last exporting.";
+
+    String messageMigrationHistorySuccess = "Migrate history from old version successfully!";
+
+
 }
