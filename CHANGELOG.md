@@ -5,6 +5,7 @@
 
 ## [Unreleased]
 - Add template CRUD for largely improve export performance.
+- Remember dialog size last adjusted. 
 - Remove the Created-By entry from MANIFEST.MF.
 - Many refactors.
 

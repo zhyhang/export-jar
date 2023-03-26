@@ -225,4 +225,10 @@ public class HistoryDao {
 		}
 	}
 
+	public void saveUISizes(UISizes uiSizes){
+		final SettingHistory history = readOrDefault();
+		history.setUi(uiSizes);
+		save(history);
+	}
+
 }

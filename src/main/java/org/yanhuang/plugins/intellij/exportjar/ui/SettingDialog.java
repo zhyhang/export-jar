@@ -323,6 +323,18 @@ public class SettingDialog extends JDialog {
         super.dispose();
     }
 
+    /**
+     * collection current ui components size
+     * @return sizes
+     */
+    public UISizes currentUISizes(){
+        final UISizes sizes = new UISizes();
+        sizes.setExportDialog(this.getSize());
+        sizes.setFileSettingSplitPanel(this.fileListSettingSplitPanel.getPreferredSize());
+        sizes.setFileSettingSplitRatio(this.fileListSettingSplitPanel.getProportion());
+        return sizes;
+    }
+
     private void disposeFileListDialog() {
         if (this.fileListDialog == null || this.fileListDialog.isDisposed()) {
             return;

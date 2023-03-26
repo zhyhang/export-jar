@@ -39,16 +39,29 @@ public class TemplateEventHandler {
 		// do not save transient template in constructor, will lead logic error!!
 	}
 
+	/**
+	 * init ui (template related)
+	 * @param history setting history saved
+	 * @param curTemplate current using template name (null: start from "export jar" action, not null: start from " export jar with template" action)
+	 */
 	public void initUI(SettingHistory history, String curTemplate) {
 		updateUI(history, curTemplate);
 		//TODO setting history uiSize already used to init, do not handle again
 		//TODO save uiSize in save template/export actions
 	}
 
+	/**
+	 * enable/disable template event process
+	 * @param e change event
+	 */
 	public void templateEnableChanged(ItemEvent e) {
 		updateUI(historyDao.readOrDefault(), null);
 	}
 
+	/**
+	 * template select change event process
+	 * @param e event
+	 */
 	public void templateSelectChanged(ItemEvent e) {
 		final String name = Objects.toString(e.getItem());
 		if (name.isBlank()) {
@@ -64,6 +77,10 @@ public class TemplateEventHandler {
 		}
 	}
 
+	/**
+	 * export jar change event handle
+	 * @param e event
+	 */
 	public void exportJarChanged(ItemEvent e) {
 		if (ItemEvent.SELECTED == e.getStateChange()) {
 			final String name = Objects.toString(e.getItem());
@@ -200,6 +217,10 @@ public class TemplateEventHandler {
 		}
 	}
 
+	/**
+	 * save template event process
+	 * @param e save button event
+	 */
 	public void saveTemplate(ActionEvent e) {
 		final Object name = settingDialog.templateSelectComBox.getSelectedItem();
 		if (name == null || name.toString().isBlank()) {
@@ -214,6 +235,10 @@ public class TemplateEventHandler {
 		}
 	}
 
+	/**
+	 * save current template to history
+	 * @return not null: success, or else failure
+	 */
 	public SettingHistory saveCurTemplate() {
 		final boolean templateEnable = settingDialog.templateEnableCheckBox.isSelected();
 		if (!templateEnable) {
@@ -236,6 +261,9 @@ public class TemplateEventHandler {
 		return null;
 	}
 
+	/**
+	 * save global template to history
+	 */
 	public void saveGlobalTemplate() {
 		final SettingTemplate globalTemplate = new SettingTemplate();
 		final long ts = System.currentTimeMillis();
@@ -245,6 +273,7 @@ public class TemplateEventHandler {
 		globalTemplate.setExportJar(buildExportJarArray());
 		globalTemplate.setOptions(settingDialog.pickExportOptions());
 		this.historyDao.saveGlobal(globalTemplate);
+		this.historyDao.saveUISizes(settingDialog.currentUISizes());
 	}
 
 	private ExportJarInfo[] buildExportJarArray() {
@@ -302,6 +331,10 @@ public class TemplateEventHandler {
 		this.transientTemplate.setExportJar(buildExportJarArray());
 	}
 
+	/**
+	 * delete template action process
+	 * @param e delete button event
+	 */
 	public void delTemplate(ActionEvent e) {
 		final String template = String.valueOf(settingDialog.templateSelectComBox.getSelectedItem());
 		final SettingHistory savedHistory = historyDao.removeTemplate(settingDialog.project.getName(), template);

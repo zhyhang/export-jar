@@ -68,7 +68,8 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - help docs
 - throw swing context event exception when trigger by first-keystroke (key-map)
 - button component mnemonic not working
-- remember dialog size
+- [OK]remember dialog size
+- reset dialog ui size
 ## Build
 - config java homes for gradle to lookup JDK 11 and JDK 17
   - JAVA_HOME=path_to_jdk11
