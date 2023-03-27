@@ -4,7 +4,7 @@
 # Changelogs
 
 ## [Unreleased]
-- Add template CRUD for largely improve export performance.
+- Add template (select files, jar, options to template) management function.
 - Remember dialog size last adjusted. 
 - Remove the Created-By entry from MANIFEST.MF.
 - Many refactors.

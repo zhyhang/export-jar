@@ -231,4 +231,16 @@ public class HistoryDao {
 		save(history);
 	}
 
+	/**
+	 * extract project's setting templates from history.
+	 * @param history setting history
+	 * @param project project name
+	 * @return always not null, possible size=0, project's templates.
+	 */
+	public List<SettingTemplate> getProjectTemplates(SettingHistory history, String project) {
+		final List<SettingTemplate> templateList =
+				Optional.ofNullable(history.getProjects()).orElse(Map.of()).get(project);
+		return templateList != null ? templateList : List.of();
+	}
+
 }

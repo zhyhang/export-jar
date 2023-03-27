@@ -85,6 +85,10 @@ public class SettingDialog extends JDialog {
     private final TemplateEventHandler templateHandler = new TemplateEventHandler(this);
 
     public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles) {
+        this(project, selectedFiles, null);
+    }
+
+    public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles, @Nullable String template) {
         MessagesUtils.getMessageView(project);//register message tool window to avoid pack error
         this.project = project;
         this.selectedFiles = selectedFiles;
@@ -110,7 +114,7 @@ public class SettingDialog extends JDialog {
         updateSettingPanelComponents();
         updateFileListSettingSplitPanel();
         uiDebug();
-        updateComponentState();
+        updateComponentState(template);
         this.templateEnableCheckBox.addItemListener(templateHandler::templateEnableChanged);
         this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
         this.templateDelButton.addActionListener(templateHandler::delTemplate);
@@ -118,7 +122,7 @@ public class SettingDialog extends JDialog {
         this.outPutJarFileComboBox.addItemListener(templateHandler::exportJarChanged);
     }
 
-    private void updateComponentState(){
+    private void updateComponentState(String template){
         this.setModal(true);
         this.setResizable(true);
         final SettingHistory history = historyDao.readOrDefault();
@@ -128,7 +132,7 @@ public class SettingDialog extends JDialog {
         this.fileListSettingSplitPanel.setProportion(splitPanelRatio);
         final Dimension dialogSize = Optional.ofNullable(history.getUi()).map(UISizes::getExportDialog).orElse(Constants.settingDialogSize);
         this.setSize(dialogSize);
-        this.templateHandler.initUI(history, null);
+        this.templateHandler.initUI(history, template);
     }
 
     public JBSplitter getFileListSettingSplitPanel() {

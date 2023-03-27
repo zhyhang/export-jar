@@ -70,6 +70,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - button component mnemonic not working
 - [OK]remember dialog size
 - reset dialog ui size
+- plugin.xml item not working: add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"
 ## Build
 - config java homes for gradle to lookup JDK 11 and JDK 17
   - JAVA_HOME=path_to_jdk11

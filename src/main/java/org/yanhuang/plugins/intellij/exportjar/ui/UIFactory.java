@@ -31,7 +31,7 @@ public class UIFactory {
     public static SettingDialog createSettingDialog(DataContext dataContext) {
         Project project = CommonDataKeys.PROJECT.getData(dataContext);
         VirtualFile[] selectedFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
-        return createSettingDialog(project, selectedFiles);
+        return createSettingDialog(project, selectedFiles, null);
     }
 
     /**
@@ -41,7 +41,18 @@ public class UIFactory {
      * @return SettingDialog
      */
     public static SettingDialog createSettingDialog(Project project) {
-        return createSettingDialog(project, null);
+        return createSettingDialog(project, null, null);
+    }
+
+    /**
+     * create and config setting-dialog, without visibility
+     *
+     * @param project project
+     * @param template  template name to initial effect
+     * @return SettingDialog
+     */
+    public static SettingDialog createSettingDialog(Project project, String template) {
+        return createSettingDialog(project, null, template);
     }
 
     /**
@@ -49,10 +60,11 @@ public class UIFactory {
      *
      * @param project       project
      * @param selectedFiles selected files
+     * @param template template name to effect when dialog show
      * @return SettingDialog
      */
-    public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles) {
-        final SettingDialog setting = new SettingDialog(project, selectedFiles);
+    public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template) {
+        final SettingDialog setting = new SettingDialog(project, selectedFiles, template);
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         final Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {

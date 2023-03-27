@@ -41,17 +41,23 @@ public class TemplateEventHandler {
 
 	/**
 	 * init ui (template related)
-	 * @param history setting history saved
-	 * @param curTemplate current using template name (null: start from "export jar" action, not null: start from " export jar with template" action)
+	 *
+	 * @param history     setting history saved
+	 * @param curTemplate current using template name (null: start from "export jar" action, not null: start from "
+	 *                       export jar with template" action)
 	 */
 	public void initUI(SettingHistory history, String curTemplate) {
+		if (curTemplate != null && !curTemplate.isBlank()) {
+			settingDialog.templateEnableCheckBox.setSelected(true);
+		}
 		updateUI(history, curTemplate);
 		//TODO setting history uiSize already used to init, do not handle again
-		//TODO save uiSize in save template/export actions
+		//TODO dynamic actions: https://plugins.jetbrains.com/docs/intellij/grouping-action.html#action-groups-with-dynamic-actions-sets
 	}
 
 	/**
 	 * enable/disable template event process
+	 *
 	 * @param e change event
 	 */
 	public void templateEnableChanged(ItemEvent e) {
@@ -59,7 +65,8 @@ public class TemplateEventHandler {
 	}
 
 	/**
-	 * template select change event process
+	 * template select change event process,
+	 *
 	 * @param e event
 	 */
 	public void templateSelectChanged(ItemEvent e) {
@@ -69,7 +76,8 @@ public class TemplateEventHandler {
 		} else if (ItemEvent.SELECTED == e.getStateChange()) {
 			updateTemplateListTooltip(name);
 			final SettingHistory history = historyDao.readOrDefault();
-			final List<SettingTemplate> templates = getProjectTemplates(history);
+			final List<SettingTemplate> templates = historyDao.getProjectTemplates(history,
+					settingDialog.project.getName());
 			final Optional<SettingTemplate> template = getTemplateByName(templates, name);
 			template.ifPresent(this::updateUIOptions);
 			template.ifPresent(this::updateUIExportJar);
@@ -79,6 +87,7 @@ public class TemplateEventHandler {
 
 	/**
 	 * export jar change event handle
+	 *
 	 * @param e event
 	 */
 	public void exportJarChanged(ItemEvent e) {
@@ -121,7 +130,8 @@ public class TemplateEventHandler {
 		}
 		final String itemName = settingDialog.templateSelectComBox.getSelectedItem().toString();
 		updateTemplateListTooltip(itemName);
-		final Optional<SettingTemplate> template = getTemplateByName(getProjectTemplates(history), itemName);
+		final var templates = historyDao.getProjectTemplates(history, settingDialog.project.getName());
+		final Optional<SettingTemplate> template = getTemplateByName(templates, itemName);
 		//TODO combine to one method
 		template.ifPresent(this::updateUIOptions);
 		template.ifPresent(this::updateUIExportJar);
@@ -130,20 +140,27 @@ public class TemplateEventHandler {
 	}
 
 	private void updateUITemplateList(SettingHistory history, String selectedTemplateName) {
-		final var selectedTemplate = new SettingTemplate();
-		selectedTemplate.setName(selectedTemplateName == null ? templateDefaultName[0] : selectedTemplateName);
 		final var curTemplateList = new ArrayList<SettingTemplate>();
-		curTemplateList.add(selectedTemplate);
-		final List<SettingTemplate> savedTemplateList = getProjectTemplates(history);
-		if (savedTemplateList != null && savedTemplateList.size() > 0) {
-			curTemplateList.addAll(savedTemplateList);
+		final List<SettingTemplate> savedTemplateList = historyDao.getProjectTemplates(history,
+				settingDialog.project.getName());
+		final Optional<SettingTemplate> selectedTemplate = getTemplateByName(savedTemplateList, selectedTemplateName);
+		if (selectedTemplate.isEmpty()) {// not found name, consider it as new adding
+			final var templateNew = new SettingTemplate();
+			templateNew.setName(null == selectedTemplateName || selectedTemplateName.isBlank() ?
+					templateDefaultName[0] :
+					selectedTemplateName);
+			curTemplateList.add(templateNew);
 		}
+		curTemplateList.addAll(savedTemplateList);
 		updateUITemplateList(curTemplateList);
+		// will not trigger event listener,  because add listener after this method call
+		selectedTemplate.ifPresent(t -> settingDialog.templateSelectComBox.setSelectedItem(t.getName()));
 	}
 
 	private void updateUITemplateList(SettingHistory history) {
-		final List<SettingTemplate> templateList = getProjectTemplates(history);
-		if (templateList != null && templateList.size() > 0) {
+		final List<SettingTemplate> templateList = historyDao.getProjectTemplates(history,
+				settingDialog.project.getName());
+		if (templateList.size() > 0) {
 			updateUITemplateList(templateList);
 		} else {
 			final ComboBoxModel<String> model = new DefaultComboBoxModel<>(templateDefaultName);
@@ -151,13 +168,8 @@ public class TemplateEventHandler {
 		}
 	}
 
-	private List<SettingTemplate> getProjectTemplates(SettingHistory history) {
-		return Optional.ofNullable(history.getProjects()).orElse(Map.of()).get(settingDialog.project.getName());
-	}
-
 	private Optional<SettingTemplate> getTemplateByName(List<SettingTemplate> templates, String name) {
-		return templates != null ? templates.stream().filter(t -> t.getName().equalsIgnoreCase(name)).findFirst() :
-				Optional.empty();
+		return templates.stream().filter(t -> t.getName().equalsIgnoreCase(name)).findFirst();
 	}
 
 	private void updateUITemplateList(final List<SettingTemplate> templateList) {
@@ -219,6 +231,7 @@ public class TemplateEventHandler {
 
 	/**
 	 * save template event process
+	 *
 	 * @param e save button event
 	 */
 	public void saveTemplate(ActionEvent e) {
@@ -237,6 +250,7 @@ public class TemplateEventHandler {
 
 	/**
 	 * save current template to history
+	 *
 	 * @return not null: success, or else failure
 	 */
 	public SettingHistory saveCurTemplate() {
@@ -333,6 +347,7 @@ public class TemplateEventHandler {
 
 	/**
 	 * delete template action process
+	 *
 	 * @param e delete button event
 	 */
 	public void delTemplate(ActionEvent e) {
