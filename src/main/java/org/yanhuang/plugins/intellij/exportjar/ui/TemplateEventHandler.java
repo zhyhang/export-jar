@@ -221,11 +221,12 @@ public class TemplateEventHandler {
 	}
 
 	private void updateUIDataDisableTemplate(SettingHistory history) {
+		final SettingTemplate global = history.getGlobal();
 		if (this.transientTemplateSelectFiles != null) {
 			updateUIByTransientTemplate();
-		} else {
-			updateUIOptions(history.getGlobal());
-			updateUIExportJar(history.getGlobal());
+		} else if (global != null) {
+			updateUIOptions(global);
+			updateUIExportJar(global);
 		}
 	}
 
