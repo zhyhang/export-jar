@@ -10,6 +10,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports export files in test directory
 - Supports custom setting export file type
 - Supports export from vcs commits (local changes) as well as intrinsic "Create Patch" action 
+- Supports save exporting files and options to templates then export by them.
 
 ## usage
 - select files
