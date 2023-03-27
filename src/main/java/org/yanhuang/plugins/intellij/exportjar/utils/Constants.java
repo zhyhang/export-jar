@@ -8,7 +8,7 @@ import java.nio.file.Path;
 public interface Constants {
     int maxTemplateHistoryPerProject=512;
     int maxJarHistoryPerTemplate=256;
-    int maxTemplateExportActionSize = 10;
+    int maxTemplateExportActionSize = 12*2;
     String actionName = "Export Jar";
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
