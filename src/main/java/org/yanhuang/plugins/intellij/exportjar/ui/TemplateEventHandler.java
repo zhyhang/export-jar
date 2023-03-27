@@ -51,8 +51,6 @@ public class TemplateEventHandler {
 			settingDialog.templateEnableCheckBox.setSelected(true);
 		}
 		updateUI(history, curTemplate);
-		//TODO setting history uiSize already used to init, do not handle again
-		//TODO dynamic actions: https://plugins.jetbrains.com/docs/intellij/grouping-action.html#action-groups-with-dynamic-actions-sets
 	}
 
 	/**
@@ -132,11 +130,9 @@ public class TemplateEventHandler {
 		updateTemplateListTooltip(itemName);
 		final var templates = historyDao.getProjectTemplates(history, settingDialog.project.getName());
 		final Optional<SettingTemplate> template = getTemplateByName(templates, itemName);
-		//TODO combine to one method
 		template.ifPresent(this::updateUIOptions);
 		template.ifPresent(this::updateUIExportJar);
 		template.ifPresent(this::updateUISelectFiles);
-		// TODO update select files panel, setModel fire the change event, use listener to update select files
 	}
 
 	private void updateUITemplateList(SettingHistory history, String selectedTemplateName) {

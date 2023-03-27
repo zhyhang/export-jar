@@ -5,6 +5,7 @@
 
 ## [Unreleased]
 - Add template (select files, jar, options to template) management function.
+- Redesign dialog layout.
 - Remember dialog size last adjusted. 
 - Remove the Created-By entry from MANIFEST.MF.
 - Many refactors.

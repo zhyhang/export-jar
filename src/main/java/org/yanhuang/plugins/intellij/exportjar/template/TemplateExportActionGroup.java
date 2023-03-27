@@ -15,6 +15,9 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import java.util.List;
 
+/**
+ * dynamic actions according saved templates, every click action group will recreate children.
+ */
 public class TemplateExportActionGroup extends ActionGroup {
 	private final HistoryDao dao = new HistoryDao();
 	@Override
