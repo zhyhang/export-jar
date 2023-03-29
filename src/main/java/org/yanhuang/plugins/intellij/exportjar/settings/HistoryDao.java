@@ -23,6 +23,9 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorN
 
 public class HistoryDao {
 
+	/**
+	 * create v2023 history and save if that not exists.
+	 */
 	public void initV2023() {
 		if (Constants.historyFilePath2023.toFile().exists()) {
 			return;
@@ -55,7 +58,7 @@ public class HistoryDao {
 		}
 	}
 
-	public SettingTemplate defaultGlobalTemplate() {
+	private SettingTemplate defaultGlobalTemplate() {
 		final long ts = System.currentTimeMillis();
 		final SettingTemplate globalTemplate = new SettingTemplate();
 		globalTemplate.setName(Constants.templateGlobalName);
@@ -66,19 +69,23 @@ public class HistoryDao {
 		return globalTemplate;
 	}
 
+	/**
+	 * save global template to history [merge with old global template]
+	 * @param globalNewTemplate new global template
+	 */
 	public void saveGlobal(SettingTemplate globalNewTemplate) {
 		final SettingHistory history = readOrDefault();
-		final SettingTemplate savedGlobal = history.getGlobal() != null ? history.getGlobal() :
-				defaultGlobalTemplate();
+		final var savedGlobal = Objects.requireNonNullElse(history.getGlobal(), defaultGlobalTemplate());
 		mergeTemplate(globalNewTemplate, savedGlobal);
 		history.setGlobal(savedGlobal);
+		history.setUpdateTime(System.currentTimeMillis());
 		save(history);
 	}
 
 	/**
-	 * save project's setting
+	 * save project's setting (template) to history
 	 *
-	 * @param project     project
+	 * @param project project
 	 * @param newTemplate new setting template
 	 * @return when success, return saved history, or else null.
 	 */
@@ -129,11 +136,7 @@ public class HistoryDao {
 		final int existsIndex = itemList.indexOf(item);
 		if (existsIndex >= 0) {
 			final T existsItem = itemList.get(existsIndex);
-			if (existsItem != null) {
-				srcDescMerge.accept(item, existsItem);
-			} else {
-				itemList.add(item);
-			}
+			srcDescMerge.accept(item, existsItem);
 		} else {
 			itemList.add(item);
 		}
@@ -210,15 +213,15 @@ public class HistoryDao {
 
 	public SettingHistory removeTemplate(String project, String template) {
 		final SettingHistory history = readOrDefault();
-		final var orgProjectTemplates = history.getProjects();
-		final var orgTemplates = Optional.ofNullable(orgProjectTemplates).orElse(Map.of()).get(project);
-		final var savingTemplates = Optional.ofNullable(orgTemplates).orElse(List.of()).stream()
-				.filter(Predicate.not(t -> t.getName().equalsIgnoreCase(template))).collect(Collectors.toList());
-		if (orgTemplates != null && orgTemplates.size() > savingTemplates.size()) {
-			final var savingProjectTemplates = new HashMap<>(orgProjectTemplates != null ? orgProjectTemplates :
-					Map.of());
+		final var orgTemplates = getProjectTemplates(history, project);
+		final var savingTemplates =
+				orgTemplates.stream().filter(Predicate.not(t -> t.getName().equalsIgnoreCase(template))).collect(Collectors.toList());
+		if (orgTemplates.size() > savingTemplates.size()) {
+			final var orgProjectTemplates = history.getProjects();
+			final var savingProjectTemplates = new HashMap<>(orgProjectTemplates); //make modified
 			savingProjectTemplates.put(project, savingTemplates);
 			history.setProjects(savingProjectTemplates);
+			history.setUpdateTime(System.currentTimeMillis());
 			return save(history);
 		} else {
 			return null;

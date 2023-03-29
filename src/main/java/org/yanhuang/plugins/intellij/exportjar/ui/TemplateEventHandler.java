@@ -1,5 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
 import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
@@ -16,8 +18,7 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.intellij.openapi.ui.Messages.showErrorDialog;
-import static com.intellij.openapi.ui.Messages.showInfoMessage;
+import static com.intellij.openapi.ui.Messages.*;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorNotify;
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.warn;
@@ -74,13 +75,17 @@ public class TemplateEventHandler {
 		} else if (ItemEvent.SELECTED == e.getStateChange()) {
 			updateTemplateListTooltip(name);
 			final SettingHistory history = historyDao.readOrDefault();
-			final List<SettingTemplate> templates = historyDao.getProjectTemplates(history,
-					settingDialog.project.getName());
-			final Optional<SettingTemplate> template = getTemplateByName(templates, name);
-			template.ifPresent(this::updateUIOptions);
-			template.ifPresent(this::updateUIExportJar);
-			template.ifPresent(this::updateUISelectFiles);
+			updateUIBySelectTemplate(history);
 		}
+	}
+
+	private void updateUIBySelectTemplate(SettingHistory history) {
+		final var selectTemplate = String.valueOf(settingDialog.templateSelectComBox.getSelectedItem());
+		final var templates = historyDao.getProjectTemplates(history, settingDialog.project.getName());
+		final var template = getTemplateByName(templates, selectTemplate);
+		template.ifPresent(this::updateUIOptions);
+		template.ifPresent(this::updateUIExportJar);
+		template.ifPresent(this::updateUISelectFiles);
 	}
 
 	/**
@@ -128,11 +133,7 @@ public class TemplateEventHandler {
 		}
 		final String itemName = settingDialog.templateSelectComBox.getSelectedItem().toString();
 		updateTemplateListTooltip(itemName);
-		final var templates = historyDao.getProjectTemplates(history, settingDialog.project.getName());
-		final Optional<SettingTemplate> template = getTemplateByName(templates, itemName);
-		template.ifPresent(this::updateUIOptions);
-		template.ifPresent(this::updateUIExportJar);
-		template.ifPresent(this::updateUISelectFiles);
+		updateUIBySelectTemplate(history);
 	}
 
 	private void updateUITemplateList(SettingHistory history, String selectedTemplateName) {
@@ -240,6 +241,7 @@ public class TemplateEventHandler {
 			if (savedHistory != null) {
 				updateUITemplateList(savedHistory);
 				saveGlobalTemplate();
+				updateUIBySelectTemplate(savedHistory);
 				showInfoMessage(String.format(messageTemplateSaveSuccess, name), titleTemplateMessageDialog);
 			}
 		}
@@ -349,10 +351,17 @@ public class TemplateEventHandler {
 	 */
 	public void delTemplate(ActionEvent e) {
 		final String template = String.valueOf(settingDialog.templateSelectComBox.getSelectedItem());
+		final Application app = ApplicationManager.getApplication();
+		final int[] result = new int[1];
+		app.invokeAndWait(() -> result[0] = showYesNoDialog(settingDialog.project,
+				String.format(messageTemplateDelYesNo, template), titleTemplateMessageDialog, getWarningIcon()));
+		if (result[0] == NO) {
+			return;
+		}
 		final SettingHistory savedHistory = historyDao.removeTemplate(settingDialog.project.getName(), template);
 		if (savedHistory != null) {
 			updateUITemplateList(savedHistory);
-			showInfoMessage(String.format(messageTemplateDelSuccess, template), titleTemplateMessageDialog);
+			updateUIBySelectTemplate(savedHistory);
 		} else {
 			errorNotify(titleTemplateMessageDialog, String.format(messageTemplateDelError, template));
 		}

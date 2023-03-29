@@ -3,6 +3,9 @@ package org.yanhuang.plugins.intellij.exportjar.model;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * exporting history
+ */
 public class SettingHistory {
     private long createTime;
     private long updateTime;

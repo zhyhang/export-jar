@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * export settings saved in template include select files, options, jar file and etc.
+ */
 public class SettingTemplate implements Comparable<SettingTemplate> {
 
     public static final ExportOptions[] DEFAULT_OPTIONS = {ExportOptions.export_class, ExportOptions.export_java};

@@ -35,6 +35,7 @@ public interface Constants {
     String messageTemplateSaveSuccess = "template %s save successfully";
     String messageTemplateDelSuccess = "template %s delete successfully";
     String messageTemplateDelError = "template %s delete failure, possible not exists";
+    String messageTemplateDelYesNo = "Would you delete the template %s ?";
     String messageTemplateNameNull = "Please specify template name";
     String messageTemplateStoreSelectsError = "write select files to store %s error\n %s";
     String messageTemplateReadSelectsError = "read select files from store %s error\n %s";

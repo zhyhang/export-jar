@@ -16,29 +16,31 @@ import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import java.util.List;
 
 /**
- * dynamic actions according saved templates, every click action group will recreate children.
+ * dynamic actions created from saved templates, every click action group will refresh child actions i.e. recreate
+ * actions from saved templates.
  */
 public class TemplateExportActionGroup extends ActionGroup {
 	private final HistoryDao dao = new HistoryDao();
+
 	@Override
 	public AnAction @NotNull [] getChildren(@Nullable AnActionEvent e) {
-		final Project project = e!=null?e.getProject():null;
-		if(project!=null) {
+		final Project project = e != null ? e.getProject() : null;
+		if (project != null) {
 			return createTemplateActions(project);
-		}else {
+		} else {
 			return new AnAction[0];
 		}
 	}
 
-	private AnAction[] createTemplateActions(Project project){
+	private AnAction[] createTemplateActions(Project project) {
 		final SettingHistory history = dao.readOrDefault();
 		final List<SettingTemplate> templates = dao.getProjectTemplates(history, project.getName());
 		return templates.stream().limit(Constants.maxTemplateExportActionSize)
 				.map(t -> createTemplateAction(project, t)).toArray(AnAction[]::new);
 	}
 
-	private AnAction createTemplateAction(Project project,SettingTemplate template) {
-		return new AnAction(template.getName(),template.getName(),null) {
+	private AnAction createTemplateAction(Project project, SettingTemplate template) {
+		return new AnAction(template.getName(), template.getName(), null) {
 			@Override
 			public void actionPerformed(@NotNull AnActionEvent e) {
 				final SettingDialog dialog = UIFactory.createSettingDialog(project, template.getName());
