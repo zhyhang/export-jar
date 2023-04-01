@@ -27,7 +27,7 @@ public class ExportJarAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        SettingDialog setting = UIFactory.createSettingDialog(event.getDataContext());
+        final SettingDialog setting = UIFactory.createSettingDialog(event.getDataContext());
         setting.setVisible(true);
     }
 

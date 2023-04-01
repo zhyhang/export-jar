@@ -6,13 +6,17 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.CheckboxTree;
+import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.TitledSeparator;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.util.Objects;
+
+import static com.intellij.util.ui.JBUI.Panels.simplePanel;
 
 /**
  * factory for creating setting dialog
@@ -27,7 +31,7 @@ public class UIFactory {
     public static SettingDialog createSettingDialog(DataContext dataContext) {
         Project project = CommonDataKeys.PROJECT.getData(dataContext);
         VirtualFile[] selectedFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
-        return createSettingDialog(project, selectedFiles);
+        return createSettingDialog(project, selectedFiles, null);
     }
 
     /**
@@ -37,7 +41,18 @@ public class UIFactory {
      * @return SettingDialog
      */
     public static SettingDialog createSettingDialog(Project project) {
-        return createSettingDialog(project, null);
+        return createSettingDialog(project, null, null);
+    }
+
+    /**
+     * create and config setting-dialog, without visibility
+     *
+     * @param project project
+     * @param template  template name to initial effect
+     * @return SettingDialog
+     */
+    public static SettingDialog createSettingDialog(Project project, String template) {
+        return createSettingDialog(project, null, template);
     }
 
     /**
@@ -45,15 +60,13 @@ public class UIFactory {
      *
      * @param project       project
      * @param selectedFiles selected files
+     * @param template template name to effect when dialog show
      * @return SettingDialog
      */
-    public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles) {
-        SettingDialog setting = new SettingDialog(project, selectedFiles);
-        setting.getSettingPanel().setPreferredSize(Constants.settingPanelSize);
-        setting.setResizable(true);
-        setting.setSize(Constants.settingDialogSize);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension frameSize = setting.getSize();
+    public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template) {
+        final SettingDialog setting = new SettingDialog(project, selectedFiles, template);
+        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        final Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
         }
@@ -65,6 +78,17 @@ public class UIFactory {
         setting.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
         setting.setTitle(Constants.actionName);
         return setting;
+    }
+
+    /**
+     * build a new titled separator panel
+     * @param title title for located at left with separator
+     * @param forComp related component of separator
+     * @return panel created
+     */
+    public static JPanel createTitledSeparatorPanel(String title, JComponent forComp) {
+        final TitledSeparator separator = SeparatorFactory.createSeparator(title, forComp);
+        return simplePanel().addToBottom(separator).addToTop(Box.createVerticalGlue());
     }
 
     /**

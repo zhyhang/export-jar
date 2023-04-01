@@ -11,7 +11,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
-import org.yanhuang.plugins.intellij.exportjar.HistoryData.ExportOptions;
+import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.action.CopyTextToClipboardAction;

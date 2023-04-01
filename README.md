@@ -10,11 +10,13 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports export files in test directory
 - Supports custom setting export file type
 - Supports export from vcs commits (local changes) as well as intrinsic "Create Patch" action 
+- Supports save exporting files and options to templates then export by them.
 
 ## usage
 - select files
   - right click mouse or click Build menu
   - select "Export Jar..." to perform export
+  - or select "Export Jar By Template" to perform export by template saved before
 - or click VCS menu  "Export Jar from Local Changes..."
 - or in normal commit changes dialog, click "Export Jar..." in commit button group
 <!-- Plugin description end -->
@@ -23,21 +25,18 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - v1: Intellij Idea (U & C) 2017.3 and later
 - v2: Intellij Idea (U & C) 2020.2 and later
 
-## plugin developing require
+## plugin developing guide
 - [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
 - [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
-- when developing with 192+, please add following jars to SDK classpath:  
-**installed root path/plugin/java/lib/\*.jar**  
-**installed root path/lib/platform-core-ui.jar**  
 
 ## screenshot
-![From Build Menu](image/export-jar-menu.png)
-![From Right Click](image/export-jar-right-click.png)
+![From Build Menu](image/export-jar-menus.gif)
 ![From VCS Menu](image/export-jar-local-changes-vcs-menu.png)
 ![From Normal Commit](image/export-jar-local-changes-add-to-commit-button-group.png)
 ![From Local Changes Pop Menu](image/export-jar-local-changes-right-click.png)
-![Setting Dialog](image/export-jar-pop.png)
+![Setting Dialog](image/export-jar-setting.gif)
 ![Export Status](image/export-jar-result.png)
+![Template Operation](image/export-jar-template.gif)
 
 ## TODO 
 - [OK]support inner and anonymous class export
@@ -68,7 +67,14 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - help docs
 - throw swing context event exception when trigger by first-keystroke (key-map)
 - button component mnemonic not working
+- [OK]remember dialog size
+- reset dialog ui size
+- plugin.xml item not working: add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"
 ## Build
+- config java homes for gradle to lookup JDK 11 and JDK 17
+  - JAVA_HOME=path_to_jdk11
+  - JAVA11_HOME=path_to_jdk11
+  - JAVA17_HOME=path_to_jdk17
 
 ```shell
 # win
@@ -77,3 +83,4 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 # linux/macos
 .\gradlew clean buildPlugin
 ```
+- **!!Gradle plugin 1.12.0, at this plugin one version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**

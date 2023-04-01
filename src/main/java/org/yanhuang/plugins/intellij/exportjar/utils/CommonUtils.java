@@ -10,6 +10,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
@@ -77,8 +78,9 @@ public class CommonUtils {
                                     List<String> entryNames, Map<Path, VirtualFile> filePathVfMap) {
         final Manifest manifest = new Manifest();
         Attributes mainAttributes = manifest.getMainAttributes();
-        mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        mainAttributes.put(new Attributes.Name("Created-By"), Constants.creator);
+        mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "2.5.0");
+        // remove according https://github.com/zhyhang/export-jar/issues/15
+        // mainAttributes.put(new Attributes.Name("Created-By"), Constants.creator);
         try (OutputStream os = Files.newOutputStream(jarFileFullPath);
              BufferedOutputStream bos = new BufferedOutputStream(os);
              JarOutputStream jos = new JarOutputStream(bos, manifest)) {
@@ -217,6 +219,10 @@ public class CommonUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static VirtualFile fromOsFile(String osFilePath) {
+        return LocalFileSystem.getInstance().findFileByPath(osFilePath);
     }
 
 }

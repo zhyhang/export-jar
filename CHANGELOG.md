@@ -5,6 +5,13 @@
 
 ## [Unreleased]
 
+## [2.5.0]
+- Add template (select files, jar, options to template) management function.
+- Redesign dialog layout.
+- Remember dialog size last adjusted. 
+- Remove the Created-By entry from MANIFEST.MF.
+- Many refactors.
+
 ## [2.4.2]
 - Make compatible with new version of Intellij IDE
 

@@ -29,7 +29,7 @@ public class ExportCommitSession implements CommitSession {
     public JComponent getAdditionalConfigurationUI(@NotNull Collection<Change> changes, @Nullable String commitMessage) {
         final VirtualFile[] changeFiles = getVirtualFiles(changes);
         settingDialog.setSelectedFiles(changeFiles);
-        return settingDialog.getSettingPanel();
+        return settingDialog.getFileListSettingSplitPanel();
     }
 
     @Override

@@ -108,6 +108,20 @@
             <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>
             <add-to-group group-id="BuildMenu" anchor="last"/>
         </action>
+        <!-- export by template dynamic actions -->
+        <!--  https://plugins.jetbrains.com/docs/intellij/grouping-action.html#action-groups-with-dynamic-actions-sets -->
+        <group id="org.yanhuang.plugins.intellij.exportjar.template.TemplateExportActionGroup"
+               class="org.yanhuang.plugins.intellij.exportjar.template.TemplateExportActionGroup"
+               popup="true"
+               text="Export Jar By Template"
+               description="Export jar by templates">
+            <add-to-group group-id="BuildMenu"
+                          anchor="after"
+                          relative-to-action="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"/>
+            <add-to-group group-id="ProjectViewCompileGroup"
+                          anchor="after"
+                          relative-to-action="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"/>
+        </group>
     </actions>
 
 </idea-plugin>
