@@ -4,6 +4,8 @@
 # Changelogs
 
 ## [Unreleased]
+
+## [2.5.0]
 - Add template (select files, jar, options to template) management function.
 - Redesign dialog layout.
 - Remember dialog size last adjusted. 

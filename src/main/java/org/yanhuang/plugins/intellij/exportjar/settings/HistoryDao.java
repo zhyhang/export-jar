@@ -147,6 +147,10 @@ public class HistoryDao {
 		return itemList;
 	}
 
+	/**
+	 * read history from setting store.
+	 * @return saved history, return default history if read error.
+	 */
 	public SettingHistory readOrDefault() {
 		try {
 			final String json = Files.readString(Constants.historyFilePath2023);
@@ -156,10 +160,16 @@ public class HistoryDao {
 		}
 	}
 
+	/**
+	 * save virtual files to store file (separate from main history store file).
+	 * @param projectName project name
+	 * @param templateName template name
+	 * @param selectVFiles virtual files
+	 * @return store file path
+	 */
 	public Path saveSelectFiles(String projectName, final String templateName, final VirtualFile[] selectVFiles) {
-		final Path selectStore = getSelectFilesStorePath(projectName, templateName);
-		final List<String> selectFiles =
-				Arrays.stream(selectVFiles).map(VirtualFile::getPath).collect(Collectors.toList());
+		final var selectStore = getSelectFilesStorePath(projectName, templateName);
+		final var selectFiles = Arrays.stream(selectVFiles).map(VirtualFile::getPath).collect(Collectors.toList());
 		try {
 			Files.writeString(selectStore, CommonUtils.toJson(selectFiles));
 		} catch (IOException e) {
@@ -211,6 +221,12 @@ public class HistoryDao {
 				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
 	}
 
+	/**
+	 * remove template
+	 * @param project project of template for
+	 * @param template template name
+	 * @return updated history, null if not found removing template.
+	 */
 	public SettingHistory removeTemplate(String project, String template) {
 		final SettingHistory history = readOrDefault();
 		final var orgTemplates = getProjectTemplates(history, project);
@@ -228,6 +244,10 @@ public class HistoryDao {
 		}
 	}
 
+	/**
+	 * save current ui sizes to history
+	 * @param uiSizes ui sizes
+	 */
 	public void saveUISizes(UISizes uiSizes){
 		final SettingHistory history = readOrDefault();
 		history.setUi(uiSizes);

@@ -45,7 +45,7 @@ public class TemplateEventHandler {
 	 *
 	 * @param history     setting history saved
 	 * @param curTemplate current using template name (null: start from "export jar" action, not null: start from "
-	 *                       export jar with template" action)
+	 *                       export jar by template" action)
 	 */
 	public void initUI(SettingHistory history, String curTemplate) {
 		if (curTemplate != null && !curTemplate.isBlank()) {
@@ -103,9 +103,13 @@ public class TemplateEventHandler {
 	private void updateUI(SettingHistory history, String curTemplate) {
 		final boolean templateEnable = updateUIState();
 		if (templateEnable) {
-			saveTransientTemplate();
+			if(curTemplate==null || curTemplate.isBlank()) {
+				// save settings to transient fields status change from disable to enable
+				saveTransientTemplate();
+			}
 			updateUIDataEnableTemplate(history, curTemplate);
 		} else {
+			// when disable template will, restore global setting (last save transient or last save global)
 			updateUIDataDisableTemplate(history);
 		}
 	}
@@ -138,8 +142,7 @@ public class TemplateEventHandler {
 
 	private void updateUITemplateList(SettingHistory history, String selectedTemplateName) {
 		final var curTemplateList = new ArrayList<SettingTemplate>();
-		final List<SettingTemplate> savedTemplateList = historyDao.getProjectTemplates(history,
-				settingDialog.project.getName());
+		final var savedTemplateList = historyDao.getProjectTemplates(history, settingDialog.project.getName());
 		final Optional<SettingTemplate> selectedTemplate = getTemplateByName(savedTemplateList, selectedTemplateName);
 		if (selectedTemplate.isEmpty()) {// not found name, consider it as new adding
 			final var templateNew = new SettingTemplate();
@@ -155,8 +158,7 @@ public class TemplateEventHandler {
 	}
 
 	private void updateUITemplateList(SettingHistory history) {
-		final List<SettingTemplate> templateList = historyDao.getProjectTemplates(history,
-				settingDialog.project.getName());
+		final var templateList = historyDao.getProjectTemplates(history, settingDialog.project.getName());
 		if (templateList.size() > 0) {
 			updateUITemplateList(templateList);
 		} else {
@@ -203,7 +205,7 @@ public class TemplateEventHandler {
 		} else {
 			historyFiles = new String[0];
 		}
-		ComboBoxModel<String> model = new DefaultComboBoxModel<>(historyFiles);
+		final var model = new DefaultComboBoxModel<>(historyFiles);
 		settingDialog.outPutJarFileComboBox.setModel(model);
 		if (historyFiles.length > 0) {
 			settingDialog.outPutJarFileComboBox.setToolTipText(historyFiles[0]);
