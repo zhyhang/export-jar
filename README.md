@@ -30,13 +30,13 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
 
 ## screenshot
-![From Build Menu](image/export-jar-menu.png)
-![From Right Click](image/export-jar-right-click.png)
+![From Build Menu](image/export-jar-menus.gif)
 ![From VCS Menu](image/export-jar-local-changes-vcs-menu.png)
 ![From Normal Commit](image/export-jar-local-changes-add-to-commit-button-group.png)
 ![From Local Changes Pop Menu](image/export-jar-local-changes-right-click.png)
-![Setting Dialog](image/export-jar-pop.png)
+![Setting Dialog](image/export-jar-setting.gif)
 ![Export Status](image/export-jar-result.png)
+![Template Operation](image/export-jar-template.gif)
 
 ## TODO 
 - [OK]support inner and anonymous class export
