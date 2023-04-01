@@ -85,3 +85,4 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 # linux/macos
 .\gradlew clean buildPlugin
 ```
+- **!!In gradle plugin 1.12.0, use same plugin version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
