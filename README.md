@@ -16,6 +16,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - select files
   - right click mouse or click Build menu
   - select "Export Jar..." to perform export
+  - or select "Export Jar By Template" to perform export by template saved before
 - or click VCS menu  "Export Jar from Local Changes..."
 - or in normal commit changes dialog, click "Export Jar..." in commit button group
 <!-- Plugin description end -->
@@ -24,12 +25,9 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - v1: Intellij Idea (U & C) 2017.3 and later
 - v2: Intellij Idea (U & C) 2020.2 and later
 
-## plugin developing require
+## plugin developing guide
 - [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
 - [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
-- when developing with 192+, please add following jars to SDK classpath:  
-**installed root path/plugin/java/lib/\*.jar**  
-**installed root path/lib/platform-core-ui.jar**  
 
 ## screenshot
 ![From Build Menu](image/export-jar-menu.png)
@@ -85,4 +83,4 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 # linux/macos
 .\gradlew clean buildPlugin
 ```
-- **!!In gradle plugin 1.12.0, use same plugin version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
+- **!!Gradle plugin 1.12.0, at this plugin one version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
