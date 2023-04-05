@@ -4,6 +4,7 @@
 # Changelogs
 
 ## [Unreleased]
+- Upgrade develop tool Gradle IntelliJ Plugin to version 1.13.2
 
 ## [2.5.0]
 - Add template (select files, jar, options to template) management function.

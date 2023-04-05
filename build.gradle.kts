@@ -9,10 +9,10 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.8.0"
+    id("org.jetbrains.kotlin.jvm") version "1.8.10"
     // Gradle IntelliJ Plugin
     // https://github.com/jetbrains/gradle-intellij-plugin/releases/latest
-    id("org.jetbrains.intellij") version "1.12.0"
+    id("org.jetbrains.intellij") version "1.13.2"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.0.0"
     // Gradle Qodana Plugin
