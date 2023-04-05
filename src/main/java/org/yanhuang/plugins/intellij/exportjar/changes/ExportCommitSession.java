@@ -26,26 +26,26 @@ public class ExportCommitSession implements CommitSession {
 
     @Nullable
     @Override
-    public JComponent getAdditionalConfigurationUI(@NotNull Collection<Change> changes, @Nullable String commitMessage) {
+    public JComponent getAdditionalConfigurationUI(@NotNull Collection<? extends Change> changes, @Nullable String commitMessage) {
         final VirtualFile[] changeFiles = getVirtualFiles(changes);
         settingDialog.setSelectedFiles(changeFiles);
         return settingDialog.getFileListSettingSplitPanel();
     }
 
     @Override
-    public boolean canExecute(Collection<Change> changes, String commitMessage) {
+    public boolean canExecute(Collection<? extends Change> changes, String commitMessage) {
         final VirtualFile[] selectedFiles = settingDialog.getSelectedFiles();
         return changes != null && changes.size() > 0 && selectedFiles != null && selectedFiles.length > 0;
     }
 
     @Override
-    public void execute(@NotNull Collection<Change> changes, @Nullable String commitMessage) {
+    public void execute(@NotNull Collection<? extends Change> changes, @Nullable String commitMessage) {
         settingDialog.onOK();
         settingDialog.dispose();
     }
 
     @NotNull
-    private VirtualFile[] getVirtualFiles(@NotNull Collection<Change> changes) {
+    private VirtualFile[] getVirtualFiles(@NotNull Collection<? extends Change> changes) {
         return changes.stream().map(Change::getVirtualFile).filter(Objects::nonNull).toArray(VirtualFile[]::new);
     }
 
