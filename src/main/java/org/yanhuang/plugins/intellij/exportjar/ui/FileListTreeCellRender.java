@@ -9,7 +9,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.intellij.ui.SimpleTextAttributes.GRAYED_BOLD_ATTRIBUTES;
+import static com.intellij.ui.SimpleTextAttributes.SYNTHETIC_ATTRIBUTES;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.toolTipRecursiveSelectDirectory;
 
 public class FileListTreeCellRender implements TreeCellRenderer {
@@ -37,7 +37,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 				Arrays.stream(components).filter(c -> c instanceof ChangesBrowserNodeRenderer).findFirst();
 		fileRenderer.ifPresent(c -> {
 			final var renderer = ((ChangesBrowserNodeRenderer) c);
-			renderer.append(" [R]", GRAYED_BOLD_ATTRIBUTES, false);
+			renderer.append(" [R]", SYNTHETIC_ATTRIBUTES, false);
 			renderer.setToolTipText(toolTipRecursiveSelectDirectory);
 		});
 	}
