@@ -10,6 +10,8 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
+import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.SeparatorFactory;
@@ -30,6 +32,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.UpgradeManager;
 
 import javax.swing.*;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -110,7 +113,7 @@ public class SettingDialog extends JDialog {
 		createFileListTree();
 		updateSettingPanelComponents();
 		updateFileListSettingSplitPanel();
-//        uiDebug();
+        uiDebug();
 		updateComponentState(template);
 		this.templateEnableCheckBox.addItemListener(templateHandler::templateEnableChanged);
 		this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
@@ -250,16 +253,16 @@ public class SettingDialog extends JDialog {
 	}
 
 	private void onDebug() {
-//        SelectFilesDialog filesDialog = createFilesDialog();
-//        filesDialog.show();
-		Messages.showInfoMessage(this.project, "name: " + this.project.getName()
-						+ ", basePath: " + this.project.getBasePath()
-						+ ", file: " + this.project.getProjectFile()
-						+ ", filePath: " + this.project.getProjectFilePath()
-						+ ", locationHash: " + this.project.getLocationHash()
-						+ ", workspaceFile: " + this.project.getWorkspaceFile()
-						+ ", url: " + this.project.getPresentableUrl(),
-				"Project Info");
+		final ChangesTree fileTree = this.fileListDialog.getFileList();
+		final TreePath[] selectionPaths = fileTree.getSelectionPaths();
+		for (TreePath selectionPath : (selectionPaths!=null?selectionPaths:new TreePath[0])) {
+			final ChangesBrowserNode<?> node  = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+			final Object nodeData = node.getUserObject();
+			if(!(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory()){
+				node.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY,Boolean.TRUE);
+			}
+		}
+		fileTree.repaint();
 	}
 
 	public void setSelectedFiles(VirtualFile[] selectedFiles) {

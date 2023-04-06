@@ -48,5 +48,6 @@ public interface Constants {
 
     String messageMigrationHistorySuccess = "Migrate history from old version successfully!";
 
+    String toolTipRecursiveSelectDirectory = "Recursively selected files in the directory and it's children";
 
 }

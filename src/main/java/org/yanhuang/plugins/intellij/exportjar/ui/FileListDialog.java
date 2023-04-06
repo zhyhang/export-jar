@@ -1,7 +1,9 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vcs.VcsShowConfirmationOption;
+import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -17,11 +19,15 @@ import java.util.function.BiConsumer;
  */
 public class FileListDialog extends SelectFilesDialog {
 
+    protected final static Key<Boolean> KEY_RECURSIVE_SELECT_DIRECTORY= Key.create("flag_recursive_select_directory");
+
     private JComponent centerPanel;
 
     public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt, @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles, boolean deletableFiles) {
         super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
         init();
+        final ChangesTree filesTree = getFileList();
+        filesTree.setCellRenderer(new FileListTreeCellRender(filesTree.getCellRenderer()));
     }
 
     @Override
@@ -38,5 +44,10 @@ public class FileListDialog extends SelectFilesDialog {
 
     public void addFileTreeChangeListener(BiConsumer<FileListDialog, PropertyChangeEvent> listener) {
         getFileList().addPropertyChangeListener(e-> listener.accept(this,e));
+    }
+
+    @Override
+    public @NotNull ChangesTree getFileList() {
+        return super.getFileList();
     }
 }
