@@ -1,11 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vcs.VcsShowConfirmationOption;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
@@ -30,8 +26,6 @@ public class FileListDialog extends SelectFilesDialog {
 
     public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt, @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles, boolean deletableFiles) {
         super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
-//        FileListTree tree = new FileListTree(project, selectableFiles, deletableFiles, files);
-//        ReflectionUtil.setField(SelectFilesDialog.class, this, VirtualFileList.class, "myFileList", tree);
         init();
         final ChangesTree filesTree = getFileList();
         filesTree.setCellRenderer(new FileListTreeCellRender(filesTree.getCellRenderer()));
@@ -61,31 +55,7 @@ public class FileListDialog extends SelectFilesDialog {
     @Override
     protected @NotNull DefaultActionGroup createToolbarActions() {
         final DefaultActionGroup group = super.createToolbarActions();
-        group.add(new AnAction("Recursive Selection","", AllIcons.Actions.ListChanges) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                Messages.showInfoMessage("It's coming","Hello");
-            }
-
-            @Override
-            public void update(@NotNull AnActionEvent e) {
-                super.update(e);
-            }
-
-        });
-        group.add(new AnAction("Cancel Recursive Selection","", AllIcons.Actions.ListFiles) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                Messages.showInfoMessage("It's coming","Hello");
-            }
-
-            public void update(@NotNull AnActionEvent e) {
-                super.update(e);
-                e.getPresentation().setEnabled(false);
-            }
-
-        });
+        group.addAll(FileListActions.treeOperationActions(this.getFileList()));
         return group;
-
     }
 }

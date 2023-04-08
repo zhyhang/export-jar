@@ -12,6 +12,8 @@ public interface Constants {
     String actionName = "Export Jar";
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
+    String actionNameRecursiveSelectByDir = "Recursive Directory Select";
+    String actionNameCancelRecursiveSelectByDir = "Cancel Recursive Directory Select (By File)";
     String infoTabName = "Packing Export Jar";
     String titleFileList = "Select Files";
     String titleTemplateSetting = "Templates";
@@ -48,6 +50,9 @@ public interface Constants {
 
     String messageMigrationHistorySuccess = "Migrate history from old version successfully!";
 
-    String toolTipRecursiveSelectDirectory = "Selected files in the directory and it's descendent";
+    String toolTipRecursiveDirectorySelect = "Selection in the directory and it's descendent";
+
+    String notifyRecursiveSelectDirectory = "Recursively select %d directories.";
+    String notifyCancelRecursiveSelectDirectory = "Unselect %d directories.";
 
 }

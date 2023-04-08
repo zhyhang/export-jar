@@ -10,8 +10,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
-import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.SeparatorFactory;
@@ -19,7 +17,6 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
@@ -33,8 +30,6 @@ import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.UpgradeManager;
 
 import javax.swing.*;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -115,7 +110,7 @@ public class SettingDialog extends JDialog {
 		createFileListTree();
 		updateSettingPanelComponents();
 		updateFileListSettingSplitPanel();
-        uiDebug();
+//        uiDebug();
 		updateComponentState(template);
 		this.templateEnableCheckBox.addItemListener(templateHandler::templateEnableChanged);
 		this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
@@ -259,28 +254,6 @@ public class SettingDialog extends JDialog {
 	}
 
 	private void onDebug() {
-		final ChangesTree fileTree = this.fileListDialog.getFileList();
-		final TreePath[] selectionPaths = fileTree.getSelectionPaths();
-		for (TreePath selectionPath : (selectionPaths!=null?selectionPaths:new TreePath[0])) {
-			final ChangesBrowserNode<?> node  = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-			traverseNodePutSelectFlag(node);
-		}
-		fileTree.repaint();
-	}
-
-	private void traverseNodePutSelectFlag(final ChangesBrowserNode<?> node) {
-		final var nodeIterable = TreeUtil.treeNodeTraverser(node).preOrderDfsTraversal();
-		for (TreeNode treeNode : nodeIterable) {
-			final ChangesBrowserNode<?> changeNode = (ChangesBrowserNode<?>) treeNode;
-			if (isFolderNode(changeNode)) {
-				changeNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY,Boolean.TRUE);
-			}
-		}
-	}
-
-	private boolean isFolderNode(final ChangesBrowserNode<?> node){
-		final Object nodeData = node.getUserObject();
-		return !(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory();
 	}
 
 	public void setSelectedFiles(VirtualFile[] selectedFiles) {

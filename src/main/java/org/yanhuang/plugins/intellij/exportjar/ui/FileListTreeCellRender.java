@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static com.intellij.ui.SimpleTextAttributes.SYNTHETIC_ATTRIBUTES;
-import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.toolTipRecursiveSelectDirectory;
+import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.toolTipRecursiveDirectorySelect;
 
 public class FileListTreeCellRender implements TreeCellRenderer {
 	private final TreeCellRenderer ideOrgRenderer;
@@ -39,7 +39,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 		fileRenderer.ifPresent(c -> {
 			final var renderer = ((ChangesBrowserNodeRenderer) c);
 			renderer.append(" [R]", SYNTHETIC_ATTRIBUTES, false);
-			renderer.setToolTipText(toolTipRecursiveSelectDirectory);
+			renderer.setToolTipText(toolTipRecursiveDirectorySelect);
 		});
 		final Optional<Component> checkboxRenderer =
 				Arrays.stream(components).filter(c -> c instanceof ThreeStateCheckBox).findFirst();
