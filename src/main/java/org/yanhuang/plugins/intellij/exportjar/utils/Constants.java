@@ -13,11 +13,11 @@ public interface Constants {
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
     String infoTabName = "Packing Export Jar";
-    String titleFileList = "Select files";
+    String titleFileList = "Select Files";
     String titleTemplateSetting = "Templates";
 
     String titleTemplateMessageDialog = "Template";
-    String titleJarFileSeparator = "Jar file";
+    String titleJarFileSeparator = "Jar File";
     String titleOptionSeparator = "Options";
     String titleHistorySaveErr = "Save History Error";
 
@@ -48,6 +48,6 @@ public interface Constants {
 
     String messageMigrationHistorySuccess = "Migrate history from old version successfully!";
 
-    String toolTipRecursiveSelectDirectory = "Recursively selected files in the directory and it's children";
+    String toolTipRecursiveSelectDirectory = "Selected files in the directory and it's descendent";
 
 }

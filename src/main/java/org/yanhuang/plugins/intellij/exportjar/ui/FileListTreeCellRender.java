@@ -2,6 +2,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNodeRenderer;
+import com.intellij.util.ui.ThreeStateCheckBox;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
@@ -39,6 +40,12 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 			final var renderer = ((ChangesBrowserNodeRenderer) c);
 			renderer.append(" [R]", SYNTHETIC_ATTRIBUTES, false);
 			renderer.setToolTipText(toolTipRecursiveSelectDirectory);
+		});
+		final Optional<Component> checkboxRenderer =
+				Arrays.stream(components).filter(c -> c instanceof ThreeStateCheckBox).findFirst();
+		checkboxRenderer.ifPresent(c->{
+//			c.setEnabled(false);
+//			c.setVisible(false);
 		});
 	}
 

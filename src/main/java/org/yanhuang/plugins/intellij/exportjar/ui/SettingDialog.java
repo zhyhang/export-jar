@@ -19,6 +19,7 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
@@ -32,6 +33,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.UpgradeManager;
 
 import javax.swing.*;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -205,6 +207,10 @@ public class SettingDialog extends JDialog {
 
 	private void uiDebug() {
 		debugButton.setVisible(true);
+		this.fileListDialog.getFileList().addSelectionListener(()->{
+			System.out.println("in ui debug");
+		});
+
 	}
 
 	private void migrateSavedHistory() {
@@ -257,12 +263,24 @@ public class SettingDialog extends JDialog {
 		final TreePath[] selectionPaths = fileTree.getSelectionPaths();
 		for (TreePath selectionPath : (selectionPaths!=null?selectionPaths:new TreePath[0])) {
 			final ChangesBrowserNode<?> node  = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-			final Object nodeData = node.getUserObject();
-			if(!(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory()){
-				node.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY,Boolean.TRUE);
-			}
+			traverseNodePutSelectFlag(node);
 		}
 		fileTree.repaint();
+	}
+
+	private void traverseNodePutSelectFlag(final ChangesBrowserNode<?> node) {
+		final var nodeIterable = TreeUtil.treeNodeTraverser(node).preOrderDfsTraversal();
+		for (TreeNode treeNode : nodeIterable) {
+			final ChangesBrowserNode<?> changeNode = (ChangesBrowserNode<?>) treeNode;
+			if (isFolderNode(changeNode)) {
+				changeNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY,Boolean.TRUE);
+			}
+		}
+	}
+
+	private boolean isFolderNode(final ChangesBrowserNode<?> node){
+		final Object nodeData = node.getUserObject();
+		return !(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory();
 	}
 
 	public void setSelectedFiles(VirtualFile[] selectedFiles) {
