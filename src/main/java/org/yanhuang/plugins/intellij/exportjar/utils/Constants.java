@@ -52,7 +52,7 @@ public interface Constants {
 
     String toolTipRecursiveDirectorySelect = "Selection in the directory and it's descendent";
 
-    String notifyRecursiveSelectDirectory = "Recursively select %d directories.";
+    String notifyRecursiveSelectDirectory = "Recursively select %d directories, %d files.";
     String notifyCancelRecursiveSelectDirectory = "Unselect %d directories.";
 
 }

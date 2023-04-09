@@ -35,33 +35,38 @@ public class FileListActions {
 
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
-			// Flag
-			// do selection recursive
-			// notification select directory
 			final TreePath[] selectionPaths = fileTree.getSelectionPaths();
-			int totalFlag=0;
-			for (TreePath selectionPath : (selectionPaths!=null?selectionPaths:new TreePath[0])) {
-				final ChangesBrowserNode<?> node  = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-				totalFlag+=traverseNodePutSelectFlag(node);
+			int totalDirFlag = 0;
+			int totalFileSelect = 0;
+			for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
+				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+				final int[] counters = traverseNodePutSelectFlag(node);
+				totalDirFlag += counters[0];
+				totalFileSelect += counters[1];
 			}
 			fileTree.repaint();
-			infoNotify(titleFileList, String.format(notifyRecursiveSelectDirectory, totalFlag));
+			infoNotify(titleFileList, String.format(notifyRecursiveSelectDirectory, totalDirFlag, totalFileSelect));
 		}
 
-		private int traverseNodePutSelectFlag(final ChangesBrowserNode<?> node) {
+		private int[] traverseNodePutSelectFlag(final ChangesBrowserNode<?> node) {
 			final var nodeIterable = TreeUtil.treeNodeTraverser(node).preOrderDfsTraversal();
-			int flagCount=0;
+			int flagDirCount = 0;
+			int fileSelectCount = 0;
 			for (TreeNode treeNode : nodeIterable) {
 				final ChangesBrowserNode<?> changeNode = (ChangesBrowserNode<?>) treeNode;
 				if (isFolderNode(changeNode)) {
-					changeNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY,Boolean.TRUE);
-					flagCount++;
+					changeNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY, Boolean.TRUE);
+					flagDirCount++;
+				} else {
+					final Object changeObj = changeNode.getUserObject();
+					fileTree.includeChange(changeObj);
+					fileSelectCount++;
 				}
 			}
-			return flagCount;
+			return new int[]{flagDirCount, fileSelectCount};
 		}
 
-		private boolean isFolderNode(final ChangesBrowserNode<?> node){
+		private boolean isFolderNode(final ChangesBrowserNode<?> node) {
 			final Object nodeData = node.getUserObject();
 			return !(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory();
 		}
@@ -78,10 +83,10 @@ public class FileListActions {
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
 			final TreePath[] selectionPaths = fileTree.getSelectionPaths();
-			int totalRemoved=0;
-			for (TreePath selectionPath : (selectionPaths!=null?selectionPaths:new TreePath[0])) {
-				final ChangesBrowserNode<?> node  = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-				totalRemoved+= traverseNodeRemoveSelectFlag(node);
+			int totalRemoved = 0;
+			for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
+				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+				totalRemoved += traverseNodeRemoveSelectFlag(node);
 			}
 			fileTree.repaint();
 			infoNotify(titleFileList, String.format(notifyCancelRecursiveSelectDirectory, totalRemoved));
@@ -89,7 +94,7 @@ public class FileListActions {
 
 		private int traverseNodeRemoveSelectFlag(final ChangesBrowserNode<?> node) {
 			final var nodeIterable = TreeUtil.treeNodeTraverser(node).preOrderDfsTraversal();
-			int removeCount=0;
+			int removeCount = 0;
 			for (TreeNode treeNode : nodeIterable) {
 				final ChangesBrowserNode<?> changeNode = (ChangesBrowserNode<?>) treeNode;
 				if (Boolean.TRUE.equals(changeNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY))) {

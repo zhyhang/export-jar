@@ -23,16 +23,16 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded,
 	                                              boolean leaf, int row, boolean hasFocus) {
-		final ChangesBrowserNode<?> valueNode = (ChangesBrowserNode<?>) value;
+		final ChangesBrowserNode<?> currentNode = (ChangesBrowserNode<?>) value;
 		final JComponent orgRenderedNodeUI = (JComponent) ideOrgRenderer.getTreeCellRendererComponent(tree, value,
 				selected, expanded, leaf, row, hasFocus);
-		if (isRecursiveNode(valueNode)) {
+		if (checkUpdateRecursiveNode(currentNode, orgRenderedNodeUI)) {
 			renderRecursiveText(orgRenderedNodeUI);
 		}
 		return orgRenderedNodeUI;
 	}
 
-	private static void renderRecursiveText(JComponent orgRenderedNodeUI) {
+	private void renderRecursiveText(JComponent orgRenderedNodeUI) {
 		final Component[] components = orgRenderedNodeUI.getComponents();
 		final Optional<Component> fileRenderer =
 				Arrays.stream(components).filter(c -> c instanceof ChangesBrowserNodeRenderer).findFirst();
@@ -41,18 +41,21 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 			renderer.append(" [R]", SYNTHETIC_ATTRIBUTES, false);
 			renderer.setToolTipText(toolTipRecursiveDirectorySelect);
 		});
-		final Optional<Component> checkboxRenderer =
-				Arrays.stream(components).filter(c -> c instanceof ThreeStateCheckBox).findFirst();
-		checkboxRenderer.ifPresent(c->{
-//			c.setEnabled(false);
-//			c.setVisible(false);
-		});
 	}
 
-	private boolean isRecursiveNode(final ChangesBrowserNode<?> currentNode) {
+	private boolean checkUpdateRecursiveNode(final ChangesBrowserNode<?> currentNode, JComponent orgRenderedNodeUI) {
+		final Component[] components = orgRenderedNodeUI.getComponents();
+		final Optional<Component> checkboxRenderer =
+				Arrays.stream(components).filter(c -> c instanceof ThreeStateCheckBox).findFirst();
+		checkboxRenderer.ifPresent(c -> {
+			final var checkBox = (ThreeStateCheckBox) c;
+			if (checkBox.getState() == ThreeStateCheckBox.State.NOT_SELECTED) {
+				// clear Recursive flag
+				currentNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY, null);
+			}
+		});
 		final Boolean recursiveDir = currentNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY);
 		return Boolean.TRUE.equals(recursiveDir);
 	}
-
 
 }
