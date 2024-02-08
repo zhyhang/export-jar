@@ -28,6 +28,24 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ## plugin developing guide
 - [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
 - [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
+  - notices
+    - upgrade dev tools copy following files from official template code:
+    ```shell
+       /gradle/*
+       /gradle/wrapper/*
+      ./build.gradle.kts
+    ```
+    - change build.gradle.kts to make building success, generally remove jvmToolchain line: vendor = JvmVendorSpec.JETBRAINS
+    ```kotlin
+      // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
+      kotlin {
+      @Suppress("UnstableApiUsage")
+          jvmToolchain {
+              languageVersion = JavaLanguageVersion.of(17)
+          }
+      }
+    ```
+    - change gradle.properties to make compatible
 
 ## screenshot
 ![From Build Menu](image/export-jar-menus.gif)
@@ -81,6 +99,11 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 .\gradlew.bat clean buildPlugin
 
 # linux/macos
-.\gradlew clean buildPlugin
+./gradlew clean buildPlugin
+```
+!!When buildPlugin throw **build/tmp/initializeIntelliJPlugin/coroutines-javaagent.jar not found** error change gradle.properties
+```kotlin
+org.gradle.configuration-cache = false
 ```
 - **!!Gradle plugin 1.12.0, at this plugin one version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
+- **!!If download gradle.bin timeout, please change IDEA system networks proxy**
