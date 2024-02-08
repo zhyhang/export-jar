@@ -105,5 +105,6 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ```kotlin
 org.gradle.configuration-cache = false
 ```
+**[See the issue in Github](https://github.com/JetBrains/gradle-intellij-plugin/issues/1491)**
 - **!!Gradle plugin 1.12.0, at this plugin one version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
 - **!!If download gradle.bin timeout, please change IDEA system networks proxy**
