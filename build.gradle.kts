@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
@@ -69,6 +70,17 @@ koverReport {
 }
 
 tasks {
+    // Set the JVM compatibility versions, javaVersion setting in gradle.properties
+    properties("javaVersion").let {
+        withType<JavaCompile> {
+            sourceCompatibility = it.get()
+            targetCompatibility = it.get()
+        }
+        withType<KotlinCompile> {
+            kotlinOptions.jvmTarget = it.get()
+        }
+    }
+
     wrapper {
         gradleVersion = properties("gradleVersion").get()
     }

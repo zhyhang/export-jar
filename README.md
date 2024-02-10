@@ -37,11 +37,21 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
     ```
     - change build.gradle.kts to make building success, generally remove jvmToolchain line: vendor = JvmVendorSpec.JETBRAINS
     ```kotlin
-      // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
+      // Set the JVM language level used to tools to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
       kotlin {
       @Suppress("UnstableApiUsage")
           jvmToolchain {
               languageVersion = JavaLanguageVersion.of(17)
+          }
+      }
+      // Set the JVM compatibility versions to generate plugin classes, javaVersion setting in gradle.properties
+      properties("javaVersion").let {
+          withType<JavaCompile> {
+              sourceCompatibility = it.get()
+              targetCompatibility = it.get()
+          }
+          withType<KotlinCompile> {
+              kotlinOptions.jvmTarget = it.get()
           }
       }
     ```

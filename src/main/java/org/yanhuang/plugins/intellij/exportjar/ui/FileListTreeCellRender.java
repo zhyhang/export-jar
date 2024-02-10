@@ -3,6 +3,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNodeRenderer;
 import com.intellij.util.ui.ThreeStateCheckBox;
+import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
@@ -38,7 +39,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 				Arrays.stream(components).filter(c -> c instanceof ChangesBrowserNodeRenderer).findFirst();
 		fileRenderer.ifPresent(c -> {
 			final var renderer = ((ChangesBrowserNodeRenderer) c);
-			renderer.append(" [R]", SYNTHETIC_ATTRIBUTES, false);
+			renderer.append(" " + Constants.flagFileSelectRecursive, SYNTHETIC_ATTRIBUTES, false);
 			renderer.setToolTipText(toolTipRecursiveDirectorySelect);
 		});
 	}
