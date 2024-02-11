@@ -6,18 +6,21 @@ import java.awt.*;
 import java.nio.file.Path;
 
 public interface Constants {
+    String flagFileSelectRecursive = "[R]";
     int maxTemplateHistoryPerProject=512;
     int maxJarHistoryPerTemplate=256;
     int maxTemplateExportActionSize = 12*2;
     String actionName = "Export Jar";
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
+    String actionNameRecursiveSelectByDir = "Recursive Select (files in directory recursively export)";
+    String actionNameCancelRecursiveSelectByDir = "Cancel Recursive Select (only select files export)";
     String infoTabName = "Packing Export Jar";
-    String titleFileList = "Select files";
+    String titleFileList = "Select Files";
     String titleTemplateSetting = "Templates";
 
     String titleTemplateMessageDialog = "Template";
-    String titleJarFileSeparator = "Jar file";
+    String titleJarFileSeparator = "Jar File";
     String titleOptionSeparator = "Options";
     String titleHistorySaveErr = "Save History Error";
 
@@ -48,5 +51,9 @@ public interface Constants {
 
     String messageMigrationHistorySuccess = "Migrate history from old version successfully!";
 
+    String toolTipRecursiveDirectorySelect = flagFileSelectRecursive+": Files in the directory and in it's descendents will export.";
+
+    String notifyRecursiveSelectDirectory = "Recursively select %d directories, %d files.";
+    String notifyCancelRecursiveSelectDirectory = "Unselect %d directories.";
 
 }

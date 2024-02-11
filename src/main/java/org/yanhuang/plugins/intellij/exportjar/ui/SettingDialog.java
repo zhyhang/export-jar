@@ -9,13 +9,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.util.Consumer;
-import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,8 +33,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,8 +47,10 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 /**
  * export jar settings dialog (link to SettingDialog.form)
  * <li><b>In UIDesigner: export options JCheckBox's name is same as HistoryData.ExportOptions</b></li>
+ * <li><b>If modal dialog, should extends DialogWrapper, or else throw exception when setVisible(true)</b></li>
+ *
  */
-public class SettingDialog extends JDialog {
+public class SettingDialog extends DialogWrapper {
 	protected final Project project;
 	@Nullable
 	private VirtualFile[] selectedFiles;
@@ -85,22 +85,23 @@ public class SettingDialog extends JDialog {
 	private final TemplateEventHandler templateHandler = new TemplateEventHandler(this);
 
 	public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles, @Nullable String template) {
+		super(true);
 		MessagesUtils.getMessageView(project);//register message tool window to avoid pack error
 		this.project = project;
 		this.selectedFiles = selectedFiles;
-		setContentPane(contentPane);
+		this.getPeer().setContentPane(contentPane);
 		getRootPane().setDefaultButton(buttonOK);
 		this.buttonOK.addActionListener(e -> onOK());
 		this.buttonCancel.addActionListener(e -> onCancel());
 		this.debugButton.addActionListener(e -> onDebug());
 
-		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		this.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onCancel();
-			}
-		});
+//		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+//		this.addWindowListener(new WindowAdapter() {
+//			@Override
+//			public void windowClosing(WindowEvent e) {
+//				onCancel();
+//			}
+//		});
 		this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
@@ -120,7 +121,6 @@ public class SettingDialog extends JDialog {
 	}
 
 	private void updateComponentState(String template) {
-		this.setModal(true);
 		this.setResizable(true);
 		final SettingHistory history = historyDao.readOrDefault();
 		final Dimension splitPanelSize =
@@ -131,7 +131,7 @@ public class SettingDialog extends JDialog {
 		this.fileListSettingSplitPanel.setProportion(splitPanelRatio);
 		final Dimension dialogSize =
 				Optional.ofNullable(history.getUi()).map(UISizes::getExportDialog).orElse(Constants.settingDialogSize);
-		this.setSize(dialogSize);
+		this.setSize(dialogSize.width,dialogSize.height);
 		this.templateHandler.initUI(history, template);
 	}
 
@@ -202,6 +202,10 @@ public class SettingDialog extends JDialog {
 
 	private void uiDebug() {
 		debugButton.setVisible(true);
+		this.fileListDialog.getFileList().addSelectionListener(()->{
+			System.out.println("in ui debug");
+		});
+
 	}
 
 	private void migrateSavedHistory() {
@@ -250,16 +254,6 @@ public class SettingDialog extends JDialog {
 	}
 
 	private void onDebug() {
-//        SelectFilesDialog filesDialog = createFilesDialog();
-//        filesDialog.show();
-		Messages.showInfoMessage(this.project, "name: " + this.project.getName()
-						+ ", basePath: " + this.project.getBasePath()
-						+ ", file: " + this.project.getProjectFile()
-						+ ", filePath: " + this.project.getProjectFilePath()
-						+ ", locationHash: " + this.project.getLocationHash()
-						+ ", workspaceFile: " + this.project.getWorkspaceFile()
-						+ ", url: " + this.project.getPresentableUrl(),
-				"Project Info");
 	}
 
 	public void setSelectedFiles(VirtualFile[] selectedFiles) {
@@ -329,6 +323,11 @@ public class SettingDialog extends JDialog {
 	}
 
 	@Override
+	protected @Nullable JComponent createCenterPanel() {
+		return null;//will use this contentPane replace super contentPane, return null here
+	}
+
+	@Override
 	public void dispose() {
 		disposeFileListDialog();
 		super.dispose();
@@ -351,7 +350,7 @@ public class SettingDialog extends JDialog {
 		if (this.fileListDialog == null || this.fileListDialog.isDisposed()) {
 			return;
 		}
-		UIUtil.invokeAndWaitIfNeeded((Runnable) () -> this.fileListDialog.disposeIfNeeded());
+		ApplicationManager.getApplication().invokeLater(() -> this.fileListDialog.disposeIfNeeded());
 	}
 
 	private static class FileChooserConsumerImplForComboBox implements Consumer<VirtualFile> {
@@ -364,7 +363,7 @@ public class SettingDialog extends JDialog {
 		@Override
 		public void consume(VirtualFile virtualFile) {
 			String filePath = virtualFile.getPath();
-			if (filePath.trim().length() == 0) {
+			if (filePath.trim().isEmpty()) {
 				return;
 			}
 			((DefaultComboBoxModel<String>) comboBox.getModel()).insertElementAt(filePath, 0);

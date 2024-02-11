@@ -3,7 +3,11 @@
 
 # Changelogs
 
-## [Unreleased]
+## [2.5.1]
+- Make compatible with coming new IDEA 2024 version
+- Upgrade develop tool Gradle IntelliJ Plugin to version 1.17.1
+- Upgrade develop tool Gradle to version 8.6
+
 
 ## [2.5.0]
 - Add template (select files, jar, options to template) management function.

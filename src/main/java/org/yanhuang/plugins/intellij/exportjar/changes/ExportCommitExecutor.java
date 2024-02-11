@@ -1,6 +1,5 @@
 package org.yanhuang.plugins.intellij.exportjar.changes;
 
-import com.intellij.openapi.extensions.ExtensionPoint;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.changes.CommitContext;
 import com.intellij.openapi.vcs.changes.CommitSession;
@@ -19,11 +18,6 @@ public class ExportCommitExecutor extends LocalCommitExecutor {
 
     public ExportCommitExecutor(Project project) {
         this.project = project;
-    }
-
-    public static ExportCommitExecutor getInstance(Project project) {
-        final ExtensionPoint<LocalCommitExecutor> extPoint = project.getExtensionArea().getExtensionPoint(LOCAL_COMMIT_EXECUTOR.getName());
-        return (ExportCommitExecutor) extPoint.extensions().filter(e -> e.getClass().equals(ExportCommitExecutor.class)).findFirst().get();
     }
 
     @Nullable
