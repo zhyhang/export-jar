@@ -55,8 +55,7 @@ public class FileListDialog extends SelectFilesDialog {
     @Override
     protected @NotNull DefaultActionGroup createToolbarActions() {
         final DefaultActionGroup group = super.createToolbarActions();
-        //TODO temporary hide recursive selection actions(toolbox button)
-//        group.addAll(FileListActions.treeOperationActions(this.getFileList()));
+        group.addAll(FileListActions.treeOperationActions(this.getFileList()));
         return group;
     }
 }
