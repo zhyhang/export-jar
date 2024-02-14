@@ -31,6 +31,7 @@ public interface Constants {
     Path historyFilePath = cachePath.resolve("select_history.json");
     Path historyFilePath2023 = cachePath.resolve("history_v2023.json");
     String historySelectsFilePathPrefix2023 = "history_v2023_";
+    String historySelectsFilePathPrefix2024 = "history_v2024_";
     String historySelectsFilePathSuffix2023 = "_selects.json";
     Dimension settingDialogSize = new Dimension(800, 420);
     Dimension fileListSettingSplitPanelSize = new Dimension(780, 410);

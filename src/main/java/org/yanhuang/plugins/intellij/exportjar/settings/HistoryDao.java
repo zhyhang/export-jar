@@ -2,10 +2,7 @@ package org.yanhuang.plugins.intellij.exportjar.settings;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
-import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
-import org.yanhuang.plugins.intellij.exportjar.model.SettingTemplate;
-import org.yanhuang.plugins.intellij.exportjar.model.UISizes;
+import org.yanhuang.plugins.intellij.exportjar.model.*;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
@@ -168,7 +165,7 @@ public class HistoryDao {
 	 * @return store file path
 	 */
 	public Path saveSelectFiles(String projectName, final String templateName, final VirtualFile[] selectVFiles) {
-		final var selectStore = getSelectFilesStorePath(projectName, templateName);
+		final var selectStore = getSelectFilesStorePath2023(projectName, templateName);
 		final var selectFiles = Arrays.stream(selectVFiles).map(VirtualFile::getPath).collect(Collectors.toList());
 		try {
 			Files.writeString(selectStore, CommonUtils.toJson(selectFiles));
@@ -187,12 +184,28 @@ public class HistoryDao {
 	 * @return os file string mapping VirtualFile, if not exists the os file, the entry value is null. return map
 	 * Always not null.
 	 */
-	public Map<String, VirtualFile> readStoredSelectFiles(String projectName, String templateName) {
-		final Path selectStore = getSelectFilesStorePath(projectName, templateName);
+	public Map<Path, VirtualFile> readStoredSelectFiles(String projectName, String templateName) {
+		final Path selectStore = getSelectFilesStorePath2024(projectName, templateName);
+		if (selectStore.toFile().exists()) {
+			try {
+				final SettingSelectFile[] storeFiles = CommonUtils.fromJson(Files.readString(selectStore), SettingSelectFile[].class);
+				return readSelectVirtualFiles2024(storeFiles);
+			} catch (IOException e) {
+				final String msg = String.format(messageTemplateReadSelectsError, selectStore, e.getMessage());
+				errorNotify(titleTemplateMessageDialog, msg);
+				return Map.of();
+			}
+		} else {
+			return readStoredSelectFiles2023(projectName, templateName);
+		}
+	}
+
+	private Map<Path, VirtualFile> readStoredSelectFiles2023(String projectName, String templateName) {
+		final Path selectStore = getSelectFilesStorePath2023(projectName, templateName);
 		if (selectStore.toFile().exists()) {
 			try {
 				final String[] storeFiles = CommonUtils.fromJson(Files.readString(selectStore), String[].class);
-				return readSelectVirtualFiles(storeFiles);
+				return readSelectVirtualFiles2023(storeFiles);
 			} catch (IOException e) {
 				final String msg = String.format(messageTemplateReadSelectsError, selectStore, e.getMessage());
 				errorNotify(titleTemplateMessageDialog, msg);
@@ -203,12 +216,12 @@ public class HistoryDao {
 		}
 	}
 
-	private Map<String, VirtualFile> readSelectVirtualFiles(final String[] storeFiles) {
+	private Map<Path, VirtualFile> readSelectVirtualFiles2023(final String[] storeFiles) {
 		if (storeFiles != null && storeFiles.length > 0) {
-			final Map<String, VirtualFile> virtualFileMap = new HashMap<>();
+			final Map<Path, VirtualFile> virtualFileMap = new HashMap<>();
 			for (String storeFile : storeFiles) {
 				final VirtualFile vf = Path.of(storeFile).toFile().exists() ? CommonUtils.fromOsFile(storeFile) : null;
-				virtualFileMap.put(storeFile, vf);
+				virtualFileMap.put(Path.of(storeFile), vf);
 			}
 			return virtualFileMap;
 		} else {
@@ -216,8 +229,49 @@ public class HistoryDao {
 		}
 	}
 
-	private Path getSelectFilesStorePath(String projectName, String templateName) {
+	private Map<Path, VirtualFile> readSelectVirtualFiles2024(final SettingSelectFile[] storeFiles) {
+		if (storeFiles != null && storeFiles.length > 0) {
+			final Map<String, VirtualFile> virtualFileMap = new HashMap<>();
+			for (SettingSelectFile storeFile : storeFiles) {
+				readSelectVirtualFiles2024(storeFile);
+			}
+			return SettingSelectFile.combineFinalVirtualFiles(storeFiles);
+		} else {
+			return Map.of();
+		}
+	}
+
+	private void readSelectVirtualFiles2024(final SettingSelectFile storeFile) {
+		final Path filePath = storeFile.getFilePath();
+		final Map<Path, VirtualFile> virtualFileMap = new HashMap<>();
+		storeFile.setMappingVfs(virtualFileMap);
+		final VirtualFile vf = osFileToVirtualOrNull(filePath);
+		if (vf!=null && storeFile.isDirectory()) {
+			final Collection<VirtualFile> virtualFiles = CommonUtils.collectFilesNest(vf);
+			for (VirtualFile virtualFile : virtualFiles) {
+				virtualFileMap.put(CommonUtils.toOsFile(virtualFile), virtualFile);
+			}
+		}else{
+			virtualFileMap.put(filePath, vf);
+		}
+	}
+
+
+
+	private VirtualFile osFileToVirtualOrNull(Path osFile){
+		if(osFile!=null) {
+			return osFile.toFile().exists() ? CommonUtils.fromOsFile(osFile.toString()) : null;
+		}else{
+			return null;
+		}
+	}
+	private Path getSelectFilesStorePath2023(String projectName, String templateName) {
 		return cachePath.resolve(historySelectsFilePathPrefix2023
+				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
+	}
+
+	private Path getSelectFilesStorePath2024(String projectName, String templateName) {
+		return cachePath.resolve(historySelectsFilePathPrefix2024
 				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
 	}
 

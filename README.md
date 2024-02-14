@@ -55,6 +55,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
           }
       }
     ```
+    - **keep dependencies and tasks test section code in build.gradle.ks not remove**
     - change gradle.properties to make compatible
 
 ## screenshot

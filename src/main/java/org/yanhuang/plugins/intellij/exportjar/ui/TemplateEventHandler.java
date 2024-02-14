@@ -313,7 +313,7 @@ public class TemplateEventHandler {
 		final var projectName = settingDialog.project.getName();
 		final var fileMap = historyDao.readStoredSelectFiles(projectName, templateName);
 		final var fs = new ArrayList<VirtualFile>();
-		for (Map.Entry<String, VirtualFile> fileEntry : fileMap.entrySet()) {
+		for (Map.Entry<Path, VirtualFile> fileEntry : fileMap.entrySet()) {
 			if (fileEntry.getValue() != null) {
 				fs.add(fileEntry.getValue());
 			} else {

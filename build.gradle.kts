@@ -24,7 +24,11 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-//    implementation(libs.annotations)
+    //    implementation(libs.annotations)
+    // test
+    val junit5Version = properties("junitVersion").get()
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junit5Version")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit5Version")
 }
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
@@ -140,4 +144,12 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels = properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) }
     }
+
+    test {
+    // refer official testing guide: https://plugins.jetbrains.com/docs/intellij/light-and-heavy-tests.html
+    // !! use BasePlatformTestCase as test base class, should not open following code line:
+    //     useJUnitPlatform()
+
+    }
 }
+
