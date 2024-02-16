@@ -55,7 +55,7 @@ public class SettingSelectFile {
 	}
 
 	public enum SelectType {
-		include, exclude
+		include, exclude,noop
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class SettingSelectFile {
 				continue;
 			}
 			final var selectFileMapping = selectFile.mappingVfs;
-			if (selectFile.getSelectType() == SelectType.include
+			if (selectFile.getSelectType() != SelectType.exclude
 					|| selectFileMapping == null || selectFileMapping.isEmpty()) {
 				continue;
 			}
@@ -116,7 +116,7 @@ public class SettingSelectFile {
 
 	private static boolean isInclude(SettingSelectFile selectFile, VirtualFile selectVirtualFile,
 	                                 Map<VirtualFile, List<SettingSelectFile>> excludeSettingMap) {
-		if (selectFile == null || selectFile.getSelectType() != SelectType.include || selectFile.filePath == null) {
+		if (selectFile == null || selectFile.getSelectType() == SelectType.exclude || selectFile.filePath == null) {
 			return false;
 		}
 		final List<SettingSelectFile> settingSelectFiles = excludeSettingMap.get(selectVirtualFile);

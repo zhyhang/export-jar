@@ -2,7 +2,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNodeRenderer;
-import org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.IncludeExcludeType;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
 import javax.swing.*;
@@ -38,12 +38,12 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 
 	private final static Map<String, String> tooltipMap = Map.of(
 			// key=dir+include/exclude+recursive
-			true + IncludeExcludeType.include.name() + true, toolTipRecursiveDirectoryIncludeSelect,
-			true + IncludeExcludeType.include.name() + false, toolTipDirectoryIncludeSelect,
-			true + IncludeExcludeType.exclude.name() + true, toolTipRecursiveDirectoryExcludeSelect,
-			true + IncludeExcludeType.exclude.name() + false, toolTipDirectoryExcludeSelect,
-			false + IncludeExcludeType.include.name() + false, toolTipFileIncludeSelect,
-			false + IncludeExcludeType.exclude.name() + false, toolTipFileExcludeSelect
+			true + SelectType.include.name() + true, toolTipRecursiveDirectoryIncludeSelect,
+			true + SelectType.include.name() + false, toolTipDirectoryIncludeSelect,
+			true + SelectType.exclude.name() + true, toolTipRecursiveDirectoryExcludeSelect,
+			true + SelectType.exclude.name() + false, toolTipDirectoryExcludeSelect,
+			false + SelectType.include.name() + false, toolTipFileIncludeSelect,
+			false + SelectType.exclude.name() + false, toolTipFileExcludeSelect
 	);
 
 	public FileListTreeCellRender(TreeCellRenderer ideOrgRenderer) {
@@ -62,7 +62,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 
 	private void renderSelectFlagText(ChangesBrowserNode<?> currentNode, JComponent orgRenderedNodeUI) {
 		final Boolean recursive = currentNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY);
-		final IncludeExcludeType selectType = currentNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
+		final SelectType selectType = currentNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
 		final Component[] components = orgRenderedNodeUI.getComponents();
 		final Optional<Component> fileRenderer =
 				Arrays.stream(components).filter(c -> c instanceof ChangesBrowserNodeRenderer).findFirst();
@@ -71,10 +71,10 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 			if (Boolean.TRUE.equals(recursive)) {
 				renderer.append(" " + Constants.flagRecursiveSelectUnSelect, SYNTHETIC_ATTRIBUTES, false);
 			}
-			if (IncludeExcludeType.include == selectType) {
+			if (SelectType.include == selectType) {
 				renderer.append(" " + Constants.flagIncludeSelect, ERROR_ATTRIBUTES, false);
 				setRenderTooltip(currentNode, renderer, Boolean.TRUE.equals(recursive), selectType);
-			} else if (IncludeExcludeType.exclude == selectType) {
+			} else if (SelectType.exclude == selectType) {
 				renderer.append(" " + Constants.flagExcludeSelect, ERROR_ATTRIBUTES, false);
 				setRenderTooltip(currentNode, renderer, Boolean.TRUE.equals(recursive), selectType);
 			}
@@ -83,7 +83,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 
 	private void setRenderTooltip(ChangesBrowserNode<?> currentNode, ChangesBrowserNodeRenderer renderer,
 	                              boolean isRecursive,
-	                              IncludeExcludeType selectType) {
+	                              SelectType selectType) {
 		final String tooltipKey = FileListActions.isFolderNode(currentNode) + selectType.name() + isRecursive;
 		final String tooltip = tooltipMap.get(tooltipKey);
 		renderer.setToolTipText(tooltip);

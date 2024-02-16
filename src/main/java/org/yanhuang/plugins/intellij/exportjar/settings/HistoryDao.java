@@ -231,7 +231,6 @@ public class HistoryDao {
 
 	private Map<Path, VirtualFile> readSelectVirtualFiles2024(final SettingSelectFile[] storeFiles) {
 		if (storeFiles != null && storeFiles.length > 0) {
-			final Map<String, VirtualFile> virtualFileMap = new HashMap<>();
 			for (SettingSelectFile storeFile : storeFiles) {
 				readSelectVirtualFiles2024(storeFile);
 			}

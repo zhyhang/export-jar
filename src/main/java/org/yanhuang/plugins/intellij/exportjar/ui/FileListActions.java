@@ -10,15 +10,13 @@ import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
-import org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.IncludeExcludeType;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import static com.intellij.util.ui.tree.TreeUtil.treeNodeTraverser;
 import static java.util.stream.StreamSupport.stream;
-import static org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.IncludeExcludeType.exclude;
-import static org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.IncludeExcludeType.include;
 import static org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY;
 import static org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
@@ -40,7 +38,7 @@ public class FileListActions {
 	}
 
 	private static void doIncludeExcludeAction(boolean isRecursive,
-	                                           ChangesTree fileTree, IncludeExcludeType selectType,
+	                                           ChangesTree fileTree, SelectType selectType,
 	                                           FileListDialog dialog) {
 		final TreePath[] selectionPaths = fileTree.getSelectionPaths();
 		try {
@@ -56,7 +54,7 @@ public class FileListActions {
 	}
 
 	private static void putIncludeExcludeSelectFlag(boolean isRecursive, final ChangesBrowserNode<?> node,
-	                                                ChangesTree fileTree, IncludeExcludeType selectType) {
+	                                                ChangesTree fileTree, SelectType selectType) {
 		if (isFolderNode(node)) {
 			node.putUserData(KEY_RECURSIVE_SELECT_DIRECTORY, isRecursive ? Boolean.TRUE : null);
 		}
@@ -65,7 +63,7 @@ public class FileListActions {
 	}
 
 	public static void includeExcludeSubObjects(boolean isRecursive, final ChangesBrowserNode<?> node,
-	                                            ChangesTree fileTree, IncludeExcludeType selectType) {
+	                                            ChangesTree fileTree, SelectType selectType) {
 		if (isRecursive) {
 			for (TreeNode subNode : treeNodeTraverser(node).preOrderDfsTraversal()) {
 				includeExcludeObject(fileTree, selectType, subNode, true);
@@ -78,7 +76,7 @@ public class FileListActions {
 		includeExcludeObject(fileTree, selectType, node, false);// force update current node
 	}
 
-	private static void includeExcludeObject(ChangesTree fileTree, IncludeExcludeType selectType, TreeNode subNode,
+	private static void includeExcludeObject(ChangesTree fileTree, SelectType selectType, TreeNode subNode,
 	                                         boolean keepPreviousSelection) {
 		final var changeNode = (ChangesBrowserNode<?>) subNode;
 		if (isFolderNode(changeNode)) {
@@ -89,9 +87,9 @@ public class FileListActions {
 			return;
 		}
 		final Object changeObj = changeNode.getUserObject();
-		if (selectType == include) {
+		if (selectType == SelectType.include) {
 			fileTree.includeChange(changeObj);
-		} else if (selectType == exclude) {
+		} else if (selectType == SelectType.exclude) {
 			fileTree.excludeChange(changeObj);
 		}
 	}
@@ -113,7 +111,7 @@ public class FileListActions {
 
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
-			doIncludeExcludeAction(dialog.isRecursiveActionSelected(), fileTree, include, dialog);
+			doIncludeExcludeAction(dialog.isRecursiveActionSelected(), fileTree, SelectType.include, dialog);
 		}
 
 	}
@@ -130,7 +128,7 @@ public class FileListActions {
 
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
-			doIncludeExcludeAction(dialog.isRecursiveActionSelected(), fileTree, exclude, dialog);
+			doIncludeExcludeAction(dialog.isRecursiveActionSelected(), fileTree, SelectType.exclude, dialog);
 		}
 
 	}

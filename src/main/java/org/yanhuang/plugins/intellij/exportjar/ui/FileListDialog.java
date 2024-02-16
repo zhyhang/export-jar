@@ -9,6 +9,7 @@ import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
@@ -21,10 +22,7 @@ import java.util.function.BiConsumer;
 public class FileListDialog extends SelectFilesDialog {
 
     protected final static Key<Boolean> KEY_RECURSIVE_SELECT_DIRECTORY= Key.create("flag_recursive_select_directory");
-    protected final static Key<IncludeExcludeType> KEY_TYPE_SELECT_FILE_DIRECTORY= Key.create("type_select_file_directory");
-    public enum IncludeExcludeType {
-        include, exclude,noop
-    }
+    protected final static Key<SelectType> KEY_TYPE_SELECT_FILE_DIRECTORY= Key.create("type_select_file_directory");
 
     private JComponent centerPanel;
 
