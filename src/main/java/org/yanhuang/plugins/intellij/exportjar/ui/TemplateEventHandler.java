@@ -303,6 +303,14 @@ public class TemplateEventHandler {
 		}
 	}
 
+	/**
+	 * store select files to history for template.
+	 * consider the include/exclude selection.
+	 * if file under certain include or exclude directory, the file will not save to history or else directory will be saved.
+	 * should travel the whole files tree to find include or exclude selections.
+	 * @param templateName template name
+	 * @return template history store file, full path
+	 */
 	private Path storeSelectFiles(final String templateName) {
 		return this.historyDao.saveSelectFiles(settingDialog.project.getName(), templateName,
 				settingDialog.getSelectedFiles());

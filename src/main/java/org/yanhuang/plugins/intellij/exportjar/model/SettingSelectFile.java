@@ -18,7 +18,7 @@ import java.util.*;
 public class SettingSelectFile {
 	private Path filePath;
 	private boolean recursive;
-	private SelectType selectType;
+	private SelectType selectType=SelectType.include;
 
 	private transient Map<Path, VirtualFile> mappingVfs;
 
