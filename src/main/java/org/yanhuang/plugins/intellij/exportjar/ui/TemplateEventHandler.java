@@ -3,10 +3,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
-import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
-import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
-import org.yanhuang.plugins.intellij.exportjar.model.SettingTemplate;
+import org.yanhuang.plugins.intellij.exportjar.model.*;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 
 import javax.swing.*;
@@ -21,7 +18,6 @@ import java.util.stream.Collectors;
 import static com.intellij.openapi.ui.Messages.*;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorNotify;
-import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.warn;
 
 /**
  * handle template related events
@@ -159,7 +155,7 @@ public class TemplateEventHandler {
 
 	private void updateUITemplateList(SettingHistory history) {
 		final var templateList = historyDao.getProjectTemplates(history, settingDialog.project.getName());
-		if (templateList.size() > 0) {
+		if (!templateList.isEmpty()) {
 			updateUITemplateList(templateList);
 		} else {
 			final ComboBoxModel<String> model = new DefaultComboBoxModel<>(templateDefaultName);
@@ -183,7 +179,7 @@ public class TemplateEventHandler {
 				.map(ExportOptions::name)
 				.map(String::toLowerCase)
 				.collect(Collectors.toSet());
-		if (optionSet.size() == 0) {
+		if (optionSet.isEmpty()) {
 			return;
 		}
 		//set select state according to last saved
@@ -215,8 +211,8 @@ public class TemplateEventHandler {
 	}
 
 	private void updateUISelectFiles(SettingTemplate template) {
-		final VirtualFile[] virtualFiles = readStoredSelectFiles(template);
-		this.settingDialog.setSelectedFiles(virtualFiles);
+		final var selectFiles = readStoredSelectFiles(template);
+		this.settingDialog.setIncludeExcludeSelections(selectFiles);
 	}
 
 	private void updateUIDataDisableTemplate(SettingHistory history) {
@@ -313,23 +309,23 @@ public class TemplateEventHandler {
 	 */
 	private Path storeSelectFiles(final String templateName) {
 		return this.historyDao.saveSelectFiles(settingDialog.project.getName(), templateName,
-				settingDialog.getSelectedFiles());
+				settingDialog.getIncludeExcludeSelections());
 	}
 
-	private VirtualFile[] readStoredSelectFiles(final SettingTemplate template) {
+	private SettingSelectFile[] readStoredSelectFiles(final SettingTemplate template) {
 		final var templateName = template.getName();
 		final var projectName = settingDialog.project.getName();
-		final var fileMap = historyDao.readStoredSelectFiles(projectName, templateName);
-		final var fs = new ArrayList<VirtualFile>();
-		for (Map.Entry<Path, VirtualFile> fileEntry : fileMap.entrySet()) {
-			if (fileEntry.getValue() != null) {
-				fs.add(fileEntry.getValue());
-			} else {
-				warn(settingDialog.project, fileEntry.getKey() +
-						String.format(messageTemplateFileNotFound, templateName));
-			}
-		}
-		return fs.toArray(new VirtualFile[0]);
+		return historyDao.readStoredSelectFiles(projectName, templateName);
+//		final var fs = new ArrayList<VirtualFile>();
+//		for (Map.Entry<Path, VirtualFile> fileEntry : fileMap.entrySet()) {
+//			if (fileEntry.getValue() != null) {
+//				fs.add(fileEntry.getValue());
+//			} else {
+//				warn(settingDialog.project, fileEntry.getKey() +
+//						String.format(messageTemplateFileNotFound, templateName));
+//			}
+//		}
+//		return fs.toArray(new VirtualFile[0]);
 	}
 
 	private void transientTemplateChanged(ItemEvent e) {

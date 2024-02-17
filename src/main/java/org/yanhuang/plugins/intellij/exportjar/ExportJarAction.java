@@ -12,17 +12,6 @@ import org.yanhuang.plugins.intellij.exportjar.ui.UIFactory;
  */
 public class ExportJarAction extends AnAction {
 
-//    @Override
-//    public void update(@NotNull AnActionEvent event) {
-//        final Project project = event.getProject();
-//        boolean enable;
-//        event.getPresentation().setEnabledAndVisible((enable = (project != null)));
-//        if (enable) {
-//            VirtualFile[] virtualFiles = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(event.getDataContext());
-//            event.getPresentation().setEnabledAndVisible((enable = (virtualFiles != null && virtualFiles.length > 0)));
-//        }
-//    }
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         final SettingDialog setting = UIFactory.createSettingDialog(event.getDataContext());

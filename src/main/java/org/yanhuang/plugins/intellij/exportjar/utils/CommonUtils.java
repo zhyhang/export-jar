@@ -31,10 +31,12 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 public class CommonUtils {
 
@@ -100,6 +102,26 @@ public class CommonUtils {
             }
         });
         return files;
+    }
+
+    /**
+     * Collects the child files from a given parent VirtualFile.
+     *
+     * @param parentVf The parent VirtualFile from which to collect child files.
+     * @return A collection of VirtualFile objects representing the child files of the parent VirtualFile.
+     *         If the parentVf is null, an empty list is returned.
+     *         If the parentVf is not a directory, a list containing only the parentVf is returned.
+     *         Otherwise, a list of child files (non-directory files) is returned.
+     */
+    public static Collection<VirtualFile> collectChildFiles(VirtualFile parentVf) {
+        if (parentVf == null) {
+            return List.of();
+        }
+        if (!parentVf.isDirectory()) {
+            return List.of(parentVf);
+        }else{
+            return Arrays.stream(parentVf.getChildren()).filter(Predicate.not(VirtualFile::isDirectory)).collect(Collectors.toList());
+        }
     }
 
     public static void createNewJar(Project project, Path jarFileFullPath, List<Path> filePaths,

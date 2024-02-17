@@ -16,17 +16,17 @@ import java.util.*;
  * <li>     [/a/b/f1:  include /a/b] vs [/a/b/f1: exclude /a] => include /a/b/f1 </li>
  */
 public class SettingSelectFile {
-	private Path filePath;
+	private String filePath;
 	private boolean recursive;
-	private SelectType selectType=SelectType.include;
+	private SelectType selectType=SelectType.noop ;
 
 	private transient Map<Path, VirtualFile> mappingVfs;
 
-	public Path getFilePath() {
+	public String getFilePath() {
 		return filePath;
 	}
 
-	public void setFilePath(Path filePath) {
+	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
 
@@ -47,7 +47,7 @@ public class SettingSelectFile {
 	}
 
 	public boolean isDirectory() {
-		return filePath != null && filePath.toFile().isDirectory();
+		return filePath != null && Path.of(filePath).toFile().isDirectory();
 	}
 
 	public void setMappingVfs(Map<Path, VirtualFile> mappingVfs) {

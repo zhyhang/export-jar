@@ -28,15 +28,16 @@ public class FileListDialog extends SelectFilesDialog {
 
     private boolean recursiveActionSelected;
     private boolean ignoreIncludeChanged;
-    private final FileListTreeListener listener;
+    private final FileListTreeHandler handler;
 
     public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt, @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles, boolean deletableFiles) {
         super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
         init();
         final ChangesTree filesTree = getFileList();
         // listener for restore the include/exclude select state because of mouse/space key select changed
-        this.listener = new FileListTreeListener(this);
-        filesTree.setInclusionListener(listener::updateByIncludeExclude);
+        this.handler = new FileListTreeHandler(this);
+        filesTree.setInclusionListener(handler::updateByIncludeExclude);
+        filesTree.addSelectionListener(handler::updateIncludeExcludeState);
         filesTree.setCellRenderer(new FileListTreeCellRender(filesTree.getCellRenderer()));
     }
 
@@ -84,8 +85,8 @@ public class FileListDialog extends SelectFilesDialog {
         this.ignoreIncludeChanged = ignoreIncludeChanged;
     }
 
-    public FileListTreeListener getListener() {
-        return listener;
+    public FileListTreeHandler getHandler() {
+        return handler;
     }
 
 }

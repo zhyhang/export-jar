@@ -84,5 +84,42 @@ public class CommonUtilsTest extends BasePlatformTestCase {
 		assertEmpty(collectFilesNest(vfDirNoExists));
 	}
 
+	public void testCollectChildFiles() throws IOException {
+		// Test with null parentVf
+		final Collection<VirtualFile> result1 = CommonUtils.collectChildFiles(null);
+		assertNotNull(result1);
+		assertTrue(result1.isEmpty());
+
+		// Test with non-directory parentVf
+		final VirtualFile file = fromOsFile(Files.createTempFile("test", ".vf").toString());
+		final Collection<VirtualFile> result2 = CommonUtils.collectChildFiles(file);
+		assertNotNull(result2);
+		assertEquals(1, result2.size());
+		assertTrue(result2.contains(file));
+
+		// Test with directory parentVf
+		final Path dirRoot = Files.createTempDirectory("dir-root");
+		final Path dirS1 = dirRoot.resolve("dir-s1");
+		boolean ignored = dirS1.toFile().mkdirs();
+		final Path file1Root = dirRoot.resolve("file1.txt");
+		final Path file2Root = dirRoot.resolve("file2.txt");
+		final Path file1DirS1 = dirS1.resolve("file1.txt");
+		Files.createFile(file1Root);
+		Files.createFile(file2Root);
+		Files.createFile(file1DirS1);
+		final VirtualFile dir = fromOsFile(dirRoot.toString());
+		final VirtualFile file1 = fromOsFile(file1Root.toString());
+		final VirtualFile file2 = fromOsFile(file2Root.toString());
+		final VirtualFile subDir = fromOsFile(dirS1.toString());
+		final VirtualFile subFile = fromOsFile(file1DirS1.toString());
+
+		final Collection<VirtualFile> result3 = CommonUtils.collectChildFiles(dir);
+		assertNotNull(result3);
+		assertEquals(2, result3.size());
+		assertTrue(result3.contains(file1));
+		assertTrue(result3.contains(file2));
+		assertFalse(result3.contains(subDir));
+		assertFalse(result3.contains(subFile));
+	}
 
 }

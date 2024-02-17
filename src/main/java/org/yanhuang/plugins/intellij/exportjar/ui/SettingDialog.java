@@ -11,17 +11,21 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.SeparatorFactory;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.util.Consumer;
+import com.intellij.util.containers.JBTreeTraverser;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
 import org.yanhuang.plugins.intellij.exportjar.model.UISizes;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
@@ -30,6 +34,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.UpgradeManager;
 
 import javax.swing.*;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -95,13 +100,6 @@ public class SettingDialog extends DialogWrapper {
 		this.buttonCancel.addActionListener(e -> onCancel());
 		this.debugButton.addActionListener(e -> onDebug());
 
-//		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-//		this.addWindowListener(new WindowAdapter() {
-//			@Override
-//			public void windowClosing(WindowEvent e) {
-//				onCancel();
-//			}
-//		});
 		this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
@@ -248,6 +246,60 @@ public class SettingDialog extends DialogWrapper {
 		return fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
 	}
 
+	/**
+	 * Retrieves the include and exclude selections from the file list dialog and returns an array of SettingSelectFile objects.
+	 * <li>general to use for template export setting files saving history</li>
+	 * <li>if get final files (only files) to export, use getSelectedFiles() method</li>
+	 *
+	 * @return An array of SettingSelectFile objects representing the include and exclude selections (files and dirs).
+	 *         The array contains the selected files with their respective select type (include or exclude),
+	 *         file path, and recursive flag.
+	 */
+	public SettingSelectFile[] getIncludeExcludeSelections() {
+		final VirtualFile[] svfFiles = getSelectedFiles();
+		final var vfSettingMap = createVfSettingMap();
+		final List<SettingSelectFile> finalSelectFiles = createFinalSelectFiles(svfFiles, vfSettingMap);
+		return finalSelectFiles.toArray(new SettingSelectFile[0]);
+	}
+
+	private Map<VirtualFile, SettingSelectFile> createVfSettingMap() {
+		final Map<VirtualFile, SettingSelectFile> vfSettingMap = new HashMap<>();
+		final JBTreeTraverser<TreeNode> treeNodes = TreeUtil.treeNodeTraverser(fileListDialog.getFileList().getRoot());
+		for (TreeNode treeNode : treeNodes) {
+			processTreeNode((ChangesBrowserNode<?>) treeNode, vfSettingMap);
+		}
+		return vfSettingMap;
+	}
+
+	private void processTreeNode(ChangesBrowserNode<?> changeNode, Map<VirtualFile, SettingSelectFile> vfSettingMap) {
+		final SettingSelectFile.SelectType selectType = changeNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
+		if (selectType == SettingSelectFile.SelectType.include || selectType == SettingSelectFile.SelectType.exclude) {
+			final var isRecursive = Boolean.TRUE.equals(changeNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY));
+			final var vf = FileListTreeHandler.getNodeBindVirtualFile(changeNode);
+			if(vf!=null) {
+				final SettingSelectFile selectFile = new SettingSelectFile();
+				selectFile.setSelectType(selectType);
+				selectFile.setFilePath(CommonUtils.toOsFile(vf).toString());
+				selectFile.setRecursive(isRecursive);
+				vfSettingMap.put(vf, selectFile);
+			}
+		}
+	}
+
+	private List<SettingSelectFile> createFinalSelectFiles(VirtualFile[] svfFiles, Map<VirtualFile, SettingSelectFile> vfSettingMap) {
+		final List<SettingSelectFile> finalSelectFiles = new ArrayList<>();
+		for (VirtualFile svfFile : svfFiles) {
+			final SettingSelectFile selectFile = vfSettingMap.get(svfFile);
+			if (selectFile == null) {
+				final SettingSelectFile selectFileNew = new SettingSelectFile();
+				selectFileNew.setFilePath(CommonUtils.toOsFile(svfFile).toString());
+				finalSelectFiles.add(selectFileNew);
+			}
+		}
+		final boolean ignored = finalSelectFiles.addAll(vfSettingMap.values());
+		return finalSelectFiles;
+	}
+
 	public void onOK() {
 		final VirtualFile[] finalSelectFiles = fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
 		doExport(finalSelectFiles);
@@ -261,6 +313,18 @@ public class SettingDialog extends DialogWrapper {
 		createFileListTree();
 	}
 
+	public void setIncludeExcludeSelections(SettingSelectFile[] selectFiles) {
+		final var selectFileList = new ArrayList<VirtualFile>();
+		for (SettingSelectFile selectFile : selectFiles==null?new SettingSelectFile[0]:selectFiles) {
+			if (selectFile != null) {
+				selectFileList.add(CommonUtils.fromOsFile(selectFile.getFilePath()));
+			}
+		}
+		this.selectedFiles = selectFileList.toArray(new VirtualFile[0]);
+		createFileListTree();
+		this.fileListDialog.getHandler().setUpdateStateSettingFiles(selectFiles);
+	}
+
 	public void doExport(VirtualFile[] exportFiles) {
 		if (isEmpty(exportFiles)) {
 			return;
@@ -268,7 +332,7 @@ public class SettingDialog extends DialogWrapper {
 		final Application app = ApplicationManager.getApplication();
 		final Module[] modules = CommonUtils.findModule(project, exportFiles);
 		String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
-		if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().length() == 0) {
+		if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().isEmpty()) {
 			app.invokeAndWait(() -> showErrorDialog(project, "The selected output path should not empty",
 					Constants.actionName));
 			return;

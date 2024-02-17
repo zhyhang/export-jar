@@ -53,7 +53,7 @@ public class FileListActions {
 		fileTree.repaint();
 	}
 
-	private static void putIncludeExcludeSelectFlag(boolean isRecursive, final ChangesBrowserNode<?> node,
+	public static void putIncludeExcludeSelectFlag(boolean isRecursive, final ChangesBrowserNode<?> node,
 	                                                ChangesTree fileTree, SelectType selectType) {
 		if (isFolderNode(node)) {
 			node.putUserData(KEY_RECURSIVE_SELECT_DIRECTORY, isRecursive ? Boolean.TRUE : null);
@@ -178,7 +178,7 @@ public class FileListActions {
 				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
 				cleanSelect(recursive, node);
 			}
-			dialog.getListener().updateByIncludeExclude();//trigger update selection
+			dialog.getHandler().updateByIncludeExclude();//trigger update selection
 			fileTree.repaint();
 		}
 
