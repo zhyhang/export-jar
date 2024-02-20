@@ -1,8 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
-import com.intellij.openapi.vcs.FilePath;
-import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
-import com.intellij.openapi.vcs.changes.ui.ChangesTree;
+import com.intellij.openapi.vcs.changes.ui.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.JBTreeTraverser;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -11,6 +9,7 @@ import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectTyp
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 
 import javax.swing.tree.TreeNode;
+import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -23,7 +22,7 @@ public class FileListTreeHandler {
 	private final AtomicReference<Boolean> updatingIncludeExclude = new AtomicReference<>(Boolean.FALSE);
 	private final FileListDialog dialog;
 	private final ChangesTree filesTree;
-	private transient SettingSelectFile[] updateStateSettingFiles;
+	private transient boolean shouldUpdateIncludeExclude;
 
 	public FileListTreeHandler(FileListDialog dialog) {
 		this.dialog = dialog;
@@ -36,7 +35,7 @@ public class FileListTreeHandler {
 	 * If the dialog is set to ignore include changes or if another thread is already updating the inclusion model,
 	 * this method will return without making any updates.</b>
 	 */
-	public void updateByIncludeExclude() {
+	public void updateIncludeExcludeByPutFlag() {
 		// FileListActions is modifying changes tree inclusion model, ignore.
 		if (dialog.isIgnoreIncludeChanged()) {
 			return;
@@ -72,10 +71,14 @@ public class FileListTreeHandler {
 		}
 	}
 
-	public void updateIncludeExcludeState() {
-		if (this.updateStateSettingFiles == null || this.updateStateSettingFiles.length == 0) {
+	public void updateIncludeExcludeBySettingFiles() {
+		final SettingSelectFile[] includeExcludeSelections = dialog.getSavedIncludeExcludeSelections();
+		if (includeExcludeSelections == null || includeExcludeSelections.length == 0 || !this.isShouldUpdateIncludeExclude()
+				|| this.filesTree.getSelectionCount() == 0) {
 			return;
 		}
+		// possibly not recursively call this method, but do following check anyway
+
 		// FileListActions is modifying changes tree inclusion model, ignore.
 		if (dialog.isIgnoreIncludeChanged()) {
 			return;
@@ -85,8 +88,8 @@ public class FileListTreeHandler {
 			return;
 		}
 		try{
-			doUpdateIncludeExcludeState(this.updateStateSettingFiles);
-			this.updateStateSettingFiles=null; // clean the property as only update once
+			doUpdateIncludeExcludeState(includeExcludeSelections);
+			this.setShouldUpdateIncludeExclude(false);
 		} finally {
 			updatingIncludeExclude.set(Boolean.FALSE);
 		}
@@ -130,17 +133,26 @@ public class FileListTreeHandler {
 	 */
 
 	public static VirtualFile getNodeBindVirtualFile(ChangesBrowserNode<?> treeNode) {
-		final var nodeObject = treeNode.getUserObject();
 		VirtualFile vf = null;
-		if (nodeObject instanceof FilePath) {
-			vf = ((FilePath) nodeObject).getVirtualFile();
-		} else if (nodeObject instanceof VirtualFile) {
-			vf = (VirtualFile) nodeObject;
+		if (treeNode instanceof ChangesBrowserFileNode) {
+			vf = ((ChangesBrowserFileNode) treeNode).getUserObject();
+		} else if (treeNode instanceof ChangesBrowserFilePathNode) {
+			vf = ((ChangesBrowserFilePathNode) treeNode).getUserObject().getVirtualFile();
+		} else if (treeNode instanceof ChangesBrowserModuleNode) {
+			vf = ((ChangesBrowserModuleNode) treeNode).getModuleRoot().getVirtualFile();
 		}
 		return vf;
 	}
 
-	public void setUpdateStateSettingFiles(SettingSelectFile[] updateStateSettingFiles) {
-		this.updateStateSettingFiles = updateStateSettingFiles;
+	public void groupByChanged(PropertyChangeEvent evt) {
+		this.setShouldUpdateIncludeExclude(true);
+	}
+
+	public boolean isShouldUpdateIncludeExclude() {
+		return shouldUpdateIncludeExclude;
+	}
+
+	public void setShouldUpdateIncludeExclude(boolean shouldUpdateIncludeExclude) {
+		this.shouldUpdateIncludeExclude = shouldUpdateIncludeExclude;
 	}
 }

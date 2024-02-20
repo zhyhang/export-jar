@@ -47,6 +47,8 @@ public class FileListActions {
 				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
 				putIncludeExcludeSelectFlag(isRecursive, node, fileTree, selectType);
 			}
+			// save setting select files for updating state sometime
+			dialog.setSavedIncludeExcludeSelections(dialog.getIncludeExcludeSelections());
 		} finally {
 			dialog.setIgnoreIncludeChanged(false);
 		}
@@ -178,7 +180,8 @@ public class FileListActions {
 				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
 				cleanSelect(recursive, node);
 			}
-			dialog.getHandler().updateByIncludeExclude();//trigger update selection
+			dialog.getHandler().updateIncludeExcludeByPutFlag();//trigger update include/exclude selection state
+			dialog.setSavedIncludeExcludeSelections(dialog.getIncludeExcludeSelections()); // save setting select files for updating state sometime
 			fileTree.repaint();
 		}
 
