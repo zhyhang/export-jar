@@ -1,7 +1,5 @@
 package org.yanhuang.plugins.intellij.exportjar.model;
 
-import com.intellij.openapi.vfs.VirtualFile;
-
 import java.nio.file.Path;
 import java.util.*;
 
@@ -15,12 +13,12 @@ import java.util.*;
  * <li>    [/a/b/f1:  exclude /a/b] vs [/a/b/f1: include /a] => exclude /a/b/f1 </li>
  * <li>     [/a/b/f1:  include /a/b] vs [/a/b/f1: exclude /a] => include /a/b/f1 </li>
  */
-public class SettingSelectFile {
+public class SettingSelectFile implements Cloneable {
 	private String filePath;
 	private boolean recursive;
 	private SelectType selectType=SelectType.noop ;
 
-	private transient Map<Path, VirtualFile> mappingVfs;
+	private transient Map<Path, Object> mappingVfs = new HashMap<>();
 
 	public String getFilePath() {
 		return filePath;
@@ -50,8 +48,19 @@ public class SettingSelectFile {
 		return filePath != null && Path.of(filePath).toFile().isDirectory();
 	}
 
-	public void setMappingVfs(Map<Path, VirtualFile> mappingVfs) {
-		this.mappingVfs = mappingVfs;
+	public void putMappingVf(Path filePath, Object treeNodeObject) {
+		this.mappingVfs.put(filePath, treeNodeObject);
+	}
+
+	@Override
+	public SettingSelectFile clone() {
+		try {
+			final SettingSelectFile clone = (SettingSelectFile) super.clone();
+			clone.mappingVfs = new HashMap<>();
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
 	}
 
 	public enum SelectType {
@@ -62,23 +71,24 @@ public class SettingSelectFile {
 	 * combine select files to final virtual files (include and exclude according to select type).
 	 *
 	 * @param selectFiles array of original select files (not directory)
-	 * @return final select files by combining include and exclude according to select type.
+	 * @return final select files by combining include and exclude according to select type. list.get(0) includes, list.get(1) excludes.
 	 */
-	public static Map<Path, VirtualFile> combineFinalVirtualFiles(SettingSelectFile[] selectFiles) {
+	public static List<Map<Path, Object>> combineFinalVirtualFiles(SettingSelectFile[] selectFiles) {
 		if (selectFiles == null || selectFiles.length == 0) {
-			return Map.of();
+			return List.of(Map.of(),Map.of());
 		}
 		final var excludeSettingMap = makeExcludeSettingMap(selectFiles);
-		final var finalMap = new HashMap<Path, VirtualFile>();
+		final var finalIncludeMap = new HashMap<Path, Object>();
+		final var finalExcludeMap = new HashMap<Path, Object>();
 		for (final SettingSelectFile selectFile : selectFiles) {
-			combineOneSettingFile(selectFile, excludeSettingMap, finalMap);
+			combineOneSettingFile(selectFile, excludeSettingMap, finalIncludeMap, finalExcludeMap);
 		}
-		return finalMap;
+		return List.of(finalIncludeMap,finalExcludeMap);
 	}
 
 	private static void combineOneSettingFile(SettingSelectFile selectFile,
-	                                          Map<VirtualFile, List<SettingSelectFile>> excludeSettingMap,
-	                                          HashMap<Path, VirtualFile> finalMap) {
+	                                          Map<Object, List<SettingSelectFile>> excludeSettingMap,
+	                                          Map<Path, Object> finalIncludeMap, Map<Path,Object> finalExcludeMap) {
 		if (selectFile == null) {
 			return;
 		}
@@ -86,16 +96,18 @@ public class SettingSelectFile {
 		if (selectFileMapping == null || selectFileMapping.isEmpty()) {
 			return;
 		}
-		for (Map.Entry<Path, VirtualFile> virtualFileEntry : selectFileMapping.entrySet()) {
-			final VirtualFile virtualFile = virtualFileEntry.getValue();
+		for (Map.Entry<Path, Object> virtualFileEntry : selectFileMapping.entrySet()) {
+			final Object virtualFile = virtualFileEntry.getValue();
 			if (isInclude(selectFile, virtualFile, excludeSettingMap)) {
-				finalMap.put(virtualFileEntry.getKey(), virtualFile);
+				finalIncludeMap.put(virtualFileEntry.getKey(), virtualFile);
+			}else{
+				finalExcludeMap.put(virtualFileEntry.getKey(), virtualFile);
 			}
 		}
 	}
 
-	private static Map<VirtualFile, List<SettingSelectFile>> makeExcludeSettingMap(SettingSelectFile[] selectFiles) {
-		final var excludeSettingMap = new HashMap<VirtualFile, List<SettingSelectFile>>();
+	private static Map<Object, List<SettingSelectFile>> makeExcludeSettingMap(SettingSelectFile[] selectFiles) {
+		final var excludeSettingMap = new HashMap<Object, List<SettingSelectFile>>();
 		for (final SettingSelectFile selectFile : selectFiles) {
 			if (selectFile == null) {
 				continue;
@@ -114,8 +126,8 @@ public class SettingSelectFile {
 		return excludeSettingMap;
 	}
 
-	private static boolean isInclude(SettingSelectFile selectFile, VirtualFile selectVirtualFile,
-	                                 Map<VirtualFile, List<SettingSelectFile>> excludeSettingMap) {
+	private static boolean isInclude(SettingSelectFile selectFile, Object selectVirtualFile,
+	                                 Map<Object, List<SettingSelectFile>> excludeSettingMap) {
 		if (selectFile == null || selectFile.getSelectType() == SelectType.exclude || selectFile.filePath == null) {
 			return false;
 		}
@@ -127,7 +139,7 @@ public class SettingSelectFile {
 			if (selectFile1.filePath == null) {
 				continue;
 			}
-			if (selectFile1.filePath.startsWith(selectFile.filePath)) {
+			if (Path.of(selectFile1.filePath).startsWith(Path.of(selectFile.filePath))) {
 				return false;
 			}
 		}

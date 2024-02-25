@@ -2,6 +2,8 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNodeRenderer;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 
@@ -34,6 +36,7 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
  *
  */
 public class FileListTreeCellRender implements TreeCellRenderer {
+	private final FileListDialog dialog;
 	private final TreeCellRenderer ideOrgRenderer;
 
 	private final static Map<String, String> tooltipMap = Map.of(
@@ -46,7 +49,8 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 			false + SelectType.exclude.name() + false, toolTipFileExcludeSelect
 	);
 
-	public FileListTreeCellRender(TreeCellRenderer ideOrgRenderer) {
+	public FileListTreeCellRender(FileListDialog dialog,TreeCellRenderer ideOrgRenderer) {
+		this.dialog = dialog;
 		this.ideOrgRenderer = ideOrgRenderer;
 	}
 
@@ -61,8 +65,10 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 	}
 
 	private void renderSelectFlagText(ChangesBrowserNode<?> currentNode, JComponent orgRenderedNodeUI) {
-		final Boolean recursive = currentNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY);
-		final SelectType selectType = currentNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
+		final VirtualFile virtualFile = FileListTreeHandler.getNodeBindVirtualFile(currentNode);
+		final SettingSelectFile selectFile = dialog.getSavedIncludeExcludeSelection(virtualFile);
+		final Boolean recursive = selectFile != null && selectFile.isRecursive();
+		final SelectType selectType = selectFile != null ? selectFile.getSelectType() : SelectType.noop;
 		final Component[] components = orgRenderedNodeUI.getComponents();
 		final Optional<Component> fileRenderer =
 				Arrays.stream(components).filter(c -> c instanceof ChangesBrowserNodeRenderer).findFirst();

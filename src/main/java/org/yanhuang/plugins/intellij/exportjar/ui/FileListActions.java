@@ -37,6 +37,17 @@ public class FileListActions {
 				new CleanIncludeExcludeAction(dialog)};
 	}
 
+	private static void doIncludeExcludeAction(FileListDialog dialog,ChangesTree fileTree,SelectType selectType) {
+		try {
+			dialog.setIgnoreIncludeChanged(true);
+			dialog.getHandler().updateIncludeExcludeSelectFiles(selectType);
+			dialog.getHandler().includeExcludeObjectsBySelectFiles();// TODO only update action changes
+		} finally {
+			dialog.setIgnoreIncludeChanged(false);
+		}
+		fileTree.repaint();
+	}
+
 	private static void doIncludeExcludeAction(boolean isRecursive,
 	                                           ChangesTree fileTree, SelectType selectType,
 	                                           FileListDialog dialog) {
@@ -113,7 +124,7 @@ public class FileListActions {
 
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
-			doIncludeExcludeAction(dialog.isRecursiveActionSelected(), fileTree, SelectType.include, dialog);
+			doIncludeExcludeAction(dialog, fileTree, SelectType.include);
 		}
 
 	}
@@ -130,7 +141,7 @@ public class FileListActions {
 
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
-			doIncludeExcludeAction(dialog.isRecursiveActionSelected(), fileTree, SelectType.exclude, dialog);
+			doIncludeExcludeAction(dialog, fileTree, SelectType.exclude);
 		}
 
 	}
@@ -180,8 +191,6 @@ public class FileListActions {
 				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
 				cleanSelect(recursive, node);
 			}
-			dialog.getHandler().updateIncludeExcludeByPutFlag();//trigger update include/exclude selection state
-			dialog.setSavedIncludeExcludeSelections(dialog.getIncludeExcludeSelections()); // save setting select files for updating state sometime
 			fileTree.repaint();
 		}
 
@@ -195,8 +204,8 @@ public class FileListActions {
 
 		private void cleanSelect(final TreeNode node) {
 			final var changeNode = (ChangesBrowserNode<?>) node;
-			changeNode.putUserData(KEY_RECURSIVE_SELECT_DIRECTORY, null);
-			changeNode.putUserData(KEY_TYPE_SELECT_FILE_DIRECTORY, null);
+			final var virtualFile = FileListTreeHandler.getNodeBindVirtualFile(changeNode);
+			this.dialog.removeSavedIncludeExcludeSelection(virtualFile);
 		}
 	}
 

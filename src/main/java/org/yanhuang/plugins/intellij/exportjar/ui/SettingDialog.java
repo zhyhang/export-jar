@@ -264,7 +264,7 @@ public class SettingDialog extends DialogWrapper {
 
 	public void setIncludeExcludeSelections(SettingSelectFile[] selectFiles) {
 		final var selectFileList = new ArrayList<VirtualFile>();
-		for (SettingSelectFile selectFile : selectFiles==null?new SettingSelectFile[0]:selectFiles) {
+		for (SettingSelectFile selectFile : selectFiles == null ? new SettingSelectFile[0] : selectFiles) {
 			if (selectFile != null) {
 				selectFileList.add(CommonUtils.fromOsFile(selectFile.getFilePath()));
 			}
