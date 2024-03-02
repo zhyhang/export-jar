@@ -39,17 +39,18 @@ public class FileListTreeHandler {
 	}
 
 	public void updateIncludeExcludeSelectFiles(SelectType selectType) {
-		final boolean isRecursive = dialog.isRecursiveActionSelected();
 		final TreePath[] selectionPaths = filesTree.getSelectionPaths();
 		for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
-			final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-			final VirtualFile selectVirtualFile = getNodeBindVirtualFile(node);
+			final var node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+			final var selectVirtualFile = getNodeBindVirtualFile(node);
 			dialog.removeSavedIncludeExcludeSelection(selectVirtualFile);
+			final var isRecursive =
+					null != selectVirtualFile && selectVirtualFile.isDirectory() && dialog.isRecursiveActionSelected();
 			final var selectFile = new SettingSelectFile();
 			selectFile.setFilePath((null != selectVirtualFile) ? toOsFile(selectVirtualFile).toString() : null);
 			selectFile.setSelectType(selectType);
 			selectFile.setRecursive(isRecursive);
-			dialog.putSavedIncludeExcludeSelection(selectVirtualFile, selectFile);
+			dialog.putFlagIncludeExcludeSelection(selectVirtualFile, selectFile);
 		}
 	}
 
@@ -71,19 +72,19 @@ public class FileListTreeHandler {
 			if (currVirtualFile == null) {
 				continue;
 			}
-			var selectFile = dialog.getSavedIncludeExcludeSelection(currVirtualFile);
-			if (selectFile ==null) {
+			var selectFile = dialog.getFlagIncludeExcludeSelection(currVirtualFile);
+			if (selectFile == null) {
 				final var currParent = currVirtualFile.getParent();
 				selectFile = parentSelectionMap.get(currParent);
-			}else{
-				selectFile=selectFile.clone(); // avoid transient properties "mappingVfs" dirty
+			} else {
+				selectFile = selectFile.clone(); // avoid transient properties "mappingVfs" dirty
 			}
 			if (selectFile == null) {
 				continue;
 			}
 			if (currVirtualFile.isDirectory()) {
 				parentSelectionMap.put(currVirtualFile, selectFile);
-			}else {
+			} else {
 				selectFile.putMappingVf(CommonUtils.toOsFile(currVirtualFile), changeNode.getUserObject());
 				updatedSelectFileMap.put(selectFile.getFilePath(), selectFile);
 			}
@@ -91,7 +92,7 @@ public class FileListTreeHandler {
 		return updatedSelectFileMap;
 	}
 
-	private void includeExcludeObject(ChangesBrowserNode<?> changeNode,SelectType selectType){
+	private void includeExcludeObject(ChangesBrowserNode<?> changeNode, SelectType selectType) {
 		final Object changeObj = changeNode.getUserObject();
 		if (selectType == SelectType.include) {
 			filesTree.includeChange(changeObj);
@@ -99,6 +100,7 @@ public class FileListTreeHandler {
 			filesTree.excludeChange(changeObj);
 		}
 	}
+
 	/**
 	 * call this method repair include/exclude selection, when mouse click selection or key space press selection.
 	 * </br><b>Updates the changes tree inclusion model based on include or exclude criteria.
@@ -132,18 +134,18 @@ public class FileListTreeHandler {
 		final JBTreeTraverser<TreeNode> treeNodes = TreeUtil.treeNodeTraverser(filesTree.getRoot());
 		for (TreeNode treeNode : treeNodes) {
 			final var changeNode = (ChangesBrowserNode<?>) treeNode;
-			final SelectType selectType =
-					changeNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
-			if (selectType == SelectType.include || selectType == SelectType.exclude) {
-				final var isRecursive =
-						Boolean.TRUE.equals(changeNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY));
-				FileListActions.includeExcludeSubObjects(isRecursive, changeNode, filesTree, selectType);
-			}
+//			final SelectType selectType =
+//					changeNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
+//			if (selectType == SelectType.include || selectType == SelectType.exclude) {
+//				final var isRecursive =
+//						Boolean.TRUE.equals(changeNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY));
+//				FileListActions.includeExcludeSubObjects(isRecursive, changeNode, filesTree, selectType);
+//			}
 		}
 	}
 
 	public void updateIncludeExcludeBySettingFiles() {
-		final SettingSelectFile[] includeExcludeSelections = dialog.getSavedIncludeExcludeSelections();
+		final SettingSelectFile[] includeExcludeSelections = dialog.getFlagIncludeExcludeSelections();
 		if (includeExcludeSelections == null || includeExcludeSelections.length == 0 || !this.isShouldUpdateIncludeExclude()
 				|| this.filesTree.getSelectionCount() == 0) {
 			return;
@@ -158,7 +160,7 @@ public class FileListTreeHandler {
 		if (!updatingIncludeExclude.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 			return;
 		}
-		try{
+		try {
 			includeExcludeObjectsBySelectFiles();
 //			doUpdateIncludeExcludeState(includeExcludeSelections);
 			this.setShouldUpdateIncludeExclude(false);
@@ -174,7 +176,8 @@ public class FileListTreeHandler {
 				vfSettingMap.put(fromOsFile(selectFile.getFilePath()), selectFile);
 			}
 		}
-		final @NotNull JBIterable<TreeNode> treeNodes = TreeUtil.treeNodeTraverser(filesTree.getRoot()).preOrderDfsTraversal();
+		final @NotNull JBIterable<TreeNode> treeNodes =
+				TreeUtil.treeNodeTraverser(filesTree.getRoot()).preOrderDfsTraversal();
 		for (TreeNode treeNode : treeNodes) {
 			final var changeNode = (ChangesBrowserNode<?>) treeNode;
 			final VirtualFile virtualFile = getNodeBindVirtualFile(changeNode);
@@ -185,7 +188,8 @@ public class FileListTreeHandler {
 		}
 	}
 
-	private void doUpdateIncludeExcludeState(HashMap<VirtualFile, SettingSelectFile> vfSettingMap, VirtualFile virtualFile, ChangesBrowserNode<?> changeNode) {
+	private void doUpdateIncludeExcludeState(HashMap<VirtualFile, SettingSelectFile> vfSettingMap,
+	                                         VirtualFile virtualFile, ChangesBrowserNode<?> changeNode) {
 		final SettingSelectFile selectFile = vfSettingMap.get(virtualFile);
 		if (selectFile != null) {
 			final SelectType fileSelectType = selectFile.getSelectType();
@@ -198,8 +202,9 @@ public class FileListTreeHandler {
 
 	/**
 	 * takes a ChangesBrowserNode as input and returns the VirtualFile associated
-	 * 	with the node. It checks if the user object of the node is an instance of FilePath or VirtualFile and returns
-	 * 	the corresponding VirtualFile.
+	 * with the node. It checks if the user object of the node is an instance of FilePath or VirtualFile and returns
+	 * the corresponding VirtualFile.
+	 *
 	 * @param treeNode tree node
 	 * @return virtual file or null
 	 */

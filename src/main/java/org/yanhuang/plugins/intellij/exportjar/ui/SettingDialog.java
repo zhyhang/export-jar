@@ -246,7 +246,7 @@ public class SettingDialog extends DialogWrapper {
 	 * Retrieves the include and exclude selections from the file list dialog and returns an array of SettingSelectFile objects.
 	 */
 	public SettingSelectFile[] getIncludeExcludeSelections() {
-		return this.fileListDialog.getIncludeExcludeSelections();
+		return this.fileListDialog.getStoreIncludeExcludeSelections();
 	}
 
 	public void onOK() {
@@ -271,7 +271,7 @@ public class SettingDialog extends DialogWrapper {
 		}
 		this.selectedFiles = selectFileList.toArray(new VirtualFile[0]);
 		createFileListTree();
-		this.fileListDialog.setSavedIncludeExcludeSelections(selectFiles);
+		this.fileListDialog.setFlagIncludeExcludeSelections(selectFiles);
 		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
 	}
 

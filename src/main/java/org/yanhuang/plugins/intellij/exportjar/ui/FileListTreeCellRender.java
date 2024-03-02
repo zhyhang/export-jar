@@ -28,12 +28,11 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
  * 		if (checkboxRenderer.isPresent()) {
  * 			final var checkBox = (ThreeStateCheckBox) checkboxRenderer.get();
  * 			return checkBox.getState();
- * 		        } else {
+ *                } else {
  * 			return ThreeStateCheckBox.State.DONT_CARE;
  *        }
-
- * </pre>
  *
+ * </pre>
  */
 public class FileListTreeCellRender implements TreeCellRenderer {
 	private final FileListDialog dialog;
@@ -49,7 +48,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 			false + SelectType.exclude.name() + false, toolTipFileExcludeSelect
 	);
 
-	public FileListTreeCellRender(FileListDialog dialog,TreeCellRenderer ideOrgRenderer) {
+	public FileListTreeCellRender(FileListDialog dialog, TreeCellRenderer ideOrgRenderer) {
 		this.dialog = dialog;
 		this.ideOrgRenderer = ideOrgRenderer;
 	}
@@ -66,7 +65,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 
 	private void renderSelectFlagText(ChangesBrowserNode<?> currentNode, JComponent orgRenderedNodeUI) {
 		final VirtualFile virtualFile = FileListTreeHandler.getNodeBindVirtualFile(currentNode);
-		final SettingSelectFile selectFile = dialog.getSavedIncludeExcludeSelection(virtualFile);
+		final SettingSelectFile selectFile = dialog.getFlagIncludeExcludeSelection(virtualFile);
 		final Boolean recursive = selectFile != null && selectFile.isRecursive();
 		final SelectType selectType = selectFile != null ? selectFile.getSelectType() : SelectType.noop;
 		final Component[] components = orgRenderedNodeUI.getComponents();
@@ -88,8 +87,7 @@ public class FileListTreeCellRender implements TreeCellRenderer {
 	}
 
 	private void setRenderTooltip(ChangesBrowserNode<?> currentNode, ChangesBrowserNodeRenderer renderer,
-	                              boolean isRecursive,
-	                              SelectType selectType) {
+	                              boolean isRecursive, SelectType selectType) {
 		final String tooltipKey = FileListActions.isFolderNode(currentNode) + selectType.name() + isRecursive;
 		final String tooltip = tooltipMap.get(tooltipKey);
 		renderer.setToolTipText(tooltip);

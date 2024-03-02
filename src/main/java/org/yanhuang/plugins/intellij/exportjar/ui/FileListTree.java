@@ -16,13 +16,13 @@ public class FileListTree extends SelectFilesDialog.VirtualFileList {
 
 	@Override
 	protected boolean isInclusionEnabled(@NotNull ChangesBrowserNode<?> node) {
-		if (Boolean.TRUE.equals(node.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY))) {
-			return false;
-		}
-		final ChangesBrowserNode<?> parent = node.getParent();
-		if (parent != null && Boolean.TRUE.equals(parent.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY))) {
-			return false;
-		}
+//		if (Boolean.TRUE.equals(node.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY))) {
+//			return false;
+//		}
+//		final ChangesBrowserNode<?> parent = node.getParent();
+//		if (parent != null && Boolean.TRUE.equals(parent.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY))) {
+//			return false;
+//		}
 		return super.isInclusionEnabled(node);
 	}
 }

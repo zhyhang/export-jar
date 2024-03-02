@@ -17,8 +17,6 @@ import javax.swing.tree.TreePath;
 
 import static com.intellij.util.ui.tree.TreeUtil.treeNodeTraverser;
 import static java.util.stream.StreamSupport.stream;
-import static org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY;
-import static org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 
 /**
@@ -59,7 +57,7 @@ public class FileListActions {
 				putIncludeExcludeSelectFlag(isRecursive, node, fileTree, selectType);
 			}
 			// save setting select files for updating state sometime
-			dialog.setSavedIncludeExcludeSelections(dialog.getIncludeExcludeSelections());
+			dialog.setFlagIncludeExcludeSelections(dialog.getStoreIncludeExcludeSelections());
 		} finally {
 			dialog.setIgnoreIncludeChanged(false);
 		}
@@ -68,10 +66,10 @@ public class FileListActions {
 
 	public static void putIncludeExcludeSelectFlag(boolean isRecursive, final ChangesBrowserNode<?> node,
 	                                                ChangesTree fileTree, SelectType selectType) {
-		if (isFolderNode(node)) {
-			node.putUserData(KEY_RECURSIVE_SELECT_DIRECTORY, isRecursive ? Boolean.TRUE : null);
-		}
-		node.putUserData(KEY_TYPE_SELECT_FILE_DIRECTORY, selectType);
+//		if (isFolderNode(node)) {
+//			node.putUserData(KEY_RECURSIVE_SELECT_DIRECTORY, isRecursive ? Boolean.TRUE : null);
+//		}
+//		node.putUserData(KEY_TYPE_SELECT_FILE_DIRECTORY, selectType);
 		includeExcludeSubObjects(isRecursive, node, fileTree, selectType);
 	}
 
@@ -96,9 +94,9 @@ public class FileListActions {
 			return;
 		}
 		// if dir or file which already put include/exclude selection flag, don't modify
-		if (keepPreviousSelection && changeNode.getUserData(KEY_TYPE_SELECT_FILE_DIRECTORY) != null) {
-			return;
-		}
+//		if (keepPreviousSelection && changeNode.getUserData(KEY_TYPE_SELECT_FILE_DIRECTORY) != null) {
+//			return;
+//		}
 		final Object changeObj = changeNode.getUserObject();
 		if (selectType == SelectType.include) {
 			fileTree.includeChange(changeObj);
