@@ -1,5 +1,8 @@
 package org.yanhuang.plugins.intellij.exportjar.model;
 
+import com.intellij.openapi.vfs.VirtualFile;
+import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
+
 import java.nio.file.Path;
 import java.util.*;
 
@@ -17,8 +20,18 @@ public class SettingSelectFile implements Cloneable {
 	private String filePath;
 	private boolean recursive;
 	private SelectType selectType=SelectType.noop ;
-
+	private transient VirtualFile virtualFile;
+	private transient Path nioPath;
 	private transient Map<Path, Object> mappingVfs = new HashMap<>();
+
+	public void shallowOverrideFrom(SettingSelectFile anotherFile) {
+		this.filePath = anotherFile.getFilePath();
+		this.recursive = anotherFile.isRecursive();
+		this.selectType = anotherFile.getSelectType();
+		this.mappingVfs = anotherFile.mappingVfs;
+		this.virtualFile = anotherFile.getVirtualFile();
+		this.nioPath = anotherFile.getNioPath();
+	}
 
 	public String getFilePath() {
 		return filePath;
@@ -44,12 +57,22 @@ public class SettingSelectFile implements Cloneable {
 		this.selectType = selectType;
 	}
 
-	public boolean isDirectory() {
-		return filePath != null && Path.of(filePath).toFile().isDirectory();
-	}
-
 	public void putMappingVf(Path filePath, Object treeNodeObject) {
 		this.mappingVfs.put(filePath, treeNodeObject);
+	}
+
+	public VirtualFile getVirtualFile() {
+		if (filePath != null && this.virtualFile==null) {
+			this.virtualFile = CommonUtils.fromOsFile(filePath);
+		}
+		return virtualFile;
+	}
+
+	public Path getNioPath() {
+		if (filePath != null && this.nioPath == null) {
+			this.nioPath = Path.of(filePath);
+		}
+		return nioPath;
 	}
 
 	@Override

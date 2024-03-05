@@ -7,13 +7,15 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ToggleAction;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import static com.intellij.util.ui.tree.TreeUtil.treeNodeTraverser;
 import static java.util.stream.StreamSupport.stream;
@@ -35,79 +37,15 @@ public class FileListActions {
 				new CleanIncludeExcludeAction(dialog)};
 	}
 
-	private static void doIncludeExcludeAction(FileListDialog dialog,ChangesTree fileTree,SelectType selectType) {
+	private static void doIncludeExcludeAction(FileListDialog dialog, ChangesTree fileTree, SelectType selectType) {
 		try {
 			dialog.setIgnoreIncludeChanged(true);
-			dialog.getHandler().updateIncludeExcludeSelectFiles(selectType);
-			dialog.getHandler().includeExcludeObjectsBySelectFiles();// TODO only update action changes
+			final var selectNodes = dialog.getHandler().updateIncludeExcludeBySelectNodes(selectType);
+			dialog.getHandler().includeExcludeObjectsFrom(selectNodes);
 		} finally {
 			dialog.setIgnoreIncludeChanged(false);
 		}
 		fileTree.repaint();
-	}
-
-	private static void doIncludeExcludeAction(boolean isRecursive,
-	                                           ChangesTree fileTree, SelectType selectType,
-	                                           FileListDialog dialog) {
-		final TreePath[] selectionPaths = fileTree.getSelectionPaths();
-		try {
-			dialog.setIgnoreIncludeChanged(true);
-			for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
-				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-				putIncludeExcludeSelectFlag(isRecursive, node, fileTree, selectType);
-			}
-			// save setting select files for updating state sometime
-			dialog.setFlagIncludeExcludeSelections(dialog.getStoreIncludeExcludeSelections());
-		} finally {
-			dialog.setIgnoreIncludeChanged(false);
-		}
-		fileTree.repaint();
-	}
-
-	public static void putIncludeExcludeSelectFlag(boolean isRecursive, final ChangesBrowserNode<?> node,
-	                                                ChangesTree fileTree, SelectType selectType) {
-//		if (isFolderNode(node)) {
-//			node.putUserData(KEY_RECURSIVE_SELECT_DIRECTORY, isRecursive ? Boolean.TRUE : null);
-//		}
-//		node.putUserData(KEY_TYPE_SELECT_FILE_DIRECTORY, selectType);
-		includeExcludeSubObjects(isRecursive, node, fileTree, selectType);
-	}
-
-	public static void includeExcludeSubObjects(boolean isRecursive, final ChangesBrowserNode<?> node,
-	                                            ChangesTree fileTree, SelectType selectType) {
-		if (isRecursive) {
-			for (TreeNode subNode : treeNodeTraverser(node).preOrderDfsTraversal()) {
-				includeExcludeObject(fileTree, selectType, subNode, true);
-			}
-		} else {
-			for (TreeNode subNode : TreeUtil.nodeChildren(node)) {
-				includeExcludeObject(fileTree, selectType, subNode, true);
-			}
-		}
-		includeExcludeObject(fileTree, selectType, node, false);// force update current node
-	}
-
-	private static void includeExcludeObject(ChangesTree fileTree, SelectType selectType, TreeNode subNode,
-	                                         boolean keepPreviousSelection) {
-		final var changeNode = (ChangesBrowserNode<?>) subNode;
-		if (isFolderNode(changeNode)) {
-			return;
-		}
-		// if dir or file which already put include/exclude selection flag, don't modify
-//		if (keepPreviousSelection && changeNode.getUserData(KEY_TYPE_SELECT_FILE_DIRECTORY) != null) {
-//			return;
-//		}
-		final Object changeObj = changeNode.getUserObject();
-		if (selectType == SelectType.include) {
-			fileTree.includeChange(changeObj);
-		} else if (selectType == SelectType.exclude) {
-			fileTree.excludeChange(changeObj);
-		}
-	}
-
-	public static boolean isFolderNode(final ChangesBrowserNode<?> node) {
-		final Object nodeData = node.getUserObject();
-		return !(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory();
 	}
 
 	private static class IncludeSelectAction extends AnAction {
@@ -185,25 +123,59 @@ public class FileListActions {
 		public void actionPerformed(@NotNull AnActionEvent e) {
 			final TreePath[] selectionPaths = fileTree.getSelectionPaths();
 			final boolean recursive = dialog.isRecursiveActionSelected();
-			for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
-				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-				cleanSelect(recursive, node);
+			if (recursive) {
+				cleanSelectFlagRecursive(selectionPaths == null ? new TreePath[0] : selectionPaths);
+			} else {
+				cleanSelectFlagNonRecursive(selectionPaths == null ? new TreePath[0] : selectionPaths);
 			}
 			fileTree.repaint();
 		}
 
-		private void cleanSelect(boolean recursive, ChangesBrowserNode<?> node) {
-			if (recursive) {
-				stream(treeNodeTraverser(node).preOrderDfsTraversal().spliterator(), false).forEach(this::cleanSelect);
-			} else {
-				cleanSelect(node);
+		/**
+		 * Recursively cleans the select flag for the nodes represented by the provided array of TreePaths.
+		 * Nodes are processed in sorted order based on their level (front node deal first), ensuring only
+		 * non-descendant nodes of travelled nodes are considered (remove duplication handles).
+		 * The method iterates through the filtered nodes and performs a recursive cleaning operation on each.
+		 *
+		 * @param selectionPaths An array of TreePaths representing nodes to clean the select flag for
+		 */
+		private void cleanSelectFlagRecursive(final TreePath[] selectionPaths) {
+			final var travelledNodes = new ArrayList<ChangesBrowserNode<?>>();
+			/*
+			  Step-wise explanation:
+			  1. Create an empty ArrayList called travelledNodes to store the nodes that have been processed.
+			  2. Iterate over each TreePath in the selectionPaths array using Arrays.stream.
+			  3. Map each TreePath to a ChangesBrowserNode using the getChangesNode method from the
+			  FileListTreeHandler class.
+			  4. Sort the nodes based on their level using Comparator.comparingInt.
+			  5. Filter out nodes that are descendants of nodes already in the travelledNodes list using the
+			  noneMatch method.
+			  6. Add the filtered nodes to the travelledNodes list using the filter method.
+			  7. For each filtered node, call the recursivelyClean method on it using the forEach method.
+			 */
+			Arrays.stream(selectionPaths)
+					.map(FileListTreeHandler::getChangesNode)
+					.sorted(Comparator.comparingInt(DefaultMutableTreeNode::getLevel))
+					.filter(n -> travelledNodes.stream().noneMatch(travelledNode -> travelledNode.isNodeDescendant(n)))
+					.filter(travelledNodes::add)
+					.forEach(this::recursivelyClean);
+		}
+
+		private void recursivelyClean(ChangesBrowserNode<?> node) {
+			stream(treeNodeTraverser(node).preOrderDfsTraversal().spliterator(), false).forEach(this::cleanSelectFlag);
+		}
+
+		private void cleanSelectFlagNonRecursive(final TreePath[] selectionPaths) {
+			for (TreePath selectionPath : selectionPaths) {
+				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+				cleanSelectFlag(node);
 			}
 		}
 
-		private void cleanSelect(final TreeNode node) {
-			final var changeNode = (ChangesBrowserNode<?>) node;
-			final var virtualFile = FileListTreeHandler.getNodeBindVirtualFile(changeNode);
-			this.dialog.removeSavedIncludeExcludeSelection(virtualFile);
+		private void cleanSelectFlag(final TreeNode node) {
+			final ChangesBrowserNode<?> changesNode = (ChangesBrowserNode<?>) node;
+			final var virtualFile = FileListTreeHandler.getNodeBindVirtualFile(changesNode);
+			this.dialog.removeFlaggedIncludeExcludeSelection(virtualFile);
 		}
 	}
 

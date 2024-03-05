@@ -271,7 +271,7 @@ public class SettingDialog extends DialogWrapper {
 		}
 		this.selectedFiles = selectFileList.toArray(new VirtualFile[0]);
 		createFileListTree();
-		this.fileListDialog.setFlagIncludeExcludeSelections(selectFiles);
+		this.fileListDialog.setFlaggedIncludeExcludeSelections(selectFiles);
 		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
 	}
 

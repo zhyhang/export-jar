@@ -3,23 +3,19 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.openapi.vcs.changes.ui.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.JBIterable;
-import com.intellij.util.containers.JBTreeTraverser;
 import com.intellij.util.ui.tree.TreeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils.fromOsFile;
 import static org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils.toOsFile;
 
 /**
@@ -38,44 +34,78 @@ public class FileListTreeHandler {
 		this.filesTree = dialog.getFileList();
 	}
 
-	public void updateIncludeExcludeSelectFiles(SelectType selectType) {
-		final TreePath[] selectionPaths = filesTree.getSelectionPaths();
-		for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
-			final var node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+	/**
+	 * Updates the include/exclude selection for files based on the selected tree paths flag by doing actions.
+	 *
+	 * @param selectType The type of selection (include/exclude)
+	 * @return select tree nodes from select path. not null.
+	 */
+	public List<ChangesBrowserNode<?>> updateIncludeExcludeBySelectNodes(SelectType selectType) {
+		final TreePath[] selectTreePaths = filesTree.getSelectionPaths();
+		final List<ChangesBrowserNode<?>> selectNodes = new ArrayList<>();
+		for (TreePath selectionPath : (selectTreePaths != null ? selectTreePaths : new TreePath[0])) {
+			final var node = getChangesNode(selectionPath);
 			final var selectVirtualFile = getNodeBindVirtualFile(node);
-			dialog.removeSavedIncludeExcludeSelection(selectVirtualFile);
+			dialog.removeFlaggedIncludeExcludeSelection(selectVirtualFile);
 			final var isRecursive =
 					null != selectVirtualFile && selectVirtualFile.isDirectory() && dialog.isRecursiveActionSelected();
 			final var selectFile = new SettingSelectFile();
 			selectFile.setFilePath((null != selectVirtualFile) ? toOsFile(selectVirtualFile).toString() : null);
 			selectFile.setSelectType(selectType);
 			selectFile.setRecursive(isRecursive);
-			dialog.putFlagIncludeExcludeSelection(selectVirtualFile, selectFile);
+			dialog.putFlaggedIncludeExcludeSelection(selectVirtualFile, selectFile);
+			selectNodes.add(node);
+		}
+		return selectNodes;
+	}
+
+	public static ChangesBrowserNode<?> getChangesNode(TreePath selectionPath) {
+		return (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+	}
+
+	public void includeExcludeObjectsFrom(List<ChangesBrowserNode<?>> selectNodes) {
+		selectNodes.sort(Comparator.comparingInt(DefaultMutableTreeNode::getLevel));
+		final var travelledNodes = new ArrayList<ChangesBrowserNode<?>>();
+		for (ChangesBrowserNode<?> selectNode : selectNodes) {
+			if (travelledNodes.stream().anyMatch(travelledNode -> travelledNode.isNodeDescendant(selectNode))) {
+				continue;
+			}
+			includeExcludeObjectsFrom(TreeUtil.treeNodeTraverser(selectNode).preOrderDfsTraversal());
+			travelledNodes.add(selectNode);
 		}
 	}
 
-	public void includeExcludeObjectsBySelectFiles() {
-		final var treeNodes = TreeUtil.treeNodeTraverser(filesTree.getRoot()).preOrderDfsTraversal();
-		final Map<String, SettingSelectFile> selectFileMap = includeExcludeObjects(treeNodes);
+	public void includeExcludeObjectsAll() {
+		final var preOrderRoot = TreeUtil.treeNodeTraverser(filesTree.getRoot()).preOrderDfsTraversal();
+		includeExcludeObjectsFrom(preOrderRoot);
+	}
+
+	private void includeExcludeObjectsFrom(JBIterable<TreeNode> preOrderDfsNodes) {
+		final Map<String, SettingSelectFile> selectFileMap = collectIncludeExcludeObjects(preOrderDfsNodes);
 		final SettingSelectFile[] selectFiles = selectFileMap.values().toArray(new SettingSelectFile[0]);
 		final List<Map<Path, Object>> finalMaps = SettingSelectFile.combineFinalVirtualFiles(selectFiles);
 		this.filesTree.includeChanges(finalMaps.get(0).values());
 		this.filesTree.excludeChanges(finalMaps.get(1).values());
 	}
 
-	private Map<String, SettingSelectFile> includeExcludeObjects(JBIterable<TreeNode> treeNodes) {
+	/**
+	 * Collects and processes inclusion/exclusion settings for the provided pre-order depth-first traversal nodes.
+	 *
+	 * @param preOrderDfsNodes The pre-order depth-first traversal nodes to collect settings from
+	 * @return A map of updated select file settings
+	 */
+	private Map<String, SettingSelectFile> collectIncludeExcludeObjects(JBIterable<TreeNode> preOrderDfsNodes) {
 		final Map<String, SettingSelectFile> updatedSelectFileMap = new HashMap<>();
 		final Map<VirtualFile, SettingSelectFile> parentSelectionMap = new HashMap<>();
-		for (TreeNode treeNode : treeNodes) {
+		for (TreeNode treeNode : preOrderDfsNodes) {
 			final var changeNode = (ChangesBrowserNode<?>) treeNode;
 			final var currVirtualFile = getNodeBindVirtualFile(changeNode);
 			if (currVirtualFile == null) {
 				continue;
 			}
-			var selectFile = dialog.getFlagIncludeExcludeSelection(currVirtualFile);
-			if (selectFile == null) {
-				final var currParent = currVirtualFile.getParent();
-				selectFile = parentSelectionMap.get(currParent);
+			var selectFile = dialog.getFlaggedIncludeExcludeSelection(currVirtualFile);
+			if (selectFile == null || isNullSelectType(selectFile)) {
+				selectFile = findParentSelection(currVirtualFile, parentSelectionMap);
 			} else {
 				selectFile = selectFile.clone(); // avoid transient properties "mappingVfs" dirty
 			}
@@ -85,6 +115,7 @@ public class FileListTreeHandler {
 			if (currVirtualFile.isDirectory()) {
 				parentSelectionMap.put(currVirtualFile, selectFile);
 			} else {
+				//TODO performance change: toOsFile to remove
 				selectFile.putMappingVf(CommonUtils.toOsFile(currVirtualFile), changeNode.getUserObject());
 				updatedSelectFileMap.put(selectFile.getFilePath(), selectFile);
 			}
@@ -92,22 +123,42 @@ public class FileListTreeHandler {
 		return updatedSelectFileMap;
 	}
 
-	private void includeExcludeObject(ChangesBrowserNode<?> changeNode, SelectType selectType) {
-		final Object changeObj = changeNode.getUserObject();
-		if (selectType == SelectType.include) {
-			filesTree.includeChange(changeObj);
-		} else if (selectType == SelectType.exclude) {
-			filesTree.excludeChange(changeObj);
+	private SettingSelectFile findParentSelection(VirtualFile currVirtualFile, final Map<VirtualFile,
+			SettingSelectFile> parentSelectionMap) {
+		VirtualFile parent = currVirtualFile.getParent();
+		final SettingSelectFile tempSelectFile = new SettingSelectFile();
+		while (null != parent) {
+			final SettingSelectFile selectFile = parentSelectionMap.get(parent);
+			if (selectFile == null) {
+				parentSelectionMap.put(parent, tempSelectFile);
+				parent = parent.getParent();
+			} else if (isNullSelectType(selectFile)
+					|| isNonRecursiveInDirectParent(currVirtualFile, selectFile)) {
+				return null; //represent: previous find already not found
+			} else {
+				tempSelectFile.shallowOverrideFrom(selectFile);
+				return tempSelectFile;
+			}
 		}
+		return null;
+	}
+
+	private boolean isNonRecursiveInDirectParent(VirtualFile currVirtualFile, SettingSelectFile selectFile) {
+		return !selectFile.isRecursive() && (currVirtualFile.isDirectory() || !currVirtualFile.getParent().equals(selectFile.getVirtualFile()));
+	}
+
+	private boolean isNullSelectType(SettingSelectFile selectFile) {
+		return selectFile.getSelectType() == null || selectFile.getSelectType() == SelectType.noop;
 	}
 
 	/**
 	 * call this method repair include/exclude selection, when mouse click selection or key space press selection.
-	 * </br><b>Updates the changes tree inclusion model based on include or exclude criteria.
+	 * <br><b>generally used to inclusion changed listener</b>
+	 * </br>Updates the changes tree inclusion model based on include or exclude criteria.
 	 * If the dialog is set to ignore include changes or if another thread is already updating the inclusion model,
-	 * this method will return without making any updates.</b>
+	 * this method will return without making any updates.
 	 */
-	public void updateIncludeExcludeByPutFlag() {
+	public void reIncludeExcludeBySelections() {
 		// FileListActions is modifying changes tree inclusion model, ignore.
 		if (dialog.isIgnoreIncludeChanged()) {
 			return;
@@ -117,40 +168,18 @@ public class FileListTreeHandler {
 			return;
 		}
 		try {
-//			repairInclusionChanges();
-			includeExcludeObjectsBySelectFiles();
+			includeExcludeObjectsAll();
 		} finally {
 			updatingIncludeExclude.set(Boolean.FALSE);
 		}
 	}
 
-	/**
-	 * Repairs the changes related to including or excluding files or directories in the changes tree.
-	 * Iterates through the tree nodes in the files tree and for each node that is marked as include or exclude,
-	 * it checks if it should be included recursively and then calls FileListActions.includeExcludeSubObjects()
-	 * to update the sub-objects accordingly.
-	 */
-	private void repairInclusionChanges() {
-		final JBTreeTraverser<TreeNode> treeNodes = TreeUtil.treeNodeTraverser(filesTree.getRoot());
-		for (TreeNode treeNode : treeNodes) {
-			final var changeNode = (ChangesBrowserNode<?>) treeNode;
-//			final SelectType selectType =
-//					changeNode.getUserData(FileListDialog.KEY_TYPE_SELECT_FILE_DIRECTORY);
-//			if (selectType == SelectType.include || selectType == SelectType.exclude) {
-//				final var isRecursive =
-//						Boolean.TRUE.equals(changeNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY));
-//				FileListActions.includeExcludeSubObjects(isRecursive, changeNode, filesTree, selectType);
-//			}
-		}
-	}
-
-	public void updateIncludeExcludeBySettingFiles() {
-		final SettingSelectFile[] includeExcludeSelections = dialog.getFlagIncludeExcludeSelections();
-		if (includeExcludeSelections == null || includeExcludeSelections.length == 0 || !this.isShouldUpdateIncludeExclude()
-				|| this.filesTree.getSelectionCount() == 0) {
+	//general used to tree selection changed listener
+	public void updateIncludeExcludeWhenSelectChange() {
+		if (!this.isShouldUpdateIncludeExclude() || this.filesTree.getSelectionCount() == 0 || dialog.isFlaggedIncludeExcludeEmpty()) {
 			return;
 		}
-		// possibly not recursively call this method, but do following check anyway
+		// possibly would not recursively call this method, but do following check anyway
 
 		// FileListActions is modifying changes tree inclusion model, ignore.
 		if (dialog.isIgnoreIncludeChanged()) {
@@ -161,42 +190,10 @@ public class FileListTreeHandler {
 			return;
 		}
 		try {
-			includeExcludeObjectsBySelectFiles();
-//			doUpdateIncludeExcludeState(includeExcludeSelections);
+			includeExcludeObjectsAll();
 			this.setShouldUpdateIncludeExclude(false);
 		} finally {
 			updatingIncludeExclude.set(Boolean.FALSE);
-		}
-	}
-
-	private void doUpdateIncludeExcludeState(SettingSelectFile[] selectFiles) {
-		final var vfSettingMap = new HashMap<VirtualFile, SettingSelectFile>();
-		for (SettingSelectFile selectFile : selectFiles) {
-			if (selectFile != null) {
-				vfSettingMap.put(fromOsFile(selectFile.getFilePath()), selectFile);
-			}
-		}
-		final @NotNull JBIterable<TreeNode> treeNodes =
-				TreeUtil.treeNodeTraverser(filesTree.getRoot()).preOrderDfsTraversal();
-		for (TreeNode treeNode : treeNodes) {
-			final var changeNode = (ChangesBrowserNode<?>) treeNode;
-			final VirtualFile virtualFile = getNodeBindVirtualFile(changeNode);
-			if (virtualFile == null) {
-				continue;
-			}
-			doUpdateIncludeExcludeState(vfSettingMap, virtualFile, changeNode);
-		}
-	}
-
-	private void doUpdateIncludeExcludeState(HashMap<VirtualFile, SettingSelectFile> vfSettingMap,
-	                                         VirtualFile virtualFile, ChangesBrowserNode<?> changeNode) {
-		final SettingSelectFile selectFile = vfSettingMap.get(virtualFile);
-		if (selectFile != null) {
-			final SelectType fileSelectType = selectFile.getSelectType();
-			if (fileSelectType == SelectType.include || fileSelectType == SelectType.exclude) {
-				FileListActions.putIncludeExcludeSelectFlag(selectFile.isRecursive(), changeNode, this.filesTree,
-						fileSelectType);
-			}
 		}
 	}
 
@@ -219,6 +216,11 @@ public class FileListTreeHandler {
 			vf = ((ChangesBrowserModuleNode) treeNode).getModuleRoot().getVirtualFile();
 		}
 		return vf;
+	}
+
+	public static boolean isFolderNode(final ChangesBrowserNode<?> node) {
+		final VirtualFile virtualFile = getNodeBindVirtualFile(node);
+		return virtualFile != null && virtualFile.isDirectory();
 	}
 
 	public void groupByChanged(PropertyChangeEvent evt) {

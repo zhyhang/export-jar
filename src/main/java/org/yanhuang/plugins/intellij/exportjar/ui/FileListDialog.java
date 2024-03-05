@@ -29,7 +29,8 @@ public class FileListDialog extends SelectFilesDialog {
     private boolean recursiveActionSelected;
     private boolean ignoreIncludeChanged;
     private final FileListTreeHandler handler;
-    private final Map<VirtualFile, SettingSelectFile> virtualFileSettingSelectFileMap = new HashMap<>();
+    // virtual file to Include/Exclude selection mapping flagged by do actions
+    private final Map<VirtualFile, SettingSelectFile> flaggedVirtualFileSelectionMap = new HashMap<>();
 
     public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt, @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles, boolean deletableFiles) {
         super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
@@ -37,8 +38,8 @@ public class FileListDialog extends SelectFilesDialog {
         final ChangesTree filesTree = getFileList();
         // listener for restore the include/exclude select state because of mouse/space key select changed
         this.handler = new FileListTreeHandler(this);
-        filesTree.setInclusionListener(handler::updateIncludeExcludeByPutFlag);
-        filesTree.addSelectionListener(handler::updateIncludeExcludeBySettingFiles);
+        filesTree.setInclusionListener(handler::reIncludeExcludeBySelections);
+        filesTree.addSelectionListener(handler::updateIncludeExcludeWhenSelectChange);
         filesTree.addGroupingChangeListener(handler::groupByChanged);
         filesTree.setCellRenderer(new FileListTreeCellRender(this, filesTree.getCellRenderer()));
     }
@@ -75,7 +76,7 @@ public class FileListDialog extends SelectFilesDialog {
      */
     public SettingSelectFile[] getStoreIncludeExcludeSelections() {
         final VirtualFile[] svfFiles = getSelectedFiles().toArray(new VirtualFile[0]);
-        final List<SettingSelectFile> finalSelectFiles = createFinalSelectFiles(svfFiles, this.virtualFileSettingSelectFileMap);
+        final List<SettingSelectFile> finalSelectFiles = createFinalSelectFiles(svfFiles, this.flaggedVirtualFileSelectionMap);
         return finalSelectFiles.toArray(new SettingSelectFile[0]);
     }
 
@@ -120,35 +121,35 @@ public class FileListDialog extends SelectFilesDialog {
         return handler;
     }
 
-    public SettingSelectFile[] getFlagIncludeExcludeSelections() {
-        return this.virtualFileSettingSelectFileMap.values().toArray(new SettingSelectFile[0]);
+    public SettingSelectFile[] getFlaggedIncludeExcludeSelections() {
+        return this.flaggedVirtualFileSelectionMap.values().toArray(new SettingSelectFile[0]);
     }
 
-    public void setFlagIncludeExcludeSelections(SettingSelectFile[] savedIncludeExcludeSelections) {
+    public boolean isFlaggedIncludeExcludeEmpty(){
+        return this.flaggedVirtualFileSelectionMap.isEmpty();
+    }
+
+    public void setFlaggedIncludeExcludeSelections(SettingSelectFile[] savedIncludeExcludeSelections) {
         if (savedIncludeExcludeSelections != null) {
-            this.virtualFileSettingSelectFileMap.clear();
+            this.flaggedVirtualFileSelectionMap.clear();
             for (SettingSelectFile selectFile : savedIncludeExcludeSelections) {
                 final VirtualFile virtualFile = selectFile == null || selectFile.getFilePath() == null ? null :
                         CommonUtils.fromOsFile(selectFile.getFilePath());
-                this.virtualFileSettingSelectFileMap.put(virtualFile, selectFile);
+                this.putFlaggedIncludeExcludeSelection(virtualFile, selectFile);
             }
         }
     }
 
-    public SettingSelectFile getFlagIncludeExcludeSelection(VirtualFile vf) {
-        if (this.virtualFileSettingSelectFileMap != null) {
-            return virtualFileSettingSelectFileMap.get(vf);
-        }else{
-            return null;
-        }
+    public SettingSelectFile getFlaggedIncludeExcludeSelection(VirtualFile vf) {
+        return flaggedVirtualFileSelectionMap.get(vf);
     }
 
-    public SettingSelectFile putFlagIncludeExcludeSelection(VirtualFile virtualFile, SettingSelectFile selectFile) {
-        return this.virtualFileSettingSelectFileMap.put(virtualFile, selectFile);
+    public SettingSelectFile putFlaggedIncludeExcludeSelection(VirtualFile virtualFile, SettingSelectFile selectFile) {
+        return this.flaggedVirtualFileSelectionMap.put(virtualFile, selectFile);
     }
 
-    public SettingSelectFile removeSavedIncludeExcludeSelection(VirtualFile virtualFile) {
-        return this.virtualFileSettingSelectFileMap.remove(virtualFile);
+    public SettingSelectFile removeFlaggedIncludeExcludeSelection(VirtualFile virtualFile) {
+        return this.flaggedVirtualFileSelectionMap.remove(virtualFile);
     }
 
 }

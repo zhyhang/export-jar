@@ -272,7 +272,7 @@ public class CommonUtils {
     }
 
     public static VirtualFile fromOsFile(String osFilePath) {
-        return LocalFileSystem.getInstance().findFileByPath(osFilePath);
+        return LocalFileSystem.getInstance().findFileByPathIfCached(osFilePath);
     }
 
     public static Path toOsFile(VirtualFile virtualFile) {
