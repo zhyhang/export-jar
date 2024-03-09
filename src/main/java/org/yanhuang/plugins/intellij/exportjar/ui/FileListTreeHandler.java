@@ -132,9 +132,9 @@ public class FileListTreeHandler {
 			if (selectFile == null) {
 				parentSelectionMap.put(parent, tempSelectFile);
 				parent = parent.getParent();
-			} else if (isNullSelectType(selectFile)
+			} else if (isNullSelectType(selectFile) //represent: previous find already not found
 					|| isNonRecursiveInDirectParent(currVirtualFile, selectFile)) {
-				return null; //represent: previous find already not found
+				return null;
 			} else {
 				tempSelectFile.shallowOverrideFrom(selectFile);
 				return tempSelectFile;
@@ -147,7 +147,7 @@ public class FileListTreeHandler {
 		return !selectFile.isRecursive() && (currVirtualFile.isDirectory() || !currVirtualFile.getParent().equals(selectFile.getVirtualFile()));
 	}
 
-	private boolean isNullSelectType(SettingSelectFile selectFile) {
+	public static boolean isNullSelectType(SettingSelectFile selectFile) {
 		return selectFile.getSelectType() == null || selectFile.getSelectType() == SelectType.noop;
 	}
 
