@@ -140,9 +140,9 @@ public class FileListDialog extends SelectFilesDialog {
 		}
 		this.flaggedVirtualFileSelectionMap.clear();
 		for (SettingSelectFile selectFile : savedIncludeExcludeSelections) {
-            if (selectFile==null || FileListTreeHandler.isNullSelectType(selectFile)) {
-                continue;// filter out the noop select type
-            }
+			if (selectFile == null || selectFile.getVirtualFile() == null || FileListTreeHandler.isNullSelectType(selectFile)) {
+				continue;// filter out the noop select type
+			}
 			this.putFlaggedIncludeExcludeSelection(selectFile.getVirtualFile(), selectFile);
 		}
 	}
