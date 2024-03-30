@@ -1,5 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.dvcs.repo.Repository;
+import com.intellij.dvcs.ui.RepositoryChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.JBIterable;
@@ -191,6 +193,8 @@ public class FileListTreeHandler {
 			vf = ((ChangesBrowserFilePathNode) treeNode).getUserObject().getVirtualFile();
 		} else if (treeNode instanceof ChangesBrowserModuleNode) {
 			vf = ((ChangesBrowserModuleNode) treeNode).getModuleRoot().getVirtualFile();
+		} else if (treeNode instanceof RepositoryChangesBrowserNode) {
+			vf = ((Repository) treeNode.getUserObject()).getRoot();
 		}
 		return vf;
 	}
