@@ -128,6 +128,7 @@ public class FileListActions {
 			} else {
 				cleanSelectFlagNonRecursive(selectionPaths == null ? new TreePath[0] : selectionPaths);
 			}
+			dialog.getHandler().includeExcludeObjectsAll();
 			fileTree.repaint();
 		}
 

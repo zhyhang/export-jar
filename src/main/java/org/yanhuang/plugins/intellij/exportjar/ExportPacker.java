@@ -49,7 +49,6 @@ public class ExportPacker implements CompileStatusNotification {
             virtualFiles = new VirtualFile[0];
         }
         Set<VirtualFile> allVfs = new HashSet<>();
-        //TODO recursively collect not useful because this.selectedFiles only include File no Dir
         for (VirtualFile virtualFile : virtualFiles) {
             CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
         }

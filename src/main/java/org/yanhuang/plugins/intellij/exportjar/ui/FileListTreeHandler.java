@@ -105,6 +105,7 @@ public class FileListTreeHandler {
 			}
 			var selectFile = dialog.getFlaggedIncludeExcludeSelection(currVirtualFile);
 			if (selectFile == null || isNullSelectType(selectFile)) {
+				// find recursively parent flagged selection
 				selectFile = findParentSelection(currVirtualFile, parentSelectionMap);
 			} else {
 				selectFile = selectFile.clone(); // avoid transient properties "mappingVfs" dirty
@@ -126,14 +127,15 @@ public class FileListTreeHandler {
 	private SettingSelectFile findParentSelection(VirtualFile currVirtualFile, final Map<VirtualFile,
 			SettingSelectFile> parentSelectionMap) {
 		VirtualFile parent = currVirtualFile.getParent();
-		final SettingSelectFile tempSelectFile = new SettingSelectFile();
+		final SettingSelectFile tempSelectFile = new SettingSelectFile();//indicate parent already processed or not
 		while (null != parent) {
 			final SettingSelectFile selectFile = parentSelectionMap.get(parent);
 			if (selectFile == null) {
 				parentSelectionMap.put(parent, tempSelectFile);
 				parent = parent.getParent();
-			} else if (isNullSelectType(selectFile) //represent: previous find already not found
+			} else if (isNullSelectType(selectFile)//represent: previous process already not found
 					|| isNonRecursiveInDirectParent(currVirtualFile, selectFile)) {
+				parentSelectionMap.put(currVirtualFile.isDirectory() ? currVirtualFile : parent, tempSelectFile);
 				return null;
 			} else {
 				tempSelectFile.shallowOverrideFrom(selectFile);

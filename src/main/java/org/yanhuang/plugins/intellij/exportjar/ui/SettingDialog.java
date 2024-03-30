@@ -262,16 +262,17 @@ public class SettingDialog extends DialogWrapper {
 		createFileListTree();
 	}
 
-	public void setIncludeExcludeSelections(SettingSelectFile[] selectFiles) {
+	public void setIncludeExcludeSelections(SettingSelectFile[] inExSelectFiles) {
 		final var selectFileList = new ArrayList<VirtualFile>();
-		for (SettingSelectFile selectFile : selectFiles == null ? new SettingSelectFile[0] : selectFiles) {
-			if (selectFile != null) {
-				selectFileList.add(CommonUtils.fromOsFile(selectFile.getFilePath()));
+		for (SettingSelectFile selectFile : inExSelectFiles == null ? new SettingSelectFile[0] : inExSelectFiles) {
+			var svf = (selectFile == null ? null : selectFile.getVirtualFile());
+			if (svf != null) {
+				selectFileList.add(svf);
 			}
 		}
 		this.selectedFiles = selectFileList.toArray(new VirtualFile[0]);
 		createFileListTree();
-		this.fileListDialog.setFlaggedIncludeExcludeSelections(selectFiles);
+		this.fileListDialog.setFlaggedIncludeExcludeSelections(inExSelectFiles);
 		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
 	}
 
