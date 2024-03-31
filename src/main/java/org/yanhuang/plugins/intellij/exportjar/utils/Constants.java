@@ -67,4 +67,6 @@ public interface Constants {
     String notifyIncludeSelectDirectory = "Include %d directories, %d files.";
     String notifyExcludeSelectDirectory = "Exclude %d directories, %d files.";
 
+    String groupByDirectoryAll = "directory-all";
+
 }

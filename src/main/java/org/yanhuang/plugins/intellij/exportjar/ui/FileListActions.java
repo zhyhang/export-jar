@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ToggleAction;
+import com.intellij.openapi.vcs.changes.actions.SetChangesGroupingAction;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import org.jetbrains.annotations.NotNull;
@@ -177,6 +178,21 @@ public class FileListActions {
 			final ChangesBrowserNode<?> changesNode = (ChangesBrowserNode<?>) node;
 			final var virtualFile = FileListTreeHandler.getNodeBindVirtualFile(changesNode);
 			this.dialog.removeFlaggedIncludeExcludeSelection(virtualFile);
+		}
+	}
+
+	/**
+	 * file list dialog toolbar group by action(group by directory not hide empty package).
+	 * register action extension in plugin.xml.
+	 * It main function write in FileListTreeGroupPolicyFactory
+	 * @see FileListTreeGroupPolicyFactory
+	 */
+	public static class SetDirectoryAllChangesGroupingAction extends SetChangesGroupingAction {
+
+		@NotNull
+		@Override
+		public String getGroupingKey() {
+			return groupByDirectoryAll;
 		}
 	}
 

@@ -89,6 +89,8 @@
         <!-- add button to commit button group-->
         <vcs.changes.localCommitExecutor
                 implementation="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitExecutor"/>
+        <changesGroupingPolicy  key="directory-all" id="directory-all"
+                implementationClass="org.yanhuang.plugins.intellij.exportjar.ui.FileListTreeGroupPolicyFactory"/>
     </extensions>
 
     <actions>
@@ -122,6 +124,12 @@
                           anchor="after"
                           relative-to-action="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"/>
         </group>
+        <action id="ChangesView.GroupBy.DirectoryAll"
+                class="org.yanhuang.plugins.intellij.exportjar.ui.FileListActions$SetDirectoryAllChangesGroupingAction"
+                text="Directory-All">
+            <add-to-group group-id="ChangesView.GroupBy" anchor="after"
+                          relative-to-action="ChangesView.GroupBy.Directory"/>
+        </action>
     </actions>
 
 </idea-plugin>
