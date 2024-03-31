@@ -2,7 +2,6 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.yanhuang.plugins.intellij.exportjar.model.*;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 
@@ -28,7 +27,7 @@ public class TemplateEventHandler {
 	/**
 	 * Transient template for storing no-template-name settings
 	 */
-	private VirtualFile[] transientTemplateSelectFiles;
+	private SettingSelectFile[] transientTemplateSelectFiles;
 	private final SettingTemplate transientTemplate = new SettingTemplate();
 
 	public TemplateEventHandler(final SettingDialog settingDialog) {
@@ -315,7 +314,8 @@ public class TemplateEventHandler {
 	private SettingSelectFile[] readStoredSelectFiles(final SettingTemplate template) {
 		final var templateName = template.getName();
 		final var projectName = settingDialog.project.getName();
-		return historyDao.readStoredSelectFiles(projectName, templateName);
+		final SettingSelectFile[] selectFiles = historyDao.readStoredSelectFiles(projectName, templateName);
+		return Arrays.stream(selectFiles).filter(sf -> sf.getVirtualFile() != null).toArray(SettingSelectFile[]::new);
 	}
 
 	private void transientTemplateChanged(ItemEvent e) {
@@ -330,12 +330,12 @@ public class TemplateEventHandler {
 		if (this.transientTemplateSelectFiles != null) {
 			updateUIOptions(this.transientTemplate);
 			updateUIExportJar(this.transientTemplate);
-			this.settingDialog.setSelectedFiles(this.transientTemplateSelectFiles);
+			this.settingDialog.setIncludeExcludeSelections(this.transientTemplateSelectFiles);
 		}
 	}
 
 	private void saveTransientTemplate() {
-		this.transientTemplateSelectFiles = settingDialog.getSelectedFiles();
+		this.transientTemplateSelectFiles =  settingDialog.fileListDialog.getStoreIncludeExcludeSelections();
 		this.transientTemplate.setOptions(settingDialog.pickExportOptions());
 		this.transientTemplate.setExportJar(buildExportJarArray());
 	}

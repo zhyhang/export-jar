@@ -49,7 +49,6 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * export jar settings dialog (link to SettingDialog.form)
  * <li><b>In UIDesigner: export options JCheckBox's name is same as HistoryData.ExportOptions</b></li>
  * <li><b>If modal dialog, should extends DialogWrapper, or else throw exception when setVisible(true)</b></li>
- *
  */
 public class SettingDialog extends DialogWrapper {
 	protected final Project project;
@@ -79,7 +78,7 @@ public class SettingDialog extends DialogWrapper {
 	private JPanel templateTitlePanel;
 	private JPanel outputJarTitlePanel;
 	private JPanel optionTitlePanel;
-	private FileListDialog fileListDialog;
+	protected FileListDialog fileListDialog;
 	private BorderLayoutPanel fileListLabel;
 	private final HistoryDao historyDao = new HistoryDao();
 
@@ -125,7 +124,7 @@ public class SettingDialog extends DialogWrapper {
 		this.fileListSettingSplitPanel.setProportion(splitPanelRatio);
 		final Dimension dialogSize =
 				Optional.ofNullable(history.getUi()).map(UISizes::getExportDialog).orElse(Constants.settingDialogSize);
-		this.setSize(dialogSize.width,dialogSize.height);
+		this.setSize(dialogSize.width, dialogSize.height);
 		this.templateHandler.initUI(history, template);
 	}
 
@@ -196,7 +195,7 @@ public class SettingDialog extends DialogWrapper {
 
 	private void uiDebug() {
 		debugButton.setVisible(true);
-		this.fileListDialog.getFileList().addSelectionListener(()->{
+		this.fileListDialog.getFileList().addSelectionListener(() -> {
 			System.out.println("in ui debug");
 		});
 
@@ -243,7 +242,8 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	/**
-	 * Retrieves the include and exclude selections from the file list dialog and returns an array of SettingSelectFile objects.
+	 * Retrieves the include and exclude selections from the file list dialog and returns an array of
+	 * SettingSelectFile objects.
 	 */
 	public SettingSelectFile[] getIncludeExcludeSelections() {
 		return this.fileListDialog.getStoreIncludeExcludeSelections();
@@ -263,14 +263,8 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	public void setIncludeExcludeSelections(SettingSelectFile[] inExSelectFiles) {
-		final var selectFileList = new ArrayList<VirtualFile>();
-		for (SettingSelectFile selectFile : inExSelectFiles == null ? new SettingSelectFile[0] : inExSelectFiles) {
-			var svf = (selectFile == null ? null : selectFile.getVirtualFile());
-			if (svf != null) {
-				selectFileList.add(svf);
-			}
-		}
-		this.selectedFiles = selectFileList.toArray(new VirtualFile[0]);
+		this.selectedFiles =
+				Arrays.stream(inExSelectFiles != null ? inExSelectFiles : new SettingSelectFile[0]).map(SettingSelectFile::getVirtualFile).toArray(VirtualFile[]::new);
 		createFileListTree();
 		this.fileListDialog.setFlaggedIncludeExcludeSelections(inExSelectFiles);
 		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
@@ -330,7 +324,8 @@ public class SettingDialog extends DialogWrapper {
 
 	private boolean isEmpty(VirtualFile[] exportFiles) {
 		if (exportFiles == null || exportFiles.length == 0) {
-			ApplicationManager.getApplication().invokeAndWait(() -> showErrorDialog(project, "Export files is empty, " +
+			ApplicationManager.getApplication().invokeAndWait(() -> showErrorDialog(project, "Export files is empty," +
+					" " +
 					"please select them first", Constants.actionName));
 			return true;
 		}

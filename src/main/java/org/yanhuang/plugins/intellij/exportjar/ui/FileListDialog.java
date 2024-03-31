@@ -74,6 +74,7 @@ public class FileListDialog extends SelectFilesDialog {
 	 * <li>if get final files (only files) to export, use getSelectedFiles() method</li>
 	 *
 	 * @return An array of SettingSelectFile objects representing the include and exclude selections (files and dirs).
+	 * Include noop or select type is null.
 	 * The array contains the selected files with their respective select type (include or exclude),
 	 * file path, and recursive flag.
 	 */
@@ -135,12 +136,10 @@ public class FileListDialog extends SelectFilesDialog {
 	}
 
 	public void setFlaggedIncludeExcludeSelections(SettingSelectFile[] savedIncludeExcludeSelections) {
-		if (savedIncludeExcludeSelections == null) {
-			return;
-		}
 		this.flaggedVirtualFileSelectionMap.clear();
-		for (SettingSelectFile selectFile : savedIncludeExcludeSelections) {
-			if (selectFile == null || selectFile.getVirtualFile() == null || FileListTreeHandler.isNullSelectType(selectFile)) {
+		for (SettingSelectFile selectFile : savedIncludeExcludeSelections != null ? savedIncludeExcludeSelections :
+				new SettingSelectFile[0]) {
+			if (selectFile == null || FileListTreeHandler.isNullSelectType(selectFile)) {
 				continue;// filter out the noop select type
 			}
 			this.putFlaggedIncludeExcludeSelection(selectFile.getVirtualFile(), selectFile);
