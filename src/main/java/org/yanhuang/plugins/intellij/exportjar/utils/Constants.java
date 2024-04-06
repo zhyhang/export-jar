@@ -18,8 +18,10 @@ public interface Constants {
     String actionNameInclude = "Include selection";
     String actionNameExclude = "Exclude selection";
     String actionNameCleanIncludeExclude = "Clean Include/Exclude selection";
-    String actionNameRecursiveSelection = "Recursively Include/Exclude dir or Recursively Clean selection";
-    String actionNameUnRecursiveSelection = "Include/Exclude current Dir or Clean current selection";
+    String actionNameRecursiveSelection = "Recursively include/exclude dir or Recursively clean selection";
+    String actionNameUnRecursiveSelection = "Include/Exclude current dir or Clean current selection";
+    String actionNameExpandDirectory = "Expand all level directories when grouping by directory";
+    String actionNameCollapseDirectory = "Collapse empty directories when grouping by directory";
     String infoTabName = "Packing Export Jar";
     String titleFileList = "Select Files";
     String titleTemplateSetting = "Templates";
@@ -67,6 +69,7 @@ public interface Constants {
     String notifyIncludeSelectDirectory = "Include %d directories, %d files.";
     String notifyExcludeSelectDirectory = "Exclude %d directories, %d files.";
 
-    String groupByDirectoryAll = "directory-all";
+    String groupByDirectoryNoCollapse = "directory-no-collapse";
+    String fileListTreeHelperNodeKey = "helper-node";
 
 }

@@ -6,6 +6,7 @@ import com.intellij.openapi.vcs.VcsShowConfirmationOption;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ReflectionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
@@ -13,6 +14,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,17 +27,20 @@ import java.util.function.BiConsumer;
 public class FileListDialog extends SelectFilesDialog {
 
 	private JComponent centerPanel;
+	private DefaultActionGroup actionGroup;
 
 	private boolean recursiveActionSelected;
 	private boolean ignoreIncludeChanged;
 	private final FileListTreeHandler handler;
 	// virtual file to Include/Exclude selection mapping flagged by do actions
 	private final Map<VirtualFile, SettingSelectFile> flaggedVirtualFileSelectionMap = new HashMap<>();
+	;
 
 	public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt,
                           @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles,
                           boolean deletableFiles) {
 		super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
+		replaceFilesTree(project, files, selectableFiles, deletableFiles);
 		init();
 		final ChangesTree filesTree = getFileList();
 		// listener for restore the include/exclude select state because of mouse/space key select changed
@@ -46,13 +51,36 @@ public class FileListDialog extends SelectFilesDialog {
 		filesTree.setCellRenderer(new FileListTreeCellRender(this, filesTree.getCellRenderer()));
 	}
 
+	private void replaceFilesTree(Project project, List<? extends VirtualFile> files, boolean selectableFiles, boolean deletableFiles) {
+		try {
+			final Field treeField = getTreeField(getFileList());
+			if (treeField != null) {
+				final var newTree = new FileListTree(project, selectableFiles, deletableFiles, files);
+				treeField.setAccessible(true);
+				treeField.set(this, newTree);
+			}
+		} catch (IllegalAccessException e) {
+			//TODO print log to warn partial function not working
+		}
+	}
+
+	private Field getTreeField(ChangesTree orgFilesTree) throws IllegalAccessException {
+		final List<Field> fields = ReflectionUtil.collectFields(SelectFilesDialog.class);
+		for (Field field : fields) {
+			field.setAccessible(true);
+			if (field.get(this) == orgFilesTree) {
+				return field;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	protected @Nullable
 	JComponent createCenterPanel() {
 		this.centerPanel = super.createCenterPanel();
 		return this.centerPanel;
 	}
-
 
 	public JComponent getCenterPanel() {
 		return centerPanel;
@@ -104,6 +132,7 @@ public class FileListDialog extends SelectFilesDialog {
 	protected @NotNull DefaultActionGroup createToolbarActions() {
 		final DefaultActionGroup group = super.createToolbarActions();
 		group.addAll(FileListActions.treeOperationActions(this));
+		this.actionGroup = group;
 		return group;
 	}
 
@@ -157,5 +186,7 @@ public class FileListDialog extends SelectFilesDialog {
 	public SettingSelectFile removeFlaggedIncludeExcludeSelection(VirtualFile virtualFile) {
 		return this.flaggedVirtualFileSelectionMap.remove(virtualFile);
 	}
+
+
 
 }

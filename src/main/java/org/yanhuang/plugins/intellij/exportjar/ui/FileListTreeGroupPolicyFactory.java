@@ -16,7 +16,7 @@ import static com.intellij.openapi.vcs.changes.ui.TreeModelBuilder.PATH_NODE_BUI
 /**
  * Register in plugin.xml as changesGroupingPolicy extension.
  * Register the group by action in plugin.xml meanwhile.
- * @see org.yanhuang.plugins.intellij.exportjar.ui.FileListActions.SetDirectoryAllChangesGroupingAction
+ * @see FileListActions.SetDirectoryNoCollapseChangesGroupingAction
  */
 public class FileListTreeGroupPolicyFactory extends ChangesGroupingPolicyFactory {
 	@Override
@@ -68,6 +68,12 @@ class FileListTreeGroupPolicy extends BaseChangesGroupingPolicy {
 			if (pathNode != null) {
 				pathNode.markAsHelperNode();
 				DIRECTORY_CACHE.getValue(cachingRoot).put(parentPath.getKey(), pathNode);
+				final int childCount = pathNode.getChildCount();
+				if(childCount<=1 && pathNode.getFileCount()<=0) {
+					final ChangesBrowserNode<?> helperNode = ChangesBrowserNode.createRoot();
+					helperNode.putUserData(FileListTree.KEY_HELPER_NODE, Boolean.TRUE);
+					pathNode.insert(helperNode, childCount);
+				}
 				nodes.add(pathNode);
 			}
 		}

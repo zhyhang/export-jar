@@ -35,7 +35,8 @@ public class FileListActions {
 		return new AnAction[]{new RecursiveToggleAction(dialog),
 				new IncludeSelectAction(dialog),
 				new ExcludeSelectAction(dialog),
-				new CleanIncludeExcludeAction(dialog)};
+				new CleanIncludeExcludeAction(dialog),
+				new DirectoryExpandToggleAction(dialog)};
 	}
 
 	private static void doIncludeExcludeAction(FileListDialog dialog, ChangesTree fileTree, SelectType selectType) {
@@ -104,8 +105,8 @@ public class FileListActions {
 				presentation.setIcon(AllIcons.Vcs.Folders);
 				presentation.setText(actionNameRecursiveSelection);
 			} else {
-				presentation.setText(actionNameUnRecursiveSelection);
 				presentation.setIcon(AllIcons.Actions.ListFiles);
+				presentation.setText(actionNameUnRecursiveSelection);
 			}
 		}
 	}
@@ -181,18 +182,62 @@ public class FileListActions {
 		}
 	}
 
+	private static class DirectoryExpandToggleAction extends ToggleAction {
+		private final FileListDialog dialog;
+
+		public DirectoryExpandToggleAction(FileListDialog dialog) {
+			super(actionNameCollapseDirectory, null, AllIcons.Actions.GroupByPackage);
+			this.dialog = dialog;
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			if (dialog.getFileList() instanceof FileListTree) {
+				e.getPresentation().setEnabled(((FileListTree) dialog.getFileList()).isDirectoryModuleGrouping());
+			}
+		}
+
+		@Override
+		public boolean isSelected(@NotNull AnActionEvent e) {
+			final ChangesTree changesTree = dialog.getFileList();
+			if (changesTree instanceof FileListTree) {
+				return ((FileListTree) changesTree).isExpandAllDirectory();
+			}
+			return false;
+		}
+
+		@Override
+		public void setSelected(@NotNull AnActionEvent e, boolean state) {
+			final ChangesTree changesTree = dialog.getFileList();
+			if (changesTree instanceof FileListTree) {
+				((FileListTree) changesTree).setExpandAllDirectory(state);
+			}
+			Presentation presentation = e.getPresentation();
+			if (state) {
+				presentation.setIcon(AllIcons.Actions.ShowAsTree);
+				presentation.setText(actionNameExpandDirectory);
+			} else {
+				presentation.setIcon(AllIcons.Actions.GroupByPackage);
+				presentation.setText(actionNameCollapseDirectory);
+			}
+			changesTree.rebuildTree();
+		}
+	}
+
 	/**
 	 * file list dialog toolbar group by action(group by directory not hide empty package).
 	 * register action extension in plugin.xml.
 	 * It main function write in FileListTreeGroupPolicyFactory
+	 *
 	 * @see FileListTreeGroupPolicyFactory
 	 */
-	public static class SetDirectoryAllChangesGroupingAction extends SetChangesGroupingAction {
+	public static class SetDirectoryNoCollapseChangesGroupingAction extends SetChangesGroupingAction {
 
 		@NotNull
 		@Override
 		public String getGroupingKey() {
-			return groupByDirectoryAll;
+			return groupByDirectoryNoCollapse;
 		}
 	}
 
