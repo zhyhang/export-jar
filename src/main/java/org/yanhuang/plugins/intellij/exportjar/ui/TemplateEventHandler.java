@@ -2,6 +2,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import org.yanhuang.plugins.intellij.exportjar.model.*;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.openapi.ui.Messages.*;
+import static org.yanhuang.plugins.intellij.exportjar.ui.FileListTreeHandler.updateUIFileListTreeGrouping;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorNotify;
 
@@ -40,7 +42,7 @@ public class TemplateEventHandler {
 	 *
 	 * @param history     setting history saved
 	 * @param curTemplate current using template name (null: start from "export jar" action, not null: start from "
-	 *                       export jar by template" action)
+	 *                    export jar by template" action)
 	 */
 	public void initUI(SettingHistory history, String curTemplate) {
 		if (curTemplate != null && !curTemplate.isBlank()) {
@@ -81,6 +83,7 @@ public class TemplateEventHandler {
 		template.ifPresent(this::updateUIOptions);
 		template.ifPresent(this::updateUIExportJar);
 		template.ifPresent(this::updateUISelectFiles);
+		template.ifPresent(this::updateUIFileListTree);
 	}
 
 	/**
@@ -98,7 +101,7 @@ public class TemplateEventHandler {
 	private void updateUI(SettingHistory history, String curTemplate) {
 		final boolean templateEnable = updateUIState();
 		if (templateEnable) {
-			if(curTemplate==null || curTemplate.isBlank()) {
+			if (curTemplate == null || curTemplate.isBlank()) {
 				// save settings to transient fields status change from disable to enable
 				saveTransientTemplate();
 			}
@@ -214,6 +217,17 @@ public class TemplateEventHandler {
 		this.settingDialog.setIncludeExcludeSelections(selectFiles);
 	}
 
+	private void updateUIFileListTree(SettingTemplate template) {
+		final ChangesTree changesTree = settingDialog.fileListDialog.getFileList();
+		if (changesTree instanceof FileListTree) {
+			((FileListTree) changesTree).setExpandAllDirectory(template.isFileListTreeExpandDirectory());
+		}
+		if (template.getFileListTreeGroupingKeys() != null) {
+			updateUIFileListTreeGrouping(changesTree, template.getFileListTreeGroupingKeys());
+		}
+		changesTree.rebuildTree();
+	}
+
 	private void updateUIDataDisableTemplate(SettingHistory history) {
 		final SettingTemplate global = history.getGlobal();
 		if (this.transientTemplateSelectFiles != null) {
@@ -266,6 +280,8 @@ public class TemplateEventHandler {
 			curTemplate.setOptions(settingDialog.pickExportOptions());
 			final Path selectStore = storeSelectFiles(templateName);
 			curTemplate.setSelectFilesStore(selectStore.toString());
+			curTemplate.setFileListTreeExpandDirectory(settingDialog.fileListDialog.isExpandAllDirectory());
+			curTemplate.setFileListTreeGroupingKeys(settingDialog.fileListDialog.getGroupingKeys());
 			return historyDao.saveProject(settingDialog.project.getName(), curTemplate);
 		}
 		return null;
@@ -301,8 +317,10 @@ public class TemplateEventHandler {
 	/**
 	 * store select files to history for template.
 	 * consider the include/exclude selection.
-	 * if file under certain include or exclude directory, the file will not save to history or else directory will be saved.
+	 * if file under certain include or exclude directory, the file will not save to history or else directory will be
+	 * saved.
 	 * should travel the whole files tree to find include or exclude selections.
+	 *
 	 * @param templateName template name
 	 * @return template history store file, full path
 	 */
@@ -330,14 +348,17 @@ public class TemplateEventHandler {
 		if (this.transientTemplateSelectFiles != null) {
 			updateUIOptions(this.transientTemplate);
 			updateUIExportJar(this.transientTemplate);
+			updateUIFileListTree(this.transientTemplate);
 			this.settingDialog.setIncludeExcludeSelections(this.transientTemplateSelectFiles);
 		}
 	}
 
 	private void saveTransientTemplate() {
-		this.transientTemplateSelectFiles =  settingDialog.fileListDialog.getStoreIncludeExcludeSelections();
+		this.transientTemplateSelectFiles = settingDialog.fileListDialog.getStoreIncludeExcludeSelections();
 		this.transientTemplate.setOptions(settingDialog.pickExportOptions());
 		this.transientTemplate.setExportJar(buildExportJarArray());
+		this.transientTemplate.setFileListTreeExpandDirectory(settingDialog.fileListDialog.isExpandAllDirectory());
+		this.transientTemplate.setFileListTreeGroupingKeys(settingDialog.fileListDialog.getGroupingKeys());
 	}
 
 	/**

@@ -50,6 +50,10 @@ public class FileListActions {
 		fileTree.repaint();
 	}
 
+	private static void actionEnable(AnActionEvent e, ChangesTree fileTree) {
+		e.getPresentation().setEnabled(fileTree.getGroupingSupport().isDirectory());
+	}
+
 	private static class IncludeSelectAction extends AnAction {
 		private final FileListDialog dialog;
 		private final ChangesTree fileTree;
@@ -58,6 +62,12 @@ public class FileListActions {
 			super(actionNameInclude, null, AllIcons.Actions.Selectall);
 			this.dialog = dialog;
 			this.fileTree = dialog.getFileList();
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, fileTree);
 		}
 
 		@Override
@@ -78,6 +88,12 @@ public class FileListActions {
 		}
 
 		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, fileTree);
+		}
+
+		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
 			doIncludeExcludeAction(dialog, fileTree, SelectType.exclude);
 		}
@@ -90,6 +106,12 @@ public class FileListActions {
 		public RecursiveToggleAction(FileListDialog dialog) {
 			super(actionNameUnRecursiveSelection, null, AllIcons.Actions.ListFiles);
 			this.dialog = dialog;
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, this.dialog.getFileList());
 		}
 
 		@Override
@@ -119,6 +141,12 @@ public class FileListActions {
 			super(actionNameCleanIncludeExclude, null, AllIcons.Actions.Undo);
 			this.dialog = dialog;
 			this.fileTree = dialog.getFileList();
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, fileTree);
 		}
 
 		@Override
@@ -194,8 +222,10 @@ public class FileListActions {
 		public void update(@NotNull AnActionEvent e) {
 			super.update(e);
 			if (dialog.getFileList() instanceof FileListTree) {
-				e.getPresentation().setEnabled(((FileListTree) dialog.getFileList()).isDirectoryModuleGrouping());
+				final boolean enable = ((FileListTree) dialog.getFileList()).isDirectoryModuleGrouping();
+				e.getPresentation().setEnabled(enable);
 			}
+			updateUi(dialog.isExpandAllDirectory(), e.getPresentation());
 		}
 
 		@Override
@@ -213,7 +243,10 @@ public class FileListActions {
 			if (changesTree instanceof FileListTree) {
 				((FileListTree) changesTree).setExpandAllDirectory(state);
 			}
-			Presentation presentation = e.getPresentation();
+			changesTree.rebuildTree();
+		}
+
+		private static void updateUi(boolean state, Presentation presentation) {
 			if (state) {
 				presentation.setIcon(AllIcons.Actions.ShowAsTree);
 				presentation.setText(actionNameExpandDirectory);
@@ -221,7 +254,6 @@ public class FileListActions {
 				presentation.setIcon(AllIcons.Actions.GroupByPackage);
 				presentation.setText(actionNameCollapseDirectory);
 			}
-			changesTree.rebuildTree();
 		}
 	}
 

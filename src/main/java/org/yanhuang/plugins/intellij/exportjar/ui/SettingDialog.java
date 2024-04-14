@@ -221,7 +221,7 @@ public class SettingDialog extends DialogWrapper {
 				}).map(ExportOptions::valueOf).toArray(ExportOptions[]::new);
 	}
 
-	private void onSelectJarFileButton(ActionEvent event) {
+		private void onSelectJarFileButton(ActionEvent event) {
 		FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
 		Consumer<VirtualFile> chooserConsumer = new FileChooserConsumerImplForComboBox(this.outPutJarFileComboBox);
 		FileChooser.chooseFile(descriptor, project, null, chooserConsumer);

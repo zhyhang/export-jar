@@ -62,6 +62,8 @@ public class HistoryDao {
 		globalTemplate.setCreateTime(ts);
 		globalTemplate.setUpdateTime(ts);
 		globalTemplate.setExportJar(new ExportJarInfo[0]);
+		globalTemplate.setFileListTreeExpandDirectory(false);
+		globalTemplate.setFileListTreeGroupingKeys(null);
 		return globalTemplate;
 	}
 

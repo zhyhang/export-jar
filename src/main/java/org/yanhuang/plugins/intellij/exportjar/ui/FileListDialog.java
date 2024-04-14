@@ -3,10 +3,12 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsShowConfirmationOption;
+import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
 import com.intellij.openapi.vcs.changes.ui.SelectFilesDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ReflectionUtil;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
@@ -15,10 +17,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -34,7 +33,6 @@ public class FileListDialog extends SelectFilesDialog {
 	private final FileListTreeHandler handler;
 	// virtual file to Include/Exclude selection mapping flagged by do actions
 	private final Map<VirtualFile, SettingSelectFile> flaggedVirtualFileSelectionMap = new HashMap<>();
-	;
 
 	public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt,
                           @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles,
@@ -108,24 +106,45 @@ public class FileListDialog extends SelectFilesDialog {
 	 */
 	public SettingSelectFile[] getStoreIncludeExcludeSelections() {
 		final VirtualFile[] svfFiles = getSelectedFiles().toArray(new VirtualFile[0]);
-		final List<SettingSelectFile> finalSelectFiles = createFinalSelectFiles(svfFiles,
-                this.flaggedVirtualFileSelectionMap);
+		final List<SettingSelectFile> finalSelectFiles = createFinalSelectFiles(svfFiles);
 		return finalSelectFiles.toArray(new SettingSelectFile[0]);
 	}
 
-	private List<SettingSelectFile> createFinalSelectFiles(VirtualFile[] svfFiles,
-                                                           Map<VirtualFile, SettingSelectFile> vfSettingMap) {
+	private List<SettingSelectFile> createFinalSelectFiles(VirtualFile[] svfFiles) {
 		final List<SettingSelectFile> finalSelectFiles = new ArrayList<>();
 		for (VirtualFile svfFile : svfFiles) {
-			final SettingSelectFile selectFile = vfSettingMap.get(svfFile);
+			final SettingSelectFile selectFile = this.flaggedVirtualFileSelectionMap.get(svfFile);
 			if (selectFile == null) {
 				final SettingSelectFile selectFileNew = new SettingSelectFile();
 				selectFileNew.setFilePath(CommonUtils.toOsFile(svfFile).toString());
 				finalSelectFiles.add(selectFileNew);
 			}
 		}
-		final boolean ignored = finalSelectFiles.addAll(vfSettingMap.values());
+		final boolean ignored = finalSelectFiles.addAll(filterMatchTreeNode());
 		return finalSelectFiles;
+	}
+
+	/**
+	 * filter SettingSelectFile that in file list tree.
+	 */
+	private List<SettingSelectFile> filterMatchTreeNode() {
+		final ChangesBrowserNode<?> root = this.getFileList().getRoot();
+		final Set<VirtualFile> allVfInTree = new HashSet<>();
+		TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().forEach(n->{
+			final var node = (ChangesBrowserNode<?>) n;
+			final var vfs = FileListTreeHandler.getNodeBindVirtualFile(node);
+			if (vfs != null) {
+				allVfInTree.add(vfs);
+			}
+		});
+		final var filterSelectFiles = new ArrayList<SettingSelectFile>();
+		for (SettingSelectFile ssf : this.flaggedVirtualFileSelectionMap.values()) {
+			final VirtualFile ssfVirtualFile = ssf.getVirtualFile();
+			if (ssfVirtualFile == null || allVfInTree.contains(ssfVirtualFile)) {
+				filterSelectFiles.add(ssf);
+			}
+		}
+		return filterSelectFiles;
 	}
 
 	@Override
@@ -187,6 +206,16 @@ public class FileListDialog extends SelectFilesDialog {
 		return this.flaggedVirtualFileSelectionMap.remove(virtualFile);
 	}
 
+	public boolean isExpandAllDirectory(){
+		if (this.getFileList() instanceof FileListTree) {
+			return ((FileListTree) this.getFileList()).isExpandAllDirectory();
+		}
+		return false;
+	}
 
+	public String[] getGroupingKeys(){
+		final Set<String> keys = this.getFileList().getGroupingSupport().getGroupingKeys();
+		return keys.toArray(new String[0]);
+	}
 
 }

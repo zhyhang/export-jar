@@ -215,4 +215,18 @@ public class FileListTreeHandler {
 	public void setShouldUpdateIncludeExclude(boolean shouldUpdateIncludeExclude) {
 		this.shouldUpdateIncludeExclude = shouldUpdateIncludeExclude;
 	}
+
+	public static void updateUIFileListTreeGrouping(final ChangesTree changesTree, String[] groupingKeys) {
+		final ChangesGroupingSupport support = changesTree.getGroupingSupport();
+		final Set<String> oldGroupingKeys = support.getGroupingKeys();
+		final var tempGroupingKeys = new HashSet<>(List.of(groupingKeys));
+		if (oldGroupingKeys.size() != tempGroupingKeys.size() || !oldGroupingKeys.containsAll(tempGroupingKeys)) {
+			final var tempOldGroupingKeys = new HashSet<>(oldGroupingKeys);
+			tempOldGroupingKeys.removeAll(tempGroupingKeys);
+			tempOldGroupingKeys.forEach(key -> support.set(key, false));
+			tempGroupingKeys.removeAll(oldGroupingKeys);
+			tempGroupingKeys.forEach(key -> support.set(key, true));
+		}
+	}
+
 }
