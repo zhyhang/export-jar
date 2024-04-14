@@ -109,9 +109,7 @@ public class HistoryDao {
 	}
 
 	private void mergeTemplate(SettingTemplate src, SettingTemplate dest) {
-		dest.setOptions(src.getOptions());
-		dest.setSelectFilesStore(src.getSelectFilesStore());
-		dest.setUpdateTime(src.getUpdateTime());
+		SettingTemplate.mergeTemplate(src, dest);
 		final ExportJarInfo[] destJarArray = Optional.ofNullable(dest.getExportJar()).orElse(new ExportJarInfo[0]);
 		if (destJarArray.length == 0) {
 			dest.setExportJar(src.getExportJar());

@@ -20,6 +20,14 @@ public class  SettingTemplate implements Comparable<SettingTemplate> {
     private boolean fileListTreeExpandDirectory;
     private String[] fileListTreeGroupingKeys;
 
+    public static void mergeTemplate(SettingTemplate src, SettingTemplate dest) {
+        dest.setOptions(src.getOptions());
+        dest.setSelectFilesStore(src.getSelectFilesStore());
+        dest.setUpdateTime(src.getUpdateTime());
+        dest.setFileListTreeGroupingKeys(src.getFileListTreeGroupingKeys());
+        dest.setFileListTreeExpandDirectory(src.isFileListTreeExpandDirectory());
+    }
+
     public String getName() {
         return name;
     }
