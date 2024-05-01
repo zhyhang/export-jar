@@ -71,7 +71,7 @@ class FileListTreeGroupPolicy extends BaseChangesGroupingPolicy {
 				final int childCount = pathNode.getChildCount();
 				if(childCount<=1 && pathNode.getFileCount()<=0) {
 					final ChangesBrowserNode<?> helperNode = ChangesBrowserNode.createRoot();
-					helperNode.putUserData(FileListTree.KEY_HELPER_NODE, Boolean.TRUE);
+					helperNode.putUserData(FileListDialog.KEY_HELPER_NODE, Boolean.TRUE);
 					pathNode.insert(helperNode, childCount);
 				}
 				nodes.add(pathNode);

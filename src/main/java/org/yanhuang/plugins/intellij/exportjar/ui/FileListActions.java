@@ -221,28 +221,21 @@ public class FileListActions {
 		@Override
 		public void update(@NotNull AnActionEvent e) {
 			super.update(e);
-			if (dialog.getFileList() instanceof FileListTree) {
-				final boolean enable = ((FileListTree) dialog.getFileList()).isDirectoryModuleGrouping();
-				e.getPresentation().setEnabled(enable);
-			}
+			final boolean enable = dialog.isDirectoryModuleGrouping();
+			e.getPresentation().setEnabled(enable);
 			updateUi(dialog.isExpandAllDirectory(), e.getPresentation());
 		}
 
 		@Override
 		public boolean isSelected(@NotNull AnActionEvent e) {
 			final ChangesTree changesTree = dialog.getFileList();
-			if (changesTree instanceof FileListTree) {
-				return ((FileListTree) changesTree).isExpandAllDirectory();
-			}
-			return false;
+			return dialog.isExpandAllDirectory();
 		}
 
 		@Override
 		public void setSelected(@NotNull AnActionEvent e, boolean state) {
 			final ChangesTree changesTree = dialog.getFileList();
-			if (changesTree instanceof FileListTree) {
-				((FileListTree) changesTree).setExpandAllDirectory(state);
-			}
+			dialog.setExpandAllDirectory(state);
 			changesTree.rebuildTree();
 		}
 

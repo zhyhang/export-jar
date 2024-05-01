@@ -3,6 +3,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.yanhuang.plugins.intellij.exportjar.model.*;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 
@@ -218,10 +219,8 @@ public class TemplateEventHandler {
 	}
 
 	private void updateUIFileListTree(SettingTemplate template) {
+		this.settingDialog.fileListDialog.setExpandAllDirectory(template.isFileListTreeExpandDirectory());
 		final ChangesTree changesTree = settingDialog.fileListDialog.getFileList();
-		if (changesTree instanceof FileListTree) {
-			((FileListTree) changesTree).setExpandAllDirectory(template.isFileListTreeExpandDirectory());
-		}
 		if (template.getFileListTreeGroupingKeys() != null) {
 			updateUIFileListTreeGrouping(changesTree, template.getFileListTreeGroupingKeys());
 		}
@@ -333,7 +332,13 @@ public class TemplateEventHandler {
 		final var templateName = template.getName();
 		final var projectName = settingDialog.project.getName();
 		final SettingSelectFile[] selectFiles = historyDao.readStoredSelectFiles(projectName, templateName);
-		return Arrays.stream(selectFiles).filter(sf -> sf.getVirtualFile() != null).toArray(SettingSelectFile[]::new);
+		return Arrays.stream(selectFiles).filter(this::filterStoreSelectFile).toArray(SettingSelectFile[]::new);
+	}
+
+	private boolean filterStoreSelectFile(SettingSelectFile sf){
+		final VirtualFile vf = sf.getVirtualFile();
+		// filter out removed files or files not in this project
+		return vf != null && settingDialog.fileListDialog.isInModule(vf);
 	}
 
 	private void transientTemplateChanged(ItemEvent e) {
