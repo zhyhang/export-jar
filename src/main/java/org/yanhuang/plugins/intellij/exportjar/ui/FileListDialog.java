@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
+import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -69,7 +70,7 @@ public class FileListDialog extends SelectFilesDialog {
 				treeField.set(this, newTree);
 			}
 		} catch (IllegalAccessException e) {
-			//TODO print log to warn partial function not working
+			MessagesUtils.warn(project, "replace the file list tree field by customized error: " + e.getMessage());
 		}
 	}
 
