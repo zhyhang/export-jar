@@ -216,6 +216,12 @@ public class FileListTreeHandler {
 		this.shouldUpdateIncludeExclude = shouldUpdateIncludeExclude;
 	}
 
+	/**
+	 * update changes tree grouping keys as to refresh tree displaying
+	 *
+	 * @param changesTree  changes tree
+	 * @param groupingKeys new grouping keys
+	 */
 	public static void updateUIFileListTreeGrouping(final ChangesTree changesTree, String[] groupingKeys) {
 		final ChangesGroupingSupport support = changesTree.getGroupingSupport();
 		final Set<String> oldGroupingKeys = support.getGroupingKeys();
@@ -227,6 +233,19 @@ public class FileListTreeHandler {
 			tempGroupingKeys.removeAll(oldGroupingKeys);
 			tempGroupingKeys.forEach(key -> support.set(key, true));
 		}
+	}
+
+	/**
+	 * Collects virtual files in a tree structure by traversing the tree and filtering out directories.
+	 *
+	 * @param changesTree The ChangesTree containing the tree structure to collect virtual files from
+	 * @return An array of VirtualFile objects representing the collected virtual files
+	 */
+	public static VirtualFile[] collectVirtualFilesInTree(final ChangesTree changesTree) {
+		return TreeUtil.treeNodeTraverser(changesTree.getRoot()).preOrderDfsTraversal().map(n -> getNodeBindVirtualFile((ChangesBrowserNode<?>) n))
+				.filter(Objects::nonNull)
+				.filter(vf -> !vf.isDirectory())
+				.toArray(new VirtualFile[0]);
 	}
 
 }

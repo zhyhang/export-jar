@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.openapi.ui.Messages.*;
+import static org.yanhuang.plugins.intellij.exportjar.ui.FileListTreeHandler.collectVirtualFilesInTree;
 import static org.yanhuang.plugins.intellij.exportjar.ui.FileListTreeHandler.updateUIFileListTreeGrouping;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorNotify;
@@ -31,6 +32,8 @@ public class TemplateEventHandler {
 	 * Transient template for storing no-template-name settings
 	 */
 	private SettingSelectFile[] transientTemplateSelectFiles;
+	private VirtualFile[] transientFilesInTree; // all files (not include dir) in transient tree
+	private Set<Object> transientSelectObjects; // all selected files in transient tree, for rebuild un-select files state
 	private final SettingTemplate transientTemplate = new SettingTemplate();
 
 	public TemplateEventHandler(final SettingDialog settingDialog) {
@@ -83,7 +86,7 @@ public class TemplateEventHandler {
 		final var template = getTemplateByName(templates, selectTemplate);
 		template.ifPresent(this::updateUIOptions);
 		template.ifPresent(this::updateUIExportJar);
-		template.ifPresent(this::updateUISelectFiles);
+		template.ifPresent(this::updateUISelectFilesFromStore);
 		template.ifPresent(this::updateUIFileListTree);
 	}
 
@@ -213,7 +216,7 @@ public class TemplateEventHandler {
 		}
 	}
 
-	private void updateUISelectFiles(SettingTemplate template) {
+	private void updateUISelectFilesFromStore(SettingTemplate template) {
 		final var selectFiles = readStoredSelectFiles(template);
 		this.settingDialog.setIncludeExcludeSelections(selectFiles);
 	}
@@ -351,15 +354,21 @@ public class TemplateEventHandler {
 
 	private void updateUIByTransientTemplate() {
 		if (this.transientTemplateSelectFiles != null) {
+			this.settingDialog.setSelectedFiles(this.transientFilesInTree);
+			this.settingDialog.fileListDialog.setFlaggedIncludeExcludeSelections(this.transientTemplateSelectFiles);
+			this.settingDialog.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
+			final ChangesTree tree = this.settingDialog.fileListDialog.getFileList();
+			tree.getInclusionModel().retainInclusion(transientSelectObjects);
 			updateUIOptions(this.transientTemplate);
 			updateUIExportJar(this.transientTemplate);
 			updateUIFileListTree(this.transientTemplate);
-			this.settingDialog.setIncludeExcludeSelections(this.transientTemplateSelectFiles);
 		}
 	}
 
 	private void saveTransientTemplate() {
+		this.transientFilesInTree = collectVirtualFilesInTree(settingDialog.fileListDialog.getFileList());
 		this.transientTemplateSelectFiles = settingDialog.fileListDialog.getStoreIncludeExcludeSelections();
+		this.transientSelectObjects=settingDialog.fileListDialog.getFileList().getIncludedSet();
 		this.transientTemplate.setOptions(settingDialog.pickExportOptions());
 		this.transientTemplate.setExportJar(buildExportJarArray());
 		this.transientTemplate.setFileListTreeExpandDirectory(settingDialog.fileListDialog.isExpandAllDirectory());
