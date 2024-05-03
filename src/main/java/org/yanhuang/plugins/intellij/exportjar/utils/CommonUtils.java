@@ -11,7 +11,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
@@ -28,14 +30,13 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 public class CommonUtils {
 
@@ -59,6 +60,12 @@ public class CommonUtils {
     }
 
 
+    /**
+     * collect recursively all files (filter by isValidExport) of root dir and it's descendants.
+     * @param project project file in
+     * @param collected saved collected files
+     * @param parentVf root dir
+     */
     public static void collectExportFilesNest(Project project, Set<VirtualFile> collected, VirtualFile parentVf) {
         if (!parentVf.isDirectory() && isValidExport(project, parentVf)) {
             collected.add(parentVf);
@@ -71,6 +78,49 @@ public class CommonUtils {
             } else if (isValidExport(project, child)) {
                 collected.add(child);
             }
+        }
+    }
+
+    /**
+     * Recursively collects all files (not filter) under the given directory.
+     *
+     * @param parentVf the directory to start the search from.
+     * @return a collection of VirtualFiles representing all files under the directory. If parentVf is file, return it only.
+     */
+    public static Collection<VirtualFile> collectFilesNest(VirtualFile parentVf) {
+        final Collection<VirtualFile> files = new ArrayList<>();
+        if (parentVf == null) {
+            return files;
+        }
+        VfsUtil.visitChildrenRecursively(parentVf, new VirtualFileVisitor<Void>() {
+            @Override
+            public boolean visitFile(@NotNull VirtualFile file) {
+                if (!file.isDirectory()) {
+                    files.add(file);
+                }
+                return true;
+            }
+        });
+        return files;
+    }
+
+    /**
+     * Collects the child files from a given parent VirtualFile.
+     *
+     * @param parentVf The parent VirtualFile from which to collect child files.
+     * @return A collection of VirtualFile objects representing the child files of the parent VirtualFile.
+     *         If the parentVf is null, an empty list is returned.
+     *         If the parentVf is not a directory, a list containing only the parentVf is returned.
+     *         Otherwise, a list of child files (non-directory files) is returned.
+     */
+    public static Collection<VirtualFile> collectChildFiles(VirtualFile parentVf) {
+        if (parentVf == null) {
+            return List.of();
+        }
+        if (!parentVf.isDirectory()) {
+            return List.of(parentVf);
+        }else{
+            return Arrays.stream(parentVf.getChildren()).filter(Predicate.not(VirtualFile::isDirectory)).collect(Collectors.toList());
         }
     }
 
@@ -222,7 +272,11 @@ public class CommonUtils {
     }
 
     public static VirtualFile fromOsFile(String osFilePath) {
-        return LocalFileSystem.getInstance().findFileByPath(osFilePath);
+        return LocalFileSystem.getInstance().findFileByPathIfCached(osFilePath);
+    }
+
+    public static Path toOsFile(VirtualFile virtualFile) {
+        return Path.of(virtualFile.getPath());
     }
 
 }

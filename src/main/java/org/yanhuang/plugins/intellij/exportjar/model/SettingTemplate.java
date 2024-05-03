@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * export settings saved in template include select files, options, jar file and etc.
  */
-public class SettingTemplate implements Comparable<SettingTemplate> {
+public class  SettingTemplate implements Comparable<SettingTemplate> {
 
     public static final ExportOptions[] DEFAULT_OPTIONS = {ExportOptions.export_class, ExportOptions.export_java};
 
@@ -17,6 +17,16 @@ public class SettingTemplate implements Comparable<SettingTemplate> {
     private ExportJarInfo[] exportJar;
     private String selectFilesStore;
     private ExportOptions[] options;
+    private boolean fileListTreeExpandDirectory;
+    private String[] fileListTreeGroupingKeys;
+
+    public static void mergeTemplate(SettingTemplate src, SettingTemplate dest) {
+        dest.setOptions(src.getOptions());
+        dest.setSelectFilesStore(src.getSelectFilesStore());
+        dest.setUpdateTime(src.getUpdateTime());
+        dest.setFileListTreeGroupingKeys(src.getFileListTreeGroupingKeys());
+        dest.setFileListTreeExpandDirectory(src.isFileListTreeExpandDirectory());
+    }
 
     public String getName() {
         return name;
@@ -64,6 +74,22 @@ public class SettingTemplate implements Comparable<SettingTemplate> {
 
     public void setOptions(final ExportOptions[] options) {
         this.options = options;
+    }
+
+    public boolean isFileListTreeExpandDirectory() {
+        return fileListTreeExpandDirectory;
+    }
+
+    public void setFileListTreeExpandDirectory(boolean fileListTreeExpandDirectory) {
+        this.fileListTreeExpandDirectory = fileListTreeExpandDirectory;
+    }
+
+    public String[] getFileListTreeGroupingKeys() {
+        return fileListTreeGroupingKeys;
+    }
+
+    public void setFileListTreeGroupingKeys(String[] fileListTreeGroupingKeys) {
+        this.fileListTreeGroupingKeys = fileListTreeGroupingKeys;
     }
 
     @Override

@@ -10,20 +10,21 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - Supports export files in test directory
 - Supports custom setting export file type
 - Supports export from vcs commits (local changes) as well as intrinsic "Create Patch" action 
-- Supports save exporting files and options to templates then export by them.
+- Supports save exporting files and options to templates then export by them
+- Supports (recursively) include/exclude selection by directory as to can export the new files in select directories.
 
 ## usage
 - select files
   - right click mouse or click Build menu
   - select "Export Jar..." to perform export
   - or select "Export Jar By Template" to perform export by template saved before
-- or click VCS menu  "Export Jar from Local Changes..."
+- or click Build menu  "Export Jar from Local Changes..."
 - or in normal commit changes dialog, click "Export Jar..." in commit button group
 <!-- Plugin description end -->
 
 ## runtime require
-- v1: Intellij Idea (U & C) 2017.3 and later
-- v2: Intellij Idea (U & C) 2020.2 and later
+- v1.x.x: Intellij Idea (U & C) 2017.3 and later
+- v2.x.x: Intellij Idea (U & C) 2020.2 and later
 
 ## plugin developing guide
 - [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
@@ -55,6 +56,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
           }
       }
     ```
+    - **keep dependencies and tasks test section code in build.gradle.ks not remove**
     - change gradle.properties to make compatible
 
 ## screenshot
@@ -65,6 +67,8 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ![Setting Dialog](image/export-jar-setting.gif)
 ![Export Status](image/export-jar-result.png)
 ![Template Operation](image/export-jar-template.gif)
+![Include/Exclude Operation](image/v2.5.2-inlcude-exclude-select.gif)
+![Expand All Directory Operation](image/v2.5.2-expand-all-directory.gif)
 
 ## TODO 
 - [OK]support inner and anonymous class export
@@ -98,6 +102,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]remember dialog size
 - reset dialog ui size
 - plugin.xml item not working: add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"
+- [OK]make unused org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.FileListTree to use for some tree select operation.
 ## Build
 - config java homes for gradle to lookup JDK 11 and JDK 17
   - JAVA_HOME=path_to_jdk11

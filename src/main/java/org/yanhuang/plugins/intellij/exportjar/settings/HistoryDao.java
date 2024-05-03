@@ -1,11 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.settings;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.yanhuang.plugins.intellij.exportjar.model.ExportJarInfo;
-import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
-import org.yanhuang.plugins.intellij.exportjar.model.SettingTemplate;
-import org.yanhuang.plugins.intellij.exportjar.model.UISizes;
+import org.yanhuang.plugins.intellij.exportjar.model.*;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
 import org.yanhuang.plugins.intellij.exportjar.utils.Constants;
 import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
@@ -66,11 +62,14 @@ public class HistoryDao {
 		globalTemplate.setCreateTime(ts);
 		globalTemplate.setUpdateTime(ts);
 		globalTemplate.setExportJar(new ExportJarInfo[0]);
+		globalTemplate.setFileListTreeExpandDirectory(false);
+		globalTemplate.setFileListTreeGroupingKeys(null);
 		return globalTemplate;
 	}
 
 	/**
 	 * save global template to history [merge with old global template]
+	 *
 	 * @param globalNewTemplate new global template
 	 */
 	public void saveGlobal(SettingTemplate globalNewTemplate) {
@@ -85,7 +84,7 @@ public class HistoryDao {
 	/**
 	 * save project's setting (template) to history
 	 *
-	 * @param project project
+	 * @param project     project
 	 * @param newTemplate new setting template
 	 * @return when success, return saved history, or else null.
 	 */
@@ -110,9 +109,7 @@ public class HistoryDao {
 	}
 
 	private void mergeTemplate(SettingTemplate src, SettingTemplate dest) {
-		dest.setOptions(src.getOptions());
-		dest.setSelectFilesStore(src.getSelectFilesStore());
-		dest.setUpdateTime(src.getUpdateTime());
+		SettingTemplate.mergeTemplate(src, dest);
 		final ExportJarInfo[] destJarArray = Optional.ofNullable(dest.getExportJar()).orElse(new ExportJarInfo[0]);
 		if (destJarArray.length == 0) {
 			dest.setExportJar(src.getExportJar());
@@ -149,6 +146,7 @@ public class HistoryDao {
 
 	/**
 	 * read history from setting store.
+	 *
 	 * @return saved history, return default history if read error.
 	 */
 	public SettingHistory readOrDefault() {
@@ -161,15 +159,15 @@ public class HistoryDao {
 	}
 
 	/**
-	 * save virtual files to store file (separate from main history store file).
-	 * @param projectName project name
+	 * save settings export files to store file (separate from main history store file).
+	 *
+	 * @param projectName  project name
 	 * @param templateName template name
-	 * @param selectVFiles virtual files
+	 * @param selectFiles  settings export files (and dirs) in files tree
 	 * @return store file path
 	 */
-	public Path saveSelectFiles(String projectName, final String templateName, final VirtualFile[] selectVFiles) {
-		final var selectStore = getSelectFilesStorePath(projectName, templateName);
-		final var selectFiles = Arrays.stream(selectVFiles).map(VirtualFile::getPath).collect(Collectors.toList());
+	public Path saveSelectFiles(String projectName, final String templateName, final SettingSelectFile[] selectFiles) {
+		final var selectStore = getSelectFilesStorePath2024(projectName, templateName);
 		try {
 			Files.writeString(selectStore, CommonUtils.toJson(selectFiles));
 		} catch (IOException e) {
@@ -187,43 +185,63 @@ public class HistoryDao {
 	 * @return os file string mapping VirtualFile, if not exists the os file, the entry value is null. return map
 	 * Always not null.
 	 */
-	public Map<String, VirtualFile> readStoredSelectFiles(String projectName, String templateName) {
-		final Path selectStore = getSelectFilesStorePath(projectName, templateName);
+	public SettingSelectFile[] readStoredSelectFiles(String projectName, String templateName) {
+		final Path selectStore = getSelectFilesStorePath2024(projectName, templateName);
 		if (selectStore.toFile().exists()) {
 			try {
-				final String[] storeFiles = CommonUtils.fromJson(Files.readString(selectStore), String[].class);
-				return readSelectVirtualFiles(storeFiles);
+				return CommonUtils.fromJson(Files.readString(selectStore), SettingSelectFile[].class);
 			} catch (IOException e) {
 				final String msg = String.format(messageTemplateReadSelectsError, selectStore, e.getMessage());
 				errorNotify(titleTemplateMessageDialog, msg);
-				return Map.of();
+				return new SettingSelectFile[0];
 			}
 		} else {
-			return Map.of();
+			return readStoredSelectFiles2023(projectName, templateName);
 		}
 	}
 
-	private Map<String, VirtualFile> readSelectVirtualFiles(final String[] storeFiles) {
-		if (storeFiles != null && storeFiles.length > 0) {
-			final Map<String, VirtualFile> virtualFileMap = new HashMap<>();
+	private SettingSelectFile[] readStoredSelectFiles2023(String projectName, String templateName) {
+		final Path selectStore = getSelectFilesStorePath2023(projectName, templateName);
+		if (selectStore.toFile().exists()) {
+			try {
+				final String[] storeFiles = CommonUtils.fromJson(Files.readString(selectStore), String[].class);
+				return readSelectVirtualFiles2023(storeFiles);
+			} catch (IOException e) {
+				final String msg = String.format(messageTemplateReadSelectsError, selectStore, e.getMessage());
+				errorNotify(titleTemplateMessageDialog, msg);
+				return new SettingSelectFile[0];
+			}
+		} else {
+			return new SettingSelectFile[0];
+		}
+	}
+
+	private SettingSelectFile[] readSelectVirtualFiles2023(final String[] storeFiles) {
+		final var storeSettingFileList = new ArrayList<SettingSelectFile>();
+		if (storeFiles != null) {
 			for (String storeFile : storeFiles) {
-				final VirtualFile vf = Path.of(storeFile).toFile().exists() ? CommonUtils.fromOsFile(storeFile) : null;
-				virtualFileMap.put(storeFile, vf);
+				final var settingFile = new SettingSelectFile();
+				settingFile.setFilePath(storeFile);
+				storeSettingFileList.add(settingFile);
 			}
-			return virtualFileMap;
-		} else {
-			return Map.of();
 		}
+		return storeSettingFileList.toArray(new SettingSelectFile[0]);
 	}
 
-	private Path getSelectFilesStorePath(String projectName, String templateName) {
+	private Path getSelectFilesStorePath2023(String projectName, String templateName) {
 		return cachePath.resolve(historySelectsFilePathPrefix2023
+				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
+	}
+
+	private Path getSelectFilesStorePath2024(String projectName, String templateName) {
+		return cachePath.resolve(historySelectsFilePathPrefix2024
 				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
 	}
 
 	/**
 	 * remove template
-	 * @param project project of template for
+	 *
+	 * @param project  project of template for
 	 * @param template template name
 	 * @return updated history, null if not found removing template.
 	 */
@@ -246,9 +264,10 @@ public class HistoryDao {
 
 	/**
 	 * save current ui sizes to history
+	 *
 	 * @param uiSizes ui sizes
 	 */
-	public void saveUISizes(UISizes uiSizes){
+	public void saveUISizes(UISizes uiSizes) {
 		final SettingHistory history = readOrDefault();
 		history.setUi(uiSizes);
 		save(history);
@@ -256,6 +275,7 @@ public class HistoryDao {
 
 	/**
 	 * extract project's setting templates from history.
+	 *
 	 * @param history setting history
 	 * @param project project name
 	 * @return always not null, possible size=0, project's templates.

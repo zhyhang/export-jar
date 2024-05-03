@@ -6,15 +6,22 @@ import java.awt.*;
 import java.nio.file.Path;
 
 public interface Constants {
-    String flagFileSelectRecursive = "[R]";
+    String flagRecursiveSelectUnSelect = "[R]";
+    String flagIncludeSelect = "[I]";
+    String flagExcludeSelect = "[E]";
     int maxTemplateHistoryPerProject=512;
     int maxJarHistoryPerTemplate=256;
     int maxTemplateExportActionSize = 12*2;
     String actionName = "Export Jar";
     String exportCommitActionName = "Export Jar from Local Changes";
     String exportCommitButtonName = "Export Jar...";
-    String actionNameRecursiveSelectByDir = "Recursive Select (files in directory recursively export)";
-    String actionNameCancelRecursiveSelectByDir = "Cancel Recursive Select (only select files export)";
+    String actionNameInclude = "Include selection";
+    String actionNameExclude = "Exclude selection";
+    String actionNameCleanIncludeExclude = "Clean Include/Exclude selection";
+    String actionNameRecursiveSelection = "Recursively include/exclude dir or Recursively clean selection";
+    String actionNameUnRecursiveSelection = "Include/Exclude current dir or Clean current selection";
+    String actionNameExpandDirectory = "Expand all level directories when grouping by directory";
+    String actionNameCollapseDirectory = "Collapse empty directories when grouping by directory";
     String infoTabName = "Packing Export Jar";
     String titleFileList = "Select Files";
     String titleTemplateSetting = "Templates";
@@ -31,6 +38,7 @@ public interface Constants {
     Path historyFilePath = cachePath.resolve("select_history.json");
     Path historyFilePath2023 = cachePath.resolve("history_v2023.json");
     String historySelectsFilePathPrefix2023 = "history_v2023_";
+    String historySelectsFilePathPrefix2024 = "history_v2024_";
     String historySelectsFilePathSuffix2023 = "_selects.json";
     Dimension settingDialogSize = new Dimension(800, 420);
     Dimension fileListSettingSplitPanelSize = new Dimension(780, 410);
@@ -51,9 +59,17 @@ public interface Constants {
 
     String messageMigrationHistorySuccess = "Migrate history from old version successfully!";
 
-    String toolTipRecursiveDirectorySelect = flagFileSelectRecursive+": Files in the directory and in it's descendents will export.";
+    String toolTipRecursiveDirectoryIncludeSelect = flagRecursiveSelectUnSelect +flagIncludeSelect+": Files in the directory and descendents will export in spite of selection or not.";
+    String toolTipDirectoryIncludeSelect = flagIncludeSelect +": Files in the directory will export in spite of selection or not.";
+    String toolTipFileIncludeSelect = flagIncludeSelect +": the File will export in spite of selection or not.";
+    String toolTipRecursiveDirectoryExcludeSelect = flagRecursiveSelectUnSelect +flagExcludeSelect+": Files in the directory and descendents will NOT export.";
+    String toolTipDirectoryExcludeSelect = flagExcludeSelect+": Files in the directory will NOT export in spite of selection or not.";
+    String toolTipFileExcludeSelect = flagExcludeSelect+": the File will NOT export in spite of selection or not.";
 
-    String notifyRecursiveSelectDirectory = "Recursively select %d directories, %d files.";
-    String notifyCancelRecursiveSelectDirectory = "Unselect %d directories.";
+    String notifyIncludeSelectDirectory = "Include %d directories, %d files.";
+    String notifyExcludeSelectDirectory = "Exclude %d directories, %d files.";
+
+    String groupByDirectoryNoCollapse = "directory-no-collapse";
+    String fileListTreeHelperNodeKey = "helper-node";
 
 }

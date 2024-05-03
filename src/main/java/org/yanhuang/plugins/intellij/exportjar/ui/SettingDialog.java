@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile;
 import org.yanhuang.plugins.intellij.exportjar.model.UISizes;
 import org.yanhuang.plugins.intellij.exportjar.settings.HistoryDao;
 import org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils;
@@ -48,7 +49,6 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * export jar settings dialog (link to SettingDialog.form)
  * <li><b>In UIDesigner: export options JCheckBox's name is same as HistoryData.ExportOptions</b></li>
  * <li><b>If modal dialog, should extends DialogWrapper, or else throw exception when setVisible(true)</b></li>
- *
  */
 public class SettingDialog extends DialogWrapper {
 	protected final Project project;
@@ -78,7 +78,7 @@ public class SettingDialog extends DialogWrapper {
 	private JPanel templateTitlePanel;
 	private JPanel outputJarTitlePanel;
 	private JPanel optionTitlePanel;
-	private FileListDialog fileListDialog;
+	protected FileListDialog fileListDialog;
 	private BorderLayoutPanel fileListLabel;
 	private final HistoryDao historyDao = new HistoryDao();
 
@@ -95,13 +95,6 @@ public class SettingDialog extends DialogWrapper {
 		this.buttonCancel.addActionListener(e -> onCancel());
 		this.debugButton.addActionListener(e -> onDebug());
 
-//		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-//		this.addWindowListener(new WindowAdapter() {
-//			@Override
-//			public void windowClosing(WindowEvent e) {
-//				onCancel();
-//			}
-//		});
 		this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		this.selectJarFileButton.addActionListener(this::onSelectJarFileButton);
@@ -131,7 +124,7 @@ public class SettingDialog extends DialogWrapper {
 		this.fileListSettingSplitPanel.setProportion(splitPanelRatio);
 		final Dimension dialogSize =
 				Optional.ofNullable(history.getUi()).map(UISizes::getExportDialog).orElse(Constants.settingDialogSize);
-		this.setSize(dialogSize.width,dialogSize.height);
+		this.setSize(dialogSize.width, dialogSize.height);
 		this.templateHandler.initUI(history, template);
 	}
 
@@ -202,7 +195,7 @@ public class SettingDialog extends DialogWrapper {
 
 	private void uiDebug() {
 		debugButton.setVisible(true);
-		this.fileListDialog.getFileList().addSelectionListener(()->{
+		this.fileListDialog.getFileList().addSelectionListener(() -> {
 			System.out.println("in ui debug");
 		});
 
@@ -228,7 +221,7 @@ public class SettingDialog extends DialogWrapper {
 				}).map(ExportOptions::valueOf).toArray(ExportOptions[]::new);
 	}
 
-	private void onSelectJarFileButton(ActionEvent event) {
+		private void onSelectJarFileButton(ActionEvent event) {
 		FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
 		Consumer<VirtualFile> chooserConsumer = new FileChooserConsumerImplForComboBox(this.outPutJarFileComboBox);
 		FileChooser.chooseFile(descriptor, project, null, chooserConsumer);
@@ -248,6 +241,14 @@ public class SettingDialog extends DialogWrapper {
 		return fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
 	}
 
+	/**
+	 * Retrieves the include and exclude selections from the file list dialog and returns an array of
+	 * SettingSelectFile objects.
+	 */
+	public SettingSelectFile[] getIncludeExcludeSelections() {
+		return this.fileListDialog.getStoreIncludeExcludeSelections();
+	}
+
 	public void onOK() {
 		final VirtualFile[] finalSelectFiles = fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
 		doExport(finalSelectFiles);
@@ -261,6 +262,14 @@ public class SettingDialog extends DialogWrapper {
 		createFileListTree();
 	}
 
+	public void setIncludeExcludeSelections(SettingSelectFile[] inExSelectFiles) {
+		this.selectedFiles =
+				Arrays.stream(inExSelectFiles != null ? inExSelectFiles : new SettingSelectFile[0]).map(SettingSelectFile::getVirtualFile).toArray(VirtualFile[]::new);
+		createFileListTree();
+		this.fileListDialog.setFlaggedIncludeExcludeSelections(inExSelectFiles);
+		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
+	}
+
 	public void doExport(VirtualFile[] exportFiles) {
 		if (isEmpty(exportFiles)) {
 			return;
@@ -268,7 +277,7 @@ public class SettingDialog extends DialogWrapper {
 		final Application app = ApplicationManager.getApplication();
 		final Module[] modules = CommonUtils.findModule(project, exportFiles);
 		String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
-		if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().length() == 0) {
+		if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().isEmpty()) {
 			app.invokeAndWait(() -> showErrorDialog(project, "The selected output path should not empty",
 					Constants.actionName));
 			return;
@@ -315,7 +324,8 @@ public class SettingDialog extends DialogWrapper {
 
 	private boolean isEmpty(VirtualFile[] exportFiles) {
 		if (exportFiles == null || exportFiles.length == 0) {
-			ApplicationManager.getApplication().invokeAndWait(() -> showErrorDialog(project, "Export files is empty, " +
+			ApplicationManager.getApplication().invokeAndWait(() -> showErrorDialog(project, "Export files is empty," +
+					" " +
 					"please select them first", Constants.actionName));
 			return true;
 		}

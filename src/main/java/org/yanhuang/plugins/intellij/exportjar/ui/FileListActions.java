@@ -3,106 +3,266 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ToggleAction;
+import com.intellij.openapi.vcs.changes.actions.SetChangesGroupingAction;
 import com.intellij.openapi.vcs.changes.ui.ChangesBrowserNode;
 import com.intellij.openapi.vcs.changes.ui.ChangesTree;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.yanhuang.plugins.intellij.exportjar.model.SettingSelectFile.SelectType;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
+import static com.intellij.util.ui.tree.TreeUtil.treeNodeTraverser;
+import static java.util.stream.StreamSupport.stream;
 import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
-import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.infoNotify;
 
 /**
- * file list tree toolbar actions
+ * file list tree toolbar actions.
+ * include/exclude action to perform include select and exclude select type
+ * clean include/exclude action to perform clean the previous selection
+ * above 3 actions will take recursive toggle action selected state.
+ * toggle include or exclude will checkbox state will disable
  */
 public class FileListActions {
 
-	public static AnAction[] treeOperationActions(ChangesTree fileTree) {
-		return new AnAction[]{new RecursiveDirectorySelectAction(fileTree),
-				new CancelRecursiveDirectorySelectAction(fileTree)};
+	public static AnAction[] treeOperationActions(FileListDialog dialog) {
+		return new AnAction[]{new RecursiveToggleAction(dialog),
+				new IncludeSelectAction(dialog),
+				new ExcludeSelectAction(dialog),
+				new CleanIncludeExcludeAction(dialog),
+				new DirectoryExpandToggleAction(dialog)};
 	}
 
-	private static class RecursiveDirectorySelectAction extends AnAction {
+	private static void doIncludeExcludeAction(FileListDialog dialog, ChangesTree fileTree, SelectType selectType) {
+		try {
+			dialog.setIgnoreIncludeChanged(true);
+			final var selectNodes = dialog.getHandler().updateIncludeExcludeBySelectNodes(selectType);
+			dialog.getHandler().includeExcludeObjectsFrom(selectNodes);
+		} finally {
+			dialog.setIgnoreIncludeChanged(false);
+		}
+		fileTree.repaint();
+	}
+
+	private static void actionEnable(AnActionEvent e, ChangesTree fileTree) {
+		e.getPresentation().setEnabled(fileTree.getGroupingSupport().isDirectory());
+	}
+
+	private static class IncludeSelectAction extends AnAction {
+		private final FileListDialog dialog;
 		private final ChangesTree fileTree;
 
-		public RecursiveDirectorySelectAction(ChangesTree fileTree) {
-			super(actionNameRecursiveSelectByDir, null, AllIcons.Vcs.Folders);
-			this.fileTree = fileTree;
+		public IncludeSelectAction(FileListDialog dialog) {
+			super(actionNameInclude, null, AllIcons.Actions.Selectall);
+			this.dialog = dialog;
+			this.fileTree = dialog.getFileList();
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, fileTree);
+		}
+
+		@Override
+		public void actionPerformed(@NotNull AnActionEvent e) {
+			doIncludeExcludeAction(dialog, fileTree, SelectType.include);
+		}
+
+	}
+
+	private static class ExcludeSelectAction extends AnAction {
+		private final FileListDialog dialog;
+		private final ChangesTree fileTree;
+
+		public ExcludeSelectAction(FileListDialog dialog) {
+			super(actionNameExclude, null, AllIcons.Actions.Unselectall);
+			this.dialog = dialog;
+			this.fileTree = dialog.getFileList();
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, fileTree);
+		}
+
+		@Override
+		public void actionPerformed(@NotNull AnActionEvent e) {
+			doIncludeExcludeAction(dialog, fileTree, SelectType.exclude);
+		}
+
+	}
+
+	private static class RecursiveToggleAction extends ToggleAction {
+		private final FileListDialog dialog;
+
+		public RecursiveToggleAction(FileListDialog dialog) {
+			super(actionNameUnRecursiveSelection, null, AllIcons.Actions.ListFiles);
+			this.dialog = dialog;
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, this.dialog.getFileList());
+		}
+
+		@Override
+		public boolean isSelected(@NotNull AnActionEvent e) {
+			return dialog.isRecursiveActionSelected();
+		}
+
+		@Override
+		public void setSelected(@NotNull AnActionEvent e, boolean state) {
+			dialog.setRecursiveActionSelected(state);
+			Presentation presentation = e.getPresentation();
+			if (state) {
+				presentation.setIcon(AllIcons.Vcs.Folders);
+				presentation.setText(actionNameRecursiveSelection);
+			} else {
+				presentation.setIcon(AllIcons.Actions.ListFiles);
+				presentation.setText(actionNameUnRecursiveSelection);
+			}
+		}
+	}
+
+	private static class CleanIncludeExcludeAction extends AnAction {
+		private final FileListDialog dialog;
+		private final ChangesTree fileTree;
+
+		public CleanIncludeExcludeAction(FileListDialog dialog) {
+			super(actionNameCleanIncludeExclude, null, AllIcons.Actions.Undo);
+			this.dialog = dialog;
+			this.fileTree = dialog.getFileList();
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			actionEnable(e, fileTree);
 		}
 
 		@Override
 		public void actionPerformed(@NotNull AnActionEvent e) {
 			final TreePath[] selectionPaths = fileTree.getSelectionPaths();
-			int totalDirFlag = 0;
-			int totalFileSelect = 0;
-			for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
-				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-				final int[] counters = traverseNodePutSelectFlag(node);
-				totalDirFlag += counters[0];
-				totalFileSelect += counters[1];
+			final boolean recursive = dialog.isRecursiveActionSelected();
+			if (recursive) {
+				cleanSelectFlagRecursive(selectionPaths == null ? new TreePath[0] : selectionPaths);
+			} else {
+				cleanSelectFlagNonRecursive(selectionPaths == null ? new TreePath[0] : selectionPaths);
 			}
+			dialog.getHandler().includeExcludeObjectsAll();
 			fileTree.repaint();
-			infoNotify(titleFileList, String.format(notifyRecursiveSelectDirectory, totalDirFlag, totalFileSelect));
 		}
 
-		private int[] traverseNodePutSelectFlag(final ChangesBrowserNode<?> node) {
-			final var nodeIterable = TreeUtil.treeNodeTraverser(node).preOrderDfsTraversal();
-			int flagDirCount = 0;
-			int fileSelectCount = 0;
-			for (TreeNode treeNode : nodeIterable) {
-				final ChangesBrowserNode<?> changeNode = (ChangesBrowserNode<?>) treeNode;
-				if (isFolderNode(changeNode)) {
-					changeNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY, Boolean.TRUE);
-					flagDirCount++;
-				} else {
-					final Object changeObj = changeNode.getUserObject();
-					fileTree.includeChange(changeObj);
-					fileSelectCount++;
-				}
+		/**
+		 * Recursively cleans the select flag for the nodes represented by the provided array of TreePaths.
+		 * Nodes are processed in sorted order based on their level (front node deal first), ensuring only
+		 * non-descendant nodes of travelled nodes are considered (remove duplication handles).
+		 * The method iterates through the filtered nodes and performs a recursive cleaning operation on each.
+		 *
+		 * @param selectionPaths An array of TreePaths representing nodes to clean the select flag for
+		 */
+		private void cleanSelectFlagRecursive(final TreePath[] selectionPaths) {
+			final var travelledNodes = new ArrayList<ChangesBrowserNode<?>>();
+			/*
+			  Step-wise explanation:
+			  1. Create an empty ArrayList called travelledNodes to store the nodes that have been processed.
+			  2. Iterate over each TreePath in the selectionPaths array using Arrays.stream.
+			  3. Map each TreePath to a ChangesBrowserNode using the getChangesNode method from the
+			  FileListTreeHandler class.
+			  4. Sort the nodes based on their level using Comparator.comparingInt.
+			  5. Filter out nodes that are descendants of nodes already in the travelledNodes list using the
+			  noneMatch method.
+			  6. Add the filtered nodes to the travelledNodes list using the filter method.
+			  7. For each filtered node, call the recursivelyClean method on it using the forEach method.
+			 */
+			Arrays.stream(selectionPaths)
+					.map(FileListTreeHandler::getChangesNode)
+					.sorted(Comparator.comparingInt(DefaultMutableTreeNode::getLevel))
+					.filter(n -> travelledNodes.stream().noneMatch(travelledNode -> travelledNode.isNodeDescendant(n)))
+					.filter(travelledNodes::add)
+					.forEach(this::recursivelyClean);
+		}
+
+		private void recursivelyClean(ChangesBrowserNode<?> node) {
+			stream(treeNodeTraverser(node).preOrderDfsTraversal().spliterator(), false).forEach(this::cleanSelectFlag);
+		}
+
+		private void cleanSelectFlagNonRecursive(final TreePath[] selectionPaths) {
+			for (TreePath selectionPath : selectionPaths) {
+				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
+				cleanSelectFlag(node);
 			}
-			return new int[]{flagDirCount, fileSelectCount};
 		}
 
-		private boolean isFolderNode(final ChangesBrowserNode<?> node) {
-			final Object nodeData = node.getUserObject();
-			return !(nodeData instanceof VirtualFile) || ((VirtualFile) nodeData).isDirectory();
+		private void cleanSelectFlag(final TreeNode node) {
+			final ChangesBrowserNode<?> changesNode = (ChangesBrowserNode<?>) node;
+			final var virtualFile = FileListTreeHandler.getNodeBindVirtualFile(changesNode);
+			this.dialog.removeFlaggedIncludeExcludeSelection(virtualFile);
 		}
 	}
 
-	private static class CancelRecursiveDirectorySelectAction extends AnAction {
-		private final ChangesTree fileTree;
+	private static class DirectoryExpandToggleAction extends ToggleAction {
+		private final FileListDialog dialog;
 
-		public CancelRecursiveDirectorySelectAction(ChangesTree fileTree) {
-			super(actionNameCancelRecursiveSelectByDir, null, AllIcons.Actions.ListFiles);
-			this.fileTree = fileTree;
+		public DirectoryExpandToggleAction(FileListDialog dialog) {
+			super(actionNameCollapseDirectory, null, AllIcons.Actions.GroupByPackage);
+			this.dialog = dialog;
 		}
 
 		@Override
-		public void actionPerformed(@NotNull AnActionEvent e) {
-			final TreePath[] selectionPaths = fileTree.getSelectionPaths();
-			int totalRemoved = 0;
-			for (TreePath selectionPath : (selectionPaths != null ? selectionPaths : new TreePath[0])) {
-				final ChangesBrowserNode<?> node = (ChangesBrowserNode<?>) selectionPath.getLastPathComponent();
-				totalRemoved += traverseNodeRemoveSelectFlag(node);
-			}
-			fileTree.repaint();
-			infoNotify(titleFileList, String.format(notifyCancelRecursiveSelectDirectory, totalRemoved));
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			final boolean enable = dialog.isDirectoryModuleGrouping();
+			e.getPresentation().setEnabled(enable);
+			updateUi(dialog.isExpandAllDirectory(), e.getPresentation());
 		}
 
-		private int traverseNodeRemoveSelectFlag(final ChangesBrowserNode<?> node) {
-			final var nodeIterable = TreeUtil.treeNodeTraverser(node).preOrderDfsTraversal();
-			int removeCount = 0;
-			for (TreeNode treeNode : nodeIterable) {
-				final ChangesBrowserNode<?> changeNode = (ChangesBrowserNode<?>) treeNode;
-				if (Boolean.TRUE.equals(changeNode.getUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY))) {
-					changeNode.putUserData(FileListDialog.KEY_RECURSIVE_SELECT_DIRECTORY, null);
-					removeCount++;
-				}
+		@Override
+		public boolean isSelected(@NotNull AnActionEvent e) {
+			final ChangesTree changesTree = dialog.getFileList();
+			return dialog.isExpandAllDirectory();
+		}
+
+		@Override
+		public void setSelected(@NotNull AnActionEvent e, boolean state) {
+			final ChangesTree changesTree = dialog.getFileList();
+			dialog.setExpandAllDirectory(state);
+			changesTree.rebuildTree();
+		}
+
+		private static void updateUi(boolean state, Presentation presentation) {
+			if (state) {
+				presentation.setIcon(AllIcons.Actions.ShowAsTree);
+				presentation.setText(actionNameExpandDirectory);
+			} else {
+				presentation.setIcon(AllIcons.Actions.GroupByPackage);
+				presentation.setText(actionNameCollapseDirectory);
 			}
-			return removeCount;
+		}
+	}
+
+	/**
+	 * file list dialog toolbar group by action(group by directory not hide empty package).
+	 * register action extension in plugin.xml.
+	 * It main function write in FileListTreeGroupPolicyFactory
+	 *
+	 * @see FileListTreeGroupPolicyFactory
+	 */
+	public static class SetDirectoryNoCollapseChangesGroupingAction extends SetChangesGroupingAction {
+
+		@NotNull
+		@Override
+		public String getGroupingKey() {
+			return groupByDirectoryNoCollapse;
 		}
 	}
 
