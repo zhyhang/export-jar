@@ -5,6 +5,9 @@
 
 ## [Unreleased]
 - Refactor export jar from local changes action
+- Supports filter toolbar action to filter by vcs files state
+- Supports export pre-compiled class file need not just in time compiling
+- Supports view include/exclude dir in pop dialog
 
 ## [2.5.2]
 - Supports (recursively) include/exclude selection by directory as to can export the new files in select directories. 
