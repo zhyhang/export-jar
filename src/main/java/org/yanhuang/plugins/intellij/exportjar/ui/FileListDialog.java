@@ -263,7 +263,10 @@ public class FileListDialog extends SelectFilesDialog {
 
 		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull ChangesGroupingPolicyFactory grouping, @NotNull List<?
 				extends VirtualFile> changes) {
-			final DefaultTreeModel defaultTreeModel = super.buildTreeModel(grouping, changes);
+			// from 2023.2 should use following line
+//			final DefaultTreeModel defaultTreeModel = super.buildTreeModel(grouping, changes);
+			// for pass the IntelliJ Plugin Verifier
+			final DefaultTreeModel defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
 			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
 				expandDirectoryNodes(defaultTreeModel);
 			}
@@ -323,7 +326,6 @@ public class FileListDialog extends SelectFilesDialog {
 			}
 			parent.insert(currentNode, 0);
 		}
-
 		private static boolean isShouldExpand(ChangesBrowserNode<?> node, VirtualFile nodeVf, ChangesBrowserNode<?> parent,
 		                                      VirtualFile parentVf) {
 			return parent != null && parent.isRoot() ||
