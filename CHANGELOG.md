@@ -3,6 +3,9 @@
 
 # Changelogs
 
+## [Unreleased]
+- Refactor export jar from local changes action
+
 ## [2.5.2]
 - Supports (recursively) include/exclude selection by directory as to can export the new files in select directories. 
 - Refactor file list tree to customized version
