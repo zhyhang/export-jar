@@ -1,6 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -36,7 +37,8 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.fileListTr
  */
 public class FileListDialog extends SelectFilesDialog {
 	public final static Key<Boolean> KEY_HELPER_NODE = Key.create(fileListTreeHelperNodeKey);
-
+	private final static Logger LOGGER = Logger.getInstance(FileListDialog.class);
+	protected final SettingDialogCategory category;
 	private JComponent centerPanel;
 	private DefaultActionGroup actionGroup;
 
@@ -48,8 +50,9 @@ public class FileListDialog extends SelectFilesDialog {
 
 	public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt,
                           @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles,
-                          boolean deletableFiles) {
+                          boolean deletableFiles,SettingDialogCategory category) {
 		super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
+		this.category = category;
 		replaceFilesTree(project, files, selectableFiles, deletableFiles);
 		init();
 		final ChangesTree filesTree = getFileList();
@@ -65,12 +68,14 @@ public class FileListDialog extends SelectFilesDialog {
 		try {
 			final Field treeField = getTreeField(getFileList());
 			if (treeField != null) {
-				final var newTree = new FileListTree(project, selectableFiles, deletableFiles, files);
+				final var newTree = new FileListTree(project, selectableFiles, deletableFiles, files, category);
 				treeField.setAccessible(true);
 				treeField.set(this, newTree);
 			}
 		} catch (IllegalAccessException e) {
-			MessagesUtils.warn(project, "replace the file list tree field by customized error: " + e.getMessage());
+			final String message = "replace the file list tree field by customized error: " + e.getMessage();
+			MessagesUtils.warn(project, message);
+			LOGGER.warn(message, e);
 		}
 	}
 
@@ -252,40 +257,58 @@ public class FileListDialog extends SelectFilesDialog {
 
 	private static class FileListTree extends VirtualFileList {
 
+		private final SettingDialogCategory category;
 		private boolean expandAllDirectory = false;
 
 		private Set<VirtualFile> projectModuleRoots;
 
 		public FileListTree(Project project, boolean selectableFiles, boolean deletableFiles, @NotNull List<?
-				extends VirtualFile> files) {
+				extends VirtualFile> files, SettingDialogCategory category) {
 			super(project, selectableFiles, deletableFiles, files);
+			this.category = category;
 		}
 
-		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull ChangesGroupingPolicyFactory grouping, @NotNull List<?
+		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull ChangesGroupingPolicyFactory grouping,
+		                                                   @NotNull List<?
 				extends VirtualFile> changes) {
-			// from 2023.2 should use following line
-//			final DefaultTreeModel defaultTreeModel = super.buildTreeModel(grouping, changes);
-			// for pass the IntelliJ Plugin Verifier
-			final DefaultTreeModel defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
-			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
-				expandDirectoryNodes(defaultTreeModel);
-			}
-			if (isDirectoryModuleGrouping()) {
-				collapseDirectoryNotInModules(defaultTreeModel);
+			DefaultTreeModel defaultTreeModel;
+			if (category == SettingDialogCategory.VCS) {
+				defaultTreeModel = VcsHelper.treeModelFromLocalChanges(myProject, grouping);
+			} else {
+				// from 2023.2 should use following line
+				//	final DefaultTreeModel defaultTreeModel = super.buildTreeModel(grouping, changes);
+				// for pass the IntelliJ Plugin Verifier
+				defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
+				expandDirWhenSetting(defaultTreeModel);
+				collapseDirIfNeed(defaultTreeModel);
 			}
 			return defaultTreeModel;
 		}
 
 		// for compatible with before version 2022
 		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull List<? extends VirtualFile> changes) {
-			final DefaultTreeModel defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, getGrouping(), changes);
-			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
-				expandDirectoryNodes(defaultTreeModel);
+			DefaultTreeModel defaultTreeModel;
+			final ChangesGroupingPolicyFactory grouping = getGrouping();
+			if (category == SettingDialogCategory.VCS) {
+				defaultTreeModel = VcsHelper.treeModelFromLocalChanges(myProject, grouping);
+			} else {
+				defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
+				expandDirWhenSetting(defaultTreeModel);
+				collapseDirIfNeed(defaultTreeModel);
 			}
+			return defaultTreeModel;
+		}
+
+		private void collapseDirIfNeed(DefaultTreeModel defaultTreeModel) {
 			if (isDirectoryModuleGrouping()) {
 				collapseDirectoryNotInModules(defaultTreeModel);
 			}
-			return defaultTreeModel;
+		}
+
+		private void expandDirWhenSetting(DefaultTreeModel defaultTreeModel) {
+			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
+				expandDirectoryNodes(defaultTreeModel);
+			}
 		}
 
 		private void expandDirectoryNodes(DefaultTreeModel model) {

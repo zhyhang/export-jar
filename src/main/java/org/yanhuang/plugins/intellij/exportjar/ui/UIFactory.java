@@ -64,7 +64,20 @@ public class UIFactory {
      * @return SettingDialog
      */
     public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template) {
-        final SettingDialog setting = new SettingDialog(project, selectedFiles, template);
+        return createSettingDialog(project, selectedFiles, template, null);
+    }
+
+    /**
+     * create and config setting-dialog, without visibility
+     *
+     * @param project       project
+     * @param selectedFiles selected files
+     * @param template template name to effect when dialog show
+     * @param category dialog usage for category
+     * @return SettingDialog
+     */
+    public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template, SettingDialogCategory category) {
+        final SettingDialog setting = new SettingDialog(project, selectedFiles, template, category);
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         final Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {

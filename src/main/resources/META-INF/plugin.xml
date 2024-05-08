@@ -103,8 +103,8 @@
             <!-- throw swing context event exception when trigger by first-keystroke -->
             <!--<keyboard-shortcut keymap="$default" first-keystroke="control alt F9"/>-->
         </action>
-        <action id="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitAction"
-                class="org.yanhuang.plugins.intellij.exportjar.changes.ExportCommitAction"
+        <action id="org.yanhuang.plugins.intellij.exportjar.changes.ExportLocalChangesAction"
+                class="org.yanhuang.plugins.intellij.exportjar.changes.ExportLocalChangesAction"
                 text="Export Jar from Local Changes..." description="Export jar from local changes">
             <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"/>
             <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>

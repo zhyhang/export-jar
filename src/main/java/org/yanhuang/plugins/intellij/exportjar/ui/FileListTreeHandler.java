@@ -195,6 +195,8 @@ public class FileListTreeHandler {
 			vf = ((ChangesBrowserModuleNode) treeNode).getModuleRoot().getVirtualFile();
 		} else if (treeNode instanceof RepositoryChangesBrowserNode) {
 			vf = ((Repository) treeNode.getUserObject()).getRoot();
+		} else if (treeNode instanceof ChangesBrowserChangeNode) {
+			vf = ((ChangesBrowserChangeNode) treeNode).getUserObject().getVirtualFile();
 		}
 		return vf;
 	}
@@ -238,11 +240,11 @@ public class FileListTreeHandler {
 	/**
 	 * Collects virtual files in a tree structure by traversing the tree and filtering out directories.
 	 *
-	 * @param changesTree The ChangesTree containing the tree structure to collect virtual files from
+	 * @param root The ChangesTree's root containing the tree structure to collect virtual files from
 	 * @return An array of VirtualFile objects representing the collected virtual files
 	 */
-	public static VirtualFile[] collectVirtualFilesInTree(final ChangesTree changesTree) {
-		return TreeUtil.treeNodeTraverser(changesTree.getRoot()).preOrderDfsTraversal().map(n -> getNodeBindVirtualFile((ChangesBrowserNode<?>) n))
+	public static VirtualFile[] collectVirtualFilesInTree(final TreeNode root) {
+		return TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().map(n -> getNodeBindVirtualFile((ChangesBrowserNode<?>) n))
 				.filter(Objects::nonNull)
 				.filter(vf -> !vf.isDirectory())
 				.toArray(new VirtualFile[0]);

@@ -32,11 +32,23 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 public class FileListActions {
 
 	public static AnAction[] treeOperationActions(FileListDialog dialog) {
+		if(dialog.category == SettingDialogCategory.VCS){
+			return vcsTreeOperationActions(dialog);
+		}else{
+			return defaultTreeOperationActions(dialog);
+		}
+	}
+
+	public static AnAction[] defaultTreeOperationActions(FileListDialog dialog) {
 		return new AnAction[]{new RecursiveToggleAction(dialog),
 				new IncludeSelectAction(dialog),
 				new ExcludeSelectAction(dialog),
 				new CleanIncludeExcludeAction(dialog),
 				new DirectoryExpandToggleAction(dialog)};
+	}
+
+	private static AnAction[] vcsTreeOperationActions(FileListDialog dialog) {
+		return new AnAction[0];
 	}
 
 	private static void doIncludeExcludeAction(FileListDialog dialog, ChangesTree fileTree, SelectType selectType) {
@@ -228,7 +240,6 @@ public class FileListActions {
 
 		@Override
 		public boolean isSelected(@NotNull AnActionEvent e) {
-			final ChangesTree changesTree = dialog.getFileList();
 			return dialog.isExpandAllDirectory();
 		}
 

@@ -366,7 +366,7 @@ public class TemplateEventHandler {
 	}
 
 	private void saveTransientTemplate() {
-		this.transientFilesInTree = collectVirtualFilesInTree(settingDialog.fileListDialog.getFileList());
+		this.transientFilesInTree = collectVirtualFilesInTree(settingDialog.fileListDialog.getFileList().getRoot());
 		this.transientTemplateSelectFiles = settingDialog.fileListDialog.getStoreIncludeExcludeSelections();
 		this.transientSelectObjects=settingDialog.fileListDialog.getFileList().getIncludedSet();
 		this.transientTemplate.setOptions(settingDialog.pickExportOptions());

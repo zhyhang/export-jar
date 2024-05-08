@@ -51,9 +51,10 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * <li><b>If modal dialog, should extends DialogWrapper, or else throw exception when setVisible(true)</b></li>
  */
 public class SettingDialog extends DialogWrapper {
-	protected final Project project;
 	@Nullable
 	private VirtualFile[] selectedFiles;
+	protected final SettingDialogCategory category;
+	protected final Project project;
 	private JPanel contentPane;
 	private JButton buttonOK;
 	private JButton buttonCancel;
@@ -84,8 +85,9 @@ public class SettingDialog extends DialogWrapper {
 
 	private final TemplateEventHandler templateHandler = new TemplateEventHandler(this);
 
-	public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles, @Nullable String template) {
+	public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles, @Nullable String template, SettingDialogCategory category) {
 		super(true);
+		this.category = category == null ? SettingDialogCategory.NORMAL : category;
 		MessagesUtils.getMessageView(project);//register message tool window to avoid pack error
 		this.project = project;
 		this.selectedFiles = selectedFiles;
@@ -156,7 +158,8 @@ public class SettingDialog extends DialogWrapper {
 		for (VirtualFile virtualFile : Optional.ofNullable(this.selectedFiles).orElse(new VirtualFile[0])) {
 			CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
 		}
-		final FileListDialog dialog = new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false);
+		final FileListDialog dialog = new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false,
+				category);
 		dialog.addFileTreeChangeListener((d, e) -> {
 			final Collection<VirtualFile> files = d.getSelectedFiles();
 			this.buttonOK.setEnabled(null != files && !files.isEmpty());
@@ -268,6 +271,10 @@ public class SettingDialog extends DialogWrapper {
 		createFileListTree();
 		this.fileListDialog.setFlaggedIncludeExcludeSelections(inExSelectFiles);
 		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
+	}
+
+	public FileListDialog getFileListDialog() {
+		return fileListDialog;
 	}
 
 	public void doExport(VirtualFile[] exportFiles) {
