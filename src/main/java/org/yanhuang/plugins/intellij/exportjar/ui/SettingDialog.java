@@ -52,8 +52,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  */
 public class SettingDialog extends DialogWrapper {
 	@Nullable
-	private VirtualFile[] selectedFiles;
-	protected final SettingDialogCategory category;
+	protected VirtualFile[] selectedFiles;
 	protected final Project project;
 	private JPanel contentPane;
 	private JButton buttonOK;
@@ -65,7 +64,7 @@ public class SettingDialog extends DialogWrapper {
 	protected JComboBox<String> outPutJarFileComboBox;
 	private JButton selectJarFileButton;
 	private JPanel settingPanel;
-	private JPanel fileListPanel;
+	protected JPanel fileListPanel;
 	private JButton debugButton;
 	private JPanel actionPanel;
 	protected JPanel optionsPanel;
@@ -85,9 +84,8 @@ public class SettingDialog extends DialogWrapper {
 
 	private final TemplateEventHandler templateHandler = new TemplateEventHandler(this);
 
-	public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles, @Nullable String template, SettingDialogCategory category) {
+	public SettingDialog(Project project, @Nullable VirtualFile[] selectedFiles, @Nullable String template) {
 		super(true);
-		this.category = category == null ? SettingDialogCategory.NORMAL : category;
 		MessagesUtils.getMessageView(project);//register message tool window to avoid pack error
 		this.project = project;
 		this.selectedFiles = selectedFiles;
@@ -108,6 +106,7 @@ public class SettingDialog extends DialogWrapper {
 		updateFileListSettingSplitPanel();
 //        uiDebug();
 		updateComponentState(template);
+		updateTemplateUiState();
 		this.templateEnableCheckBox.addItemListener(templateHandler::templateEnableChanged);
 		this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
 		this.templateDelButton.addActionListener(templateHandler::delTemplate);
@@ -130,11 +129,17 @@ public class SettingDialog extends DialogWrapper {
 		this.templateHandler.initUI(history, template);
 	}
 
+	protected void updateTemplateUiState() {
+//		if (category == SettingDialogCategory.LOCAL_CHANGES || category == SettingDialogCategory.LOCAL_CHANGES_REUSE_IDEA) {
+//			this.templateEnableCheckBox.setEnabled(false);
+//		}
+	}
+
 	public JBSplitter getFileListSettingSplitPanel() {
 		return fileListSettingSplitPanel;
 	}
 
-	private void createFileListTree() {
+	protected void createFileListTree() {
 		//remove old component
 		if (this.fileListLabel != null) {
 			fileListPanel.remove(fileListLabel);
@@ -158,15 +163,13 @@ public class SettingDialog extends DialogWrapper {
 		for (VirtualFile virtualFile : Optional.ofNullable(this.selectedFiles).orElse(new VirtualFile[0])) {
 			CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
 		}
-		final FileListDialog dialog = new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false,
-				category);
+		final FileListDialog dialog = new FileListDialog(this.project, List.copyOf(allVfs), null, null, true, false);
 		dialog.addFileTreeChangeListener((d, e) -> {
 			final Collection<VirtualFile> files = d.getSelectedFiles();
 			this.buttonOK.setEnabled(null != files && !files.isEmpty());
 		});
 		return dialog;
 	}
-
 	private void updateSettingPanelComponents() {
 		createTemplatePanelTitledSeparator();
 		createJarOutputPanelTiledSeparator();
@@ -240,7 +243,7 @@ public class SettingDialog extends DialogWrapper {
 	 *
 	 * @return selected files, always not null, possible length=0
 	 */
-	public VirtualFile[] getSelectedFiles() {
+	public VirtualFile[] getExportingFiles() {
 		return fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
 	}
 
@@ -253,7 +256,7 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	public void onOK() {
-		final VirtualFile[] finalSelectFiles = fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
+		final VirtualFile[] finalSelectFiles = this.getExportingFiles();
 		doExport(finalSelectFiles);
 	}
 

@@ -32,11 +32,7 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.*;
 public class FileListActions {
 
 	public static AnAction[] treeOperationActions(FileListDialog dialog) {
-		if(dialog.category == SettingDialogCategory.VCS){
-			return vcsTreeOperationActions(dialog);
-		}else{
-			return defaultTreeOperationActions(dialog);
-		}
+		return defaultTreeOperationActions(dialog);
 	}
 
 	public static AnAction[] defaultTreeOperationActions(FileListDialog dialog) {

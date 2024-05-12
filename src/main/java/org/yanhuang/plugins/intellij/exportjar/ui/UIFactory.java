@@ -64,20 +64,12 @@ public class UIFactory {
      * @return SettingDialog
      */
     public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template) {
-        return createSettingDialog(project, selectedFiles, template, null);
+        final SettingDialog setting = new SettingDialog(project, selectedFiles, template);
+        setDialogLocation(setting);
+        return setting;
     }
 
-    /**
-     * create and config setting-dialog, without visibility
-     *
-     * @param project       project
-     * @param selectedFiles selected files
-     * @param template template name to effect when dialog show
-     * @param category dialog usage for category
-     * @return SettingDialog
-     */
-    public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template, SettingDialogCategory category) {
-        final SettingDialog setting = new SettingDialog(project, selectedFiles, template, category);
+    private static void setDialogLocation(SettingDialog setting) {
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         final Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {
@@ -90,7 +82,6 @@ public class UIFactory {
 
         setting.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
         setting.setTitle(Constants.actionName);
-        return setting;
     }
 
     /**
@@ -102,6 +93,12 @@ public class UIFactory {
     public static JPanel createTitledSeparatorPanel(String title, JComponent forComp) {
         final TitledSeparator separator = SeparatorFactory.createSeparator(title, forComp);
         return simplePanel().addToBottom(separator).addToTop(Box.createVerticalGlue());
+    }
+
+    public static LocalChangesSettingDialog createLocalChangesSettingDialog(Project project) {
+        final var changesDialog = new LocalChangesSettingDialog(project, null);
+        setDialogLocation(changesDialog);
+        return changesDialog;
     }
 
     /**

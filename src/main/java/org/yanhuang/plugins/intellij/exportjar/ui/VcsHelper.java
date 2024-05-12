@@ -22,6 +22,12 @@ import static com.intellij.openapi.vcs.changes.ui.TreeModelBuilder.buildFromVirt
 public final class VcsHelper {
 	private static final Logger LOGGER = Logger.getInstance(VcsHelper.class);
 
+	/**
+	 * create virtual file tree for FileListDialog for making local changes export as same general export file
+	 * @param project
+	 * @param grouping
+	 * @return
+	 */
 	public static DefaultTreeModel treeModelFromLocalChanges(Project project, ChangesGroupingPolicyFactory grouping) {
 		final ChangeListManager changeListManager = ChangeListManager.getInstance(project);
 		final List<VirtualFile> affectedFiles = changeListManager.getAffectedFiles();
