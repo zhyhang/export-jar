@@ -54,7 +54,7 @@ public class MessagesUtils {
      *
      * @param project current panel
      */
-    public static void clear(Project project) {
+    public static void clearMessagePanel(Project project) {
         if (ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW) != null) {
             ContentManagerUtil.cleanupContents(null, project, Constants.infoTabName);
         }

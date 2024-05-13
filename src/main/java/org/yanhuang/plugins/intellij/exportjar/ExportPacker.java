@@ -43,7 +43,7 @@ public class ExportPacker implements CompileStatusNotification {
     }
 
     private void pack() {
-        clear(project);
+        clearMessagePanel(project);
         VirtualFile[] virtualFiles = this.selectedFiles;
         if (virtualFiles == null) {
             virtualFiles = new VirtualFile[0];
@@ -105,10 +105,10 @@ public class ExportPacker implements CompileStatusNotification {
                 collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
             }
             // only export java classes
-            if (psiPackage != null && exportOptionSet.contains(ExportOptions.export_class) && fileName.endsWith(".java")) {
+            if (psiPackage != null && exportOptionSet.contains(ExportOptions.export_class) && isExportClassSourceFile(fileName)) {
                 PsiClass[] psiClasses = psiPackage.getClasses();
                 if (psiClasses.length == 0) {
-                    warn(project, "not found class info of java file " + virtualFile.getPath());
+                    warn(project, "not found class info of source file " + virtualFile.getPath());
                     return;// possible only package-info.java or module-info.java in the package, ignore them
                 }
                 final Set<String> localClassNames = CommonUtils.findClassNameDefineIn(psiClasses, virtualFile);
@@ -153,6 +153,10 @@ public class ExportPacker implements CompileStatusNotification {
         } else {
             collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
         }
+    }
+
+    private boolean isExportClassSourceFile(String fileName) {
+        return fileName.endsWith(".java") || fileName.endsWith(".kt");
     }
 
     private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath,

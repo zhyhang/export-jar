@@ -88,7 +88,7 @@
                   <enabled value="true"/>
                   <name value="export_java"/>
                   <selected value="true"/>
-                  <text value="Export &amp;java file"/>
+                  <text value="Export &amp;source file"/>
                 </properties>
               </component>
             </children>
