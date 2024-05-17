@@ -81,7 +81,6 @@
     <depends>com.intellij.modules.lang</depends>
     -->
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.vcs</depends>
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
