@@ -30,6 +30,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
 - [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
   - notices
+    - suggest using **2023+ IDEA IC or IU** as plugin develop environment 
     - upgrade dev tools copy following files from official template code:
     ```shell
        /gradle/*
@@ -58,6 +59,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
     ```
     - **keep dependencies and tasks test section code in build.gradle.ks not remove**
     - change gradle.properties to make compatible
+    - 
 
 ## screenshot
 ![From Build Menu](image/export-jar-menus.gif)
@@ -105,7 +107,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - [OK]make unused org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.FileListTree to use for some tree select operation.
 ## Build
 - config java homes for gradle to lookup JDK 11 and JDK 17
-  - JAVA_HOME=path_to_jdk11
+  - JAVA_HOME=path_to_jdk17 (**use IntelliJ Platform Gradle Plugin 2.x must use jdk17 to run gradle**)
   - JAVA11_HOME=path_to_jdk11
   - JAVA17_HOME=path_to_jdk17
 

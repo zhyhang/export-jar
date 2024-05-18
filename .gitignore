@@ -28,3 +28,4 @@ nbdist/
 ### ide plugin template
 .gradle
 .qodana
+.intellijPlatform

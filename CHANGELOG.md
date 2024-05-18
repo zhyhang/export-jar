@@ -4,8 +4,13 @@
 # Changelogs
 
 ## [Unreleased]
-- Refactor export jar from local changes action
 - Supports export pre-compiled class file need not just in time compiling
+- Upgrade IntelliJ Platform Gradle Plugin to 2.x 
+- Supports view include/exclude dir in pop dialog
+
+## [2.5.4]
+- Supports export pre-compiled class file need not just in time compiling
+- Upgrade IntelliJ Platform Gradle Plugin to 2.x
 - Supports view include/exclude dir in pop dialog
 
 ## [2.5.3]
