@@ -158,7 +158,4 @@ tasks {
         systemProperty("jb.consents.confirmation.enabled", "false")
     }
 
-    publishPlugin {
-        dependsOn(patchChangelog)
-    }
 }
