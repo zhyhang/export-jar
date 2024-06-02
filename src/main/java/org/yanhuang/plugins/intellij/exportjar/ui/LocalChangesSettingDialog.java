@@ -7,16 +7,14 @@ import javax.swing.*;
 
 public class LocalChangesSettingDialog extends SettingDialog{
 	private LocalChangesDialogProvider provider;
-	private final VirtualFile[] pathsToExport;
 
 	public LocalChangesSettingDialog(Project project, VirtualFile[] pathsToExport) {
-		super(project, null, null);
-		this.pathsToExport = pathsToExport;
+		super(project, pathsToExport, null);
 	}
 
 	@Override
 	protected void createFileListTree() {
-		final JComponent changesViewPanel = getProviderComputeIfAbsent().createChangesViewPanel(this.project, null);
+		final JComponent changesViewPanel = getProviderComputeIfAbsent().createChangesViewPanel(this.project, this.selectedFiles);
 		this.fileListPanel.add(changesViewPanel);
 	}
 

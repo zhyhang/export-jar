@@ -102,13 +102,6 @@
             <!-- throw swing context event exception when trigger by first-keystroke -->
             <!--<keyboard-shortcut keymap="$default" first-keystroke="control alt F9"/>-->
         </action>
-        <action id="org.yanhuang.plugins.intellij.exportjar.changes.ExportLocalChangesAction"
-                class="org.yanhuang.plugins.intellij.exportjar.changes.ExportLocalChangesAction"
-                text="Export Jar from Local Changes..." description="Export jar from local changes">
-            <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"/>
-            <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>
-            <add-to-group group-id="BuildMenu" anchor="last"/>
-        </action>
         <!-- export by template dynamic actions -->
         <!--  https://plugins.jetbrains.com/docs/intellij/grouping-action.html#action-groups-with-dynamic-actions-sets -->
         <group id="org.yanhuang.plugins.intellij.exportjar.template.TemplateExportActionGroup"
@@ -123,6 +116,22 @@
                           anchor="after"
                           relative-to-action="org.yanhuang.plugins.intellij.exportjar.ExportJarAction"/>
         </group>
+        <action id="org.yanhuang.plugins.intellij.exportjar.changes.ExportLocalChangesAction"
+                class="org.yanhuang.plugins.intellij.exportjar.changes.ExportLocalChangesAction"
+                text="Export Jar from Local Changes..." description="Export jar from local changes">
+            <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"/>
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="after" relative-to-action="ChangesView.Shelve"/>
+            <add-to-group group-id="BuildMenu"
+                          anchor="after"
+                          relative-to-action="org.yanhuang.plugins.intellij.exportjar.template.TemplateExportActionGroup"/>
+        </action>
+        <action id="org.yanhuang.plugins.intellij.exportjar.changes.ExportSelectLocalChangesAction"
+                class="org.yanhuang.plugins.intellij.exportjar.changes.ExportSelectLocalChangesAction"
+                text="Export Jar from Changes..." description="Export jar from selected changes">
+            <add-to-group group-id="ProjectViewCompileGroup"
+                          anchor="after"
+                          relative-to-action="org.yanhuang.plugins.intellij.exportjar.template.TemplateExportActionGroup"/>
+        </action>
         <!--
         <action id="ChangesView.GroupBy.DirectoryNoCollapse"
                 class="org.yanhuang.plugins.intellij.exportjar.ui.FileListActions$SetDirectoryNoCollapseChangesGroupingAction"

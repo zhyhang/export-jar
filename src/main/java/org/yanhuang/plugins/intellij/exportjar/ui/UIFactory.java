@@ -95,8 +95,8 @@ public class UIFactory {
         return simplePanel().addToBottom(separator).addToTop(Box.createVerticalGlue());
     }
 
-    public static LocalChangesSettingDialog createLocalChangesSettingDialog(Project project) {
-        final var changesDialog = new LocalChangesSettingDialog(project, null);
+    public static LocalChangesSettingDialog createLocalChangesSettingDialog(Project project, VirtualFile[] initialSelections) {
+        final var changesDialog = new LocalChangesSettingDialog(project, initialSelections);
         setDialogLocation(changesDialog);
         return changesDialog;
     }

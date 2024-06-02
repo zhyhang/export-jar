@@ -35,10 +35,10 @@
                 <properties>
                   <horizontalAlignment value="0"/>
                   <horizontalTextPosition value="11"/>
-                  <preferredSize width="36" height="-1"/>
+                  <preferredSize width="64" height="-1"/>
                   <selected value="false"/>
-                  <text value="..."/>
-                  <toolTipText value="select output jar storage path"/>
+                  <text value="&amp;Path..." noi18n="true"/>
+                  <toolTipText value="select output jar storage path" noi18n="true"/>
                 </properties>
               </component>
             </children>
@@ -58,7 +58,7 @@
                 <properties>
                   <name value="add_directory"/>
                   <selected value="false"/>
-                  <text value="Add d&amp;irectory entries"/>
+                  <text value="Add d&amp;irectory entries" noi18n="true"/>
                 </properties>
               </component>
               <component id="5d560" class="javax.swing.JCheckBox" binding="exportTestFileCheckBox" default-binding="true">
@@ -67,7 +67,7 @@
                 </constraints>
                 <properties>
                   <name value="export_test"/>
-                  <text value="Export &amp;test file"/>
+                  <text value="Export t&amp;est file" noi18n="true"/>
                 </properties>
               </component>
               <component id="c418c" class="javax.swing.JCheckBox" binding="exportClassFileCheckBox">
@@ -77,7 +77,7 @@
                 <properties>
                   <name value="export_class"/>
                   <selected value="true"/>
-                  <text value="Export &amp;class file"/>
+                  <text value="Export &amp;class file" noi18n="true"/>
                 </properties>
               </component>
               <component id="3aee4" class="javax.swing.JCheckBox" binding="exportJavaFileCheckBox">
@@ -88,7 +88,7 @@
                   <enabled value="true"/>
                   <name value="export_java"/>
                   <selected value="true"/>
-                  <text value="Export &amp;source file"/>
+                  <text value="Export s&amp;ource file" noi18n="true"/>
                 </properties>
               </component>
             </children>
@@ -147,12 +147,19 @@
             <border type="none"/>
             <children>
               <component id="e570d" class="javax.swing.JCheckBox" binding="templateEnableCheckBox">
-                <constraints border-constraint="East"/>
+                <constraints border-constraint="West"/>
                 <properties>
+                  <actionCommand value=""/>
                   <hideActionText value="false"/>
-                  <text value=""/>
-                  <toolTipText value="enable/disable template"/>
+                  <horizontalTextPosition value="11"/>
+                  <text value="Te&amp;mplate" noi18n="true"/>
+                  <toolTipText value=""/>
+                  <verticalTextPosition value="0"/>
                 </properties>
+                <clientProperties>
+                  <hideActionText class="java.lang.Boolean" value="false"/>
+                  <html.disable class="java.lang.Boolean" value="false"/>
+                </clientProperties>
               </component>
             </children>
           </grid>

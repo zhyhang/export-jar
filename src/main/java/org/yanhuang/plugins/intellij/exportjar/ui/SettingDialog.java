@@ -1,5 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.openapi.MnemonicHelper;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileStatusNotification;
@@ -112,6 +113,7 @@ public class SettingDialog extends DialogWrapper {
 		this.templateDelButton.addActionListener(templateHandler::delTemplate);
 		this.templateSelectComBox.addItemListener(templateHandler::templateSelectChanged);
 		this.outPutJarFileComboBox.addItemListener(templateHandler::exportJarChanged);
+		initMnemonics();
 	}
 
 	private void updateComponentState(String template) {
@@ -130,9 +132,6 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	protected void updateTemplateUiState() {
-//		if (category == SettingDialogCategory.LOCAL_CHANGES || category == SettingDialogCategory.LOCAL_CHANGES_REUSE_IDEA) {
-//			this.templateEnableCheckBox.setEnabled(false);
-//		}
 	}
 
 	public JBSplitter getFileListSettingSplitPanel() {
@@ -177,11 +176,12 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	private void createTemplatePanelTitledSeparator() {
-		createTitledSeparatorForPanel(this.templateTitlePanel, Constants.titleTemplateSetting, this.templatePanel);
+		// use enable checkout as title
+//		createTitledSeparatorForPanel(this.templateTitlePanel, Constants.titleTemplateSetting, this.templateSelectComBox);
 	}
 
 	private void createJarOutputPanelTiledSeparator() {
-		createTitledSeparatorForPanel(this.outputJarTitlePanel, Constants.titleJarFileSeparator, this.jarFilePanel);
+		createTitledSeparatorForPanel(this.outputJarTitlePanel, Constants.titleJarFileSeparator, this.outPutJarFileComboBox);
 	}
 
 	private void createOptionPanelTitledSeparator() {
@@ -196,6 +196,10 @@ public class SettingDialog extends DialogWrapper {
 	private void updateFileListSettingSplitPanel() {
 		this.fileListSettingSplitPanel.setFirstComponent(this.fileListPanel);
 		this.fileListSettingSplitPanel.setSecondComponent(this.settingPanel);
+	}
+
+	private void initMnemonics(){
+		MnemonicHelper.init(getContentPane());
 	}
 
 
