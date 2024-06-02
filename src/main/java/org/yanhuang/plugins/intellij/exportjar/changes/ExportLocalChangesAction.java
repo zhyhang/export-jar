@@ -18,7 +18,7 @@ import org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils;
 import java.util.List;
 
 /**
- * perform export jar from local changes (i.e. vcs commits)
+ * perform export jar from local changes (i.e. vcs commits)，initial select all changes.
  */
 public class ExportLocalChangesAction extends AnAction {
 	private static final Logger LOGGER = Logger.getInstance(ExportLocalChangesAction.class);
@@ -27,13 +27,18 @@ public class ExportLocalChangesAction extends AnAction {
 	public void actionPerformed(@NotNull AnActionEvent e) {
 		final Project project = CommonDataKeys.PROJECT.getData(e.getDataContext());
 		if (project != null) {
-			final LocalChangesSettingDialog dialog = UIFactory.createLocalChangesSettingDialog(project);
+			final LocalChangesSettingDialog dialog = UIFactory.createLocalChangesSettingDialog(project,
+					initialSelection(project, e));
 			ApplicationManager.getApplication().invokeAndWait(dialog::show);
 		} else {
 			final String message = "not found project instance from AnActionEvent dataContext";
 			MessagesUtils.errorNotify(ExportLocalChangesAction.class.getSimpleName(), message);
 			LOGGER.warn(message);
 		}
+	}
+
+	protected VirtualFile[] initialSelection(Project project, AnActionEvent e) {
+		return null;
 	}
 
 	private static void simpleVcsExport(Project project) {
