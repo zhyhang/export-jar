@@ -88,7 +88,7 @@
                   <enabled value="true"/>
                   <name value="export_java"/>
                   <selected value="true"/>
-                  <text value="Export s&amp;ource file" noi18n="true"/>
+                  <text value="Export so&amp;urce file" noi18n="true"/>
                 </properties>
               </component>
             </children>
@@ -149,17 +149,10 @@
               <component id="e570d" class="javax.swing.JCheckBox" binding="templateEnableCheckBox">
                 <constraints border-constraint="West"/>
                 <properties>
-                  <actionCommand value=""/>
                   <hideActionText value="false"/>
-                  <horizontalTextPosition value="11"/>
                   <text value="Te&amp;mplate" noi18n="true"/>
-                  <toolTipText value=""/>
-                  <verticalTextPosition value="0"/>
+                  <toolTipText value="enable/disable template"/>
                 </properties>
-                <clientProperties>
-                  <hideActionText class="java.lang.Boolean" value="false"/>
-                  <html.disable class="java.lang.Boolean" value="false"/>
-                </clientProperties>
               </component>
             </children>
           </grid>
