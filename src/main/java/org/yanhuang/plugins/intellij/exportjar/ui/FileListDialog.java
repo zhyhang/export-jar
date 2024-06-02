@@ -1,6 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -36,7 +37,7 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.Constants.fileListTr
  */
 public class FileListDialog extends SelectFilesDialog {
 	public final static Key<Boolean> KEY_HELPER_NODE = Key.create(fileListTreeHelperNodeKey);
-
+	private final static Logger LOGGER = Logger.getInstance(FileListDialog.class);
 	private JComponent centerPanel;
 	private DefaultActionGroup actionGroup;
 
@@ -47,8 +48,8 @@ public class FileListDialog extends SelectFilesDialog {
 	private final Map<VirtualFile, SettingSelectFile> flaggedVirtualFileSelectionMap = new HashMap<>();
 
 	public FileListDialog(Project project, @NotNull List<? extends VirtualFile> files, @Nullable String prompt,
-                          @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles,
-                          boolean deletableFiles) {
+	                      @Nullable VcsShowConfirmationOption confirmationOption, boolean selectableFiles,
+	                      boolean deletableFiles) {
 		super(project, files, prompt, confirmationOption, selectableFiles, deletableFiles);
 		replaceFilesTree(project, files, selectableFiles, deletableFiles);
 		init();
@@ -61,7 +62,8 @@ public class FileListDialog extends SelectFilesDialog {
 		filesTree.setCellRenderer(new FileListTreeCellRender(this, filesTree.getCellRenderer()));
 	}
 
-	private void replaceFilesTree(Project project, List<? extends VirtualFile> files, boolean selectableFiles, boolean deletableFiles) {
+	private void replaceFilesTree(Project project, List<? extends VirtualFile> files, boolean selectableFiles,
+	                              boolean deletableFiles) {
 		try {
 			final Field treeField = getTreeField(getFileList());
 			if (treeField != null) {
@@ -70,7 +72,9 @@ public class FileListDialog extends SelectFilesDialog {
 				treeField.set(this, newTree);
 			}
 		} catch (IllegalAccessException e) {
-			MessagesUtils.warn(project, "replace the file list tree field by customized error: " + e.getMessage());
+			final String message = "replace the file list tree field by customized error: " + e.getMessage();
+			MessagesUtils.warn(project, message);
+			LOGGER.warn(message, e);
 		}
 	}
 
@@ -107,7 +111,7 @@ public class FileListDialog extends SelectFilesDialog {
 
 	/**
 	 * Retrieves the include and exclude selections from the file list dialog and returns an array of
-     * SettingSelectFile objects.
+	 * SettingSelectFile objects.
 	 * <li>general to use for template export setting files saving history</li>
 	 * <li>if get final files (only files) to export, use getSelectedFiles() method</li>
 	 *
@@ -142,7 +146,7 @@ public class FileListDialog extends SelectFilesDialog {
 	private List<SettingSelectFile> filterMatchTreeNode() {
 		final ChangesBrowserNode<?> root = this.getFileList().getRoot();
 		final Set<VirtualFile> allVfInTree = new HashSet<>();
-		TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().forEach(n->{
+		TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().forEach(n -> {
 			final var node = (ChangesBrowserNode<?>) n;
 			final var vfs = FileListTreeHandler.getNodeBindVirtualFile(node);
 			if (vfs != null) {
@@ -218,14 +222,14 @@ public class FileListDialog extends SelectFilesDialog {
 		return this.flaggedVirtualFileSelectionMap.remove(virtualFile);
 	}
 
-	public boolean isExpandAllDirectory(){
+	public boolean isExpandAllDirectory() {
 		if (this.getFileList() instanceof FileListTree) {
 			return ((FileListTree) this.getFileList()).isExpandAllDirectory();
 		}
 		return false;
 	}
 
-	public String[] getGroupingKeys(){
+	public String[] getGroupingKeys() {
 		final Set<String> keys = this.getFileList().getGroupingSupport().getGroupingKeys();
 		return keys.toArray(new String[0]);
 	}
@@ -251,7 +255,6 @@ public class FileListDialog extends SelectFilesDialog {
 	}
 
 	private static class FileListTree extends VirtualFileList {
-
 		private boolean expandAllDirectory = false;
 
 		private Set<VirtualFile> projectModuleRoots;
@@ -261,31 +264,39 @@ public class FileListDialog extends SelectFilesDialog {
 			super(project, selectableFiles, deletableFiles, files);
 		}
 
-		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull ChangesGroupingPolicyFactory grouping, @NotNull List<?
-				extends VirtualFile> changes) {
+		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull ChangesGroupingPolicyFactory grouping,
+		                                                   @NotNull List<?
+				                                                   extends VirtualFile> changes) {
+			DefaultTreeModel defaultTreeModel;
 			// from 2023.2 should use following line
-//			final DefaultTreeModel defaultTreeModel = super.buildTreeModel(grouping, changes);
+			//	final DefaultTreeModel defaultTreeModel = super.buildTreeModel(grouping, changes);
 			// for pass the IntelliJ Plugin Verifier
-			final DefaultTreeModel defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
-			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
-				expandDirectoryNodes(defaultTreeModel);
-			}
-			if (isDirectoryModuleGrouping()) {
-				collapseDirectoryNotInModules(defaultTreeModel);
-			}
+			defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
+			expandDirWhenSetting(defaultTreeModel);
+			collapseDirIfNeed(defaultTreeModel);
 			return defaultTreeModel;
 		}
 
 		// for compatible with before version 2022
 		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull List<? extends VirtualFile> changes) {
-			final DefaultTreeModel defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, getGrouping(), changes);
-			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
-				expandDirectoryNodes(defaultTreeModel);
-			}
+			DefaultTreeModel defaultTreeModel;
+			final ChangesGroupingPolicyFactory grouping = getGrouping();
+			defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
+			expandDirWhenSetting(defaultTreeModel);
+			collapseDirIfNeed(defaultTreeModel);
+			return defaultTreeModel;
+		}
+
+		private void collapseDirIfNeed(DefaultTreeModel defaultTreeModel) {
 			if (isDirectoryModuleGrouping()) {
 				collapseDirectoryNotInModules(defaultTreeModel);
 			}
-			return defaultTreeModel;
+		}
+
+		private void expandDirWhenSetting(DefaultTreeModel defaultTreeModel) {
+			if (isDirectoryModuleGrouping() && this.isExpandAllDirectory()) {
+				expandDirectoryNodes(defaultTreeModel);
+			}
 		}
 
 		private void expandDirectoryNodes(DefaultTreeModel model) {
@@ -304,7 +315,8 @@ public class FileListDialog extends SelectFilesDialog {
 		}
 
 		private void expandDirectoryBetween(Map<VirtualFile, ChangesBrowserNode<?>> directoryNodeCache,
-		                                    ChangesBrowserNode<?> node, VirtualFile nodeVf, ChangesBrowserNode<?> parent,
+		                                    ChangesBrowserNode<?> node, VirtualFile nodeVf,
+		                                    ChangesBrowserNode<?> parent,
 		                                    VirtualFile parentVf) {
 			var directParentVf = nodeVf.getParent();
 			var currentNode = node;
@@ -318,7 +330,7 @@ public class FileListDialog extends SelectFilesDialog {
 					directParent.markAsHelperNode();
 					directoryNodeCache.put(directParentVf, directParent);
 				}
-				if(!directParent.isNodeChild(currentNode)) {
+				if (!directParent.isNodeChild(currentNode)) {
 					directParent.insert(currentNode, directParent.getChildCount());
 				}
 				currentNode = directParent;
@@ -326,7 +338,9 @@ public class FileListDialog extends SelectFilesDialog {
 			}
 			parent.insert(currentNode, 0);
 		}
-		private static boolean isShouldExpand(ChangesBrowserNode<?> node, VirtualFile nodeVf, ChangesBrowserNode<?> parent,
+
+		private static boolean isShouldExpand(ChangesBrowserNode<?> node, VirtualFile nodeVf,
+		                                      ChangesBrowserNode<?> parent,
 		                                      VirtualFile parentVf) {
 			return parent != null && parent.isRoot() ||
 					nodeVf != null && parentVf != null && nodeVf.isDirectory() && parentVf.isDirectory() && !nodeVf.getParent().equals(parentVf);
@@ -345,7 +359,8 @@ public class FileListDialog extends SelectFilesDialog {
 		}
 
 		private boolean isInModule(VirtualFile virtualFile) {
-			// as to compatible with version 2022 and before, must initial modules roots instance variable here can not in constructor
+			// as to compatible with version 2022 and before, must initial modules roots instance variable here can
+			// not in constructor
 			if (projectModuleRoots == null) {
 				initProjectModuleRoots(this.getProject());
 			}

@@ -3,6 +3,17 @@
 
 # Changelogs
 
+## [Unreleased]
+- Refactor export jar from local changes action
+- Supports export pre-compiled class file need not just in time compiling
+- Supports view include/exclude dir in pop dialog
+
+## [2.5.3]
+- Refactor export jar from local changes action
+- Export jar from local changes can include un-versioned files export
+- Supports Kotlin source and class file export
+- Remove not necessary dependency declare in plugin.xml for compatible with coming IDE 2024.2
+
 ## [2.5.2]
 - Supports (recursively) include/exclude selection by directory as to can export the new files in select directories. 
 - Refactor file list tree to customized version

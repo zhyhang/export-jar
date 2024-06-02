@@ -1,5 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.openapi.MnemonicHelper;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileStatusNotification;
@@ -51,9 +52,9 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * <li><b>If modal dialog, should extends DialogWrapper, or else throw exception when setVisible(true)</b></li>
  */
 public class SettingDialog extends DialogWrapper {
-	protected final Project project;
 	@Nullable
-	private VirtualFile[] selectedFiles;
+	protected VirtualFile[] selectedFiles;
+	protected final Project project;
 	private JPanel contentPane;
 	private JButton buttonOK;
 	private JButton buttonCancel;
@@ -64,7 +65,7 @@ public class SettingDialog extends DialogWrapper {
 	protected JComboBox<String> outPutJarFileComboBox;
 	private JButton selectJarFileButton;
 	private JPanel settingPanel;
-	private JPanel fileListPanel;
+	protected JPanel fileListPanel;
 	private JButton debugButton;
 	private JPanel actionPanel;
 	protected JPanel optionsPanel;
@@ -106,11 +107,13 @@ public class SettingDialog extends DialogWrapper {
 		updateFileListSettingSplitPanel();
 //        uiDebug();
 		updateComponentState(template);
+		updateTemplateUiState();
 		this.templateEnableCheckBox.addItemListener(templateHandler::templateEnableChanged);
 		this.templateSaveButton.addActionListener(templateHandler::saveTemplate);
 		this.templateDelButton.addActionListener(templateHandler::delTemplate);
 		this.templateSelectComBox.addItemListener(templateHandler::templateSelectChanged);
 		this.outPutJarFileComboBox.addItemListener(templateHandler::exportJarChanged);
+		initMnemonics();
 	}
 
 	private void updateComponentState(String template) {
@@ -128,11 +131,14 @@ public class SettingDialog extends DialogWrapper {
 		this.templateHandler.initUI(history, template);
 	}
 
+	protected void updateTemplateUiState() {
+	}
+
 	public JBSplitter getFileListSettingSplitPanel() {
 		return fileListSettingSplitPanel;
 	}
 
-	private void createFileListTree() {
+	protected void createFileListTree() {
 		//remove old component
 		if (this.fileListLabel != null) {
 			fileListPanel.remove(fileListLabel);
@@ -163,7 +169,6 @@ public class SettingDialog extends DialogWrapper {
 		});
 		return dialog;
 	}
-
 	private void updateSettingPanelComponents() {
 		createTemplatePanelTitledSeparator();
 		createJarOutputPanelTiledSeparator();
@@ -171,11 +176,12 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	private void createTemplatePanelTitledSeparator() {
-		createTitledSeparatorForPanel(this.templateTitlePanel, Constants.titleTemplateSetting, this.templatePanel);
+		// use enable checkout as title
+//		createTitledSeparatorForPanel(this.templateTitlePanel, Constants.titleTemplateSetting, this.templateSelectComBox);
 	}
 
 	private void createJarOutputPanelTiledSeparator() {
-		createTitledSeparatorForPanel(this.outputJarTitlePanel, Constants.titleJarFileSeparator, this.jarFilePanel);
+		createTitledSeparatorForPanel(this.outputJarTitlePanel, Constants.titleJarFileSeparator, this.outPutJarFileComboBox);
 	}
 
 	private void createOptionPanelTitledSeparator() {
@@ -190,6 +196,10 @@ public class SettingDialog extends DialogWrapper {
 	private void updateFileListSettingSplitPanel() {
 		this.fileListSettingSplitPanel.setFirstComponent(this.fileListPanel);
 		this.fileListSettingSplitPanel.setSecondComponent(this.settingPanel);
+	}
+
+	private void initMnemonics(){
+		MnemonicHelper.init(getContentPane());
 	}
 
 
@@ -237,7 +247,7 @@ public class SettingDialog extends DialogWrapper {
 	 *
 	 * @return selected files, always not null, possible length=0
 	 */
-	public VirtualFile[] getSelectedFiles() {
+	public VirtualFile[] getExportingFiles() {
 		return fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
 	}
 
@@ -250,7 +260,7 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	public void onOK() {
-		final VirtualFile[] finalSelectFiles = fileListDialog.getSelectedFiles().toArray(new VirtualFile[0]);
+		final VirtualFile[] finalSelectFiles = this.getExportingFiles();
 		doExport(finalSelectFiles);
 	}
 
@@ -268,6 +278,10 @@ public class SettingDialog extends DialogWrapper {
 		createFileListTree();
 		this.fileListDialog.setFlaggedIncludeExcludeSelections(inExSelectFiles);
 		this.fileListDialog.getHandler().setShouldUpdateIncludeExclude(true);
+	}
+
+	public FileListDialog getFileListDialog() {
+		return fileListDialog;
 	}
 
 	public void doExport(VirtualFile[] exportFiles) {

@@ -65,6 +65,11 @@ public class UIFactory {
      */
     public static SettingDialog createSettingDialog(Project project, VirtualFile[] selectedFiles, String template) {
         final SettingDialog setting = new SettingDialog(project, selectedFiles, template);
+        setDialogLocation(setting);
+        return setting;
+    }
+
+    private static void setDialogLocation(SettingDialog setting) {
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         final Dimension frameSize = setting.getSize();
         if (frameSize.height > screenSize.height) {
@@ -77,7 +82,6 @@ public class UIFactory {
 
         setting.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
         setting.setTitle(Constants.actionName);
-        return setting;
     }
 
     /**
@@ -89,6 +93,12 @@ public class UIFactory {
     public static JPanel createTitledSeparatorPanel(String title, JComponent forComp) {
         final TitledSeparator separator = SeparatorFactory.createSeparator(title, forComp);
         return simplePanel().addToBottom(separator).addToTop(Box.createVerticalGlue());
+    }
+
+    public static LocalChangesSettingDialog createLocalChangesSettingDialog(Project project, VirtualFile[] initialSelections) {
+        final var changesDialog = new LocalChangesSettingDialog(project, initialSelections);
+        setDialogLocation(changesDialog);
+        return changesDialog;
     }
 
     /**

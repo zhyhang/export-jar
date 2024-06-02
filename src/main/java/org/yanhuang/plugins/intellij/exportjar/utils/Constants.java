@@ -24,10 +24,10 @@ public interface Constants {
     String actionNameCollapseDirectory = "Collapse empty directories when grouping by directory";
     String infoTabName = "Packing Export Jar";
     String titleFileList = "Select Files";
-    String titleTemplateSetting = "Templates";
+    String titleTemplateSetting = "Te&mplates";
 
     String titleTemplateMessageDialog = "Template";
-    String titleJarFileSeparator = "Jar File";
+    String titleJarFileSeparator = " Jar &File";
     String titleOptionSeparator = "Options";
     String titleHistorySaveErr = "Save History Error";
 

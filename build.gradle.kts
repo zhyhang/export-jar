@@ -9,7 +9,7 @@ plugins {
     // version config in: gradle/libs.versions.toml
     id("java") // Java support
     alias(libs.plugins.kotlin) // Kotlin support
-    alias(libs.plugins.gradleIntelliJPlugin) // Gradle IntelliJ Plugin
+    alias(libs.plugins.gradleIntelliJPlugin) // Gradle IntelliJ Plugin, See official introduce: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
