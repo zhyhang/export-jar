@@ -38,7 +38,8 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    //    implementation(libs.annotations)
+    // implementation(libs.exampleLibrary)
+
     // test
     val junit5Version = properties("junitVersion").get()
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit5Version")
@@ -125,13 +126,16 @@ changelog {
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
-koverReport {
-    defaults {
-        xml {
-            onCheck = true
+kover {
+    reports {
+        total {
+            xml {
+                onCheck = true
+            }
         }
     }
 }
+
 
 tasks {
     // Set the JVM compatibility versions, javaVersion setting in gradle.properties
