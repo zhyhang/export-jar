@@ -1,6 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = providers.gradleProperty(key)
@@ -57,6 +58,7 @@ dependencies {
 
         instrumentationTools()
         pluginVerifier()
+        zipSigner()
         testFramework(TestFrameworkType.Platform.JUnit4)
     }
 }
@@ -145,7 +147,8 @@ tasks {
             targetCompatibility = it.get()
         }
         withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = it.get()
+//            kotlinOptions.jvmTarget = it.get()
+            compilerOptions.jvmTarget = JvmTarget.fromTarget(it.get())
         }
     }
 
