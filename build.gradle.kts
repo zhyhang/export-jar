@@ -147,7 +147,6 @@ tasks {
             targetCompatibility = it.get()
         }
         withType<KotlinCompile> {
-//            kotlinOptions.jvmTarget = it.get()
             compilerOptions.jvmTarget = JvmTarget.fromTarget(it.get())
         }
     }

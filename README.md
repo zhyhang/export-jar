@@ -63,7 +63,6 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 
 ## screenshot
 ![From Build Menu](image/export-jar-menus.gif)
-![From VCS Menu](image/export-jar-local-changes-vcs-menu.png)
 ![From Normal Commit](image/export-jar-local-changes-add-to-commit-button-group.png)
 ![From Local Changes Pop Menu](image/export-jar-local-changes-right-click.png)
 ![Setting Dialog](image/export-jar-setting.gif)
@@ -71,6 +70,8 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ![Template Operation](image/export-jar-template.gif)
 ![Include/Exclude Operation](image/v2.5.2-inlcude-exclude-select.gif)
 ![Expand All Directory Operation](image/v2.5.2-expand-all-directory.gif)
+![From All Local changes new](image/export-all-local-changes-dialog.gif)
+![From Select Local changes new](image/export-select-local-changes-dialog.gif)
 
 ## TODO 
 - [OK]support inner and anonymous class export
