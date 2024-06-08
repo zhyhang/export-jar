@@ -119,6 +119,7 @@ intellijPlatform {
     }
 
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-verifyPlugin
+    // ./gradlew clean verifyPlugin -V -i to run verify task and report store in ./build/reports
     verifyPlugin {
         // The list of free arguments is passed directly to the IntelliJ Plugin Verifier CLI tool.
         // Cli args supports:  https://github.com/JetBrains/intellij-plugin-verifier#common-options
