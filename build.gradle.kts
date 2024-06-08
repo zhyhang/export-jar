@@ -1,8 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
-import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -127,16 +125,18 @@ intellijPlatform {
         freeArgs = listOf("-mute", "TemplateWordInPluginId")
         failureLevel = VerifyPluginTask.FailureLevel.NONE
         ides {
+            ides(properties("verifyPluginUseIdes").get().split(','))
+            // also can use following lines to specify verify using IDEs
 //            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2020.2")
 //            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1")
 //            local(file("/path/to/ide/"))
 //            recommended()
-            select {
-                types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
-                channels = listOf(ProductRelease.Channel.RELEASE)
-                sinceBuild = properties("pluginSinceBuild")
-                untilBuild = "241.*"
-            }
+//            select {
+//                types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+//                channels = listOf(ProductRelease.Channel.RELEASE)
+//                sinceBuild = properties("pluginSinceBuild")
+//                untilBuild = "241.*"
+//            }
         }
     }
 }
