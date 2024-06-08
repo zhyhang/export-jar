@@ -114,10 +114,15 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 
 ```shell
 # win
-.\gradlew.bat clean buildPlugin
+.\gradlew.bat clean buildPlugin-i -V
+or
+.\gradlew.bat clean buildPlugin verifyPlugin -i -V
+
 
 # linux/macos
-./gradlew clean buildPlugin
+./gradlew clean buildPlugin-i -V
+or
+./gradlew clean buildPlugin verifyPlugin -i -V
 ```
 !!When buildPlugin throw **build/tmp/initializeIntelliJPlugin/coroutines-javaagent.jar not found** error change gradle.properties
 ```kotlin

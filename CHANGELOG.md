@@ -4,8 +4,10 @@
 # Changelogs
 
 ## [Unreleased]
-- Supports export pre-compiled class file need not just in time compiling
-- Upgrade IntelliJ Platform Gradle Plugin to 2.x 
+- Supports export pre-compiled class files that not  just in time compiling
+- Upgrade IntelliJ Platform Gradle Plugin to 2.x.x 
+- Improve compile error message detail display
+- Change certain actions'  update thread comply to ActionUpdateThread modal rule
 - Supports view include/exclude dir in pop dialog
 
 ## [2.5.4]

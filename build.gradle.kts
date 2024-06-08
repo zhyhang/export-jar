@@ -1,6 +1,9 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -111,12 +114,29 @@ intellijPlatform {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = properties("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = properties("pluginVersion").map {
+            listOf(
+                it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" })
+        }
     }
 
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-verifyPlugin
     verifyPlugin {
+        // The list of free arguments is passed directly to the IntelliJ Plugin Verifier CLI tool.
+        // Cli args supports:  https://github.com/JetBrains/intellij-plugin-verifier#common-options
+        freeArgs = listOf("-mute", "TemplateWordInPluginId")
+        failureLevel = VerifyPluginTask.FailureLevel.NONE
         ides {
-            recommended()
+//            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2020.2")
+//            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1")
+//            local(file("/path/to/ide/"))
+//            recommended()
+            select {
+                types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+                channels = listOf(ProductRelease.Channel.RELEASE)
+                sinceBuild = properties("pluginSinceBuild")
+                untilBuild = "241.*"
+            }
         }
     }
 }
@@ -163,5 +183,6 @@ tasks {
         systemProperty("jb.privacy.policy.text", "<!--999.999-->")
         systemProperty("jb.consents.confirmation.enabled", "false")
     }
+
 
 }
