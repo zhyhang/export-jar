@@ -114,13 +114,13 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 
 ```shell
 # win
-.\gradlew.bat clean buildPlugin-i -V
+.\gradlew.bat clean buildPlugin -i -V
 or
 .\gradlew.bat clean buildPlugin verifyPlugin -i -V
 
 
 # linux/macos
-./gradlew clean buildPlugin-i -V
+./gradlew clean buildPlugin -i -V
 or
 ./gradlew clean buildPlugin verifyPlugin -i -V
 ```
@@ -128,6 +128,8 @@ or
 ```kotlin
 org.gradle.configuration-cache = false
 ```
+!!Update: above issue disappeared from IntelliJ Platform Gradle Plugin 2.0
+
 **[See the issue in Github](https://github.com/JetBrains/gradle-intellij-plugin/issues/1491)**
 - **!!Gradle plugin 1.12.0, at this plugin one version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
 - **!!If download gradle.bin timeout, please change IDEA system networks proxy**

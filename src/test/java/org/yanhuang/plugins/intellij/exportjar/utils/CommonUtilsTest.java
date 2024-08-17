@@ -12,6 +12,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils.collectFilesNest;
 import static org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils.fromOsFile;
 
+/**
+ * <a href="https://plugins.jetbrains.com/docs/intellij/testing-plugins.html">how to write plugin unit test</a>
+ */
 public class CommonUtilsTest extends BasePlatformTestCase {
 
 	public void testCollectFilesNest() throws IOException {

@@ -40,12 +40,11 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    // implementation(libs.exampleLibrary)
 
-    // test
-    val junit5Version = properties("junitVersion").get()
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junit5Version")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit5Version")
+    // test, read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#testing
+    // how write unit test: https://plugins.jetbrains.com/docs/intellij/testing-plugins.html
+    testImplementation(libs.junit)
+    testImplementation(libs.opentest4j)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
@@ -60,7 +59,10 @@ dependencies {
         instrumentationTools()
         pluginVerifier()
         zipSigner()
-        testFramework(TestFrameworkType.Platform.JUnit4)
+        // TestFrameworkType.Platform.JUnit4 to TestFrameworkType.Platform
+        // TestFrameworkType.Platform.JUnit5 to TestFrameworkType.JUnit5
+        // TestFrameworkType.Platform.Bundled to TestFrameworkType.Bundled
+        testFramework(TestFrameworkType.Platform)
     }
 }
 
@@ -118,9 +120,9 @@ intellijPlatform {
         }
     }
 
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-verifyPlugin
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification
     // ./gradlew clean verifyPlugin -V -i to run verify task and report store in ./build/reports
-    verifyPlugin {
+    pluginVerification {
         // The list of free arguments is passed directly to the IntelliJ Plugin Verifier CLI tool.
         // Cli args supports:  https://github.com/JetBrains/intellij-plugin-verifier#common-options
         freeArgs = listOf("-mute", "TemplateWordInPluginId")
@@ -177,13 +179,38 @@ tasks {
     }
 
     // Configure UI tests plugin
+    // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#runIdeForUiTests
+    // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#testIdeUi
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
+    /**
+     * testIdeUi task not registered default (real state is not available as my test) in v2.0.1
+     * use runIdeForUiTests instead, as well need register in following intellijPlatformTesting section
+     * https://github.com/JetBrains/intellij-platform-gradle-plugin/releases/tag/v2.0.1
     testIdeUi {
         systemProperty("robot-server.port", "8082")
         systemProperty("ide.mac.message.dialogs.as.sheets", "false")
         systemProperty("jb.privacy.policy.text", "<!--999.999-->")
         systemProperty("jb.consents.confirmation.enabled", "false")
     }
+    */
+}
+intellijPlatformTesting {
+    runIde {
+        register("runIdeForUiTests") { // this task is same as Run Plugin task in idea, as result could not register it
+            task {
+                jvmArgumentProviders += CommandLineArgumentProvider {
+                    listOf(
+                        "-Drobot-server.port=8082",
+                        "-Dide.mac.message.dialogs.as.sheets=false",
+                        "-Djb.privacy.policy.text=<!--999.999-->",
+                        "-Djb.consents.confirmation.enabled=false",
+                    )
+                }
+            }
 
-
+            plugins {
+                robotServerPlugin()
+            }
+        }
+    }
 }

@@ -1,16 +1,20 @@
 [versions]
 # libraries
-exampleLibrary = "24.1.0"
+junit = "4.13.2"
+opentest4j = "1.3.0"
 
 # plugins
-changelog = "2.2.0"
-intelliJPlatform = "2.0.0-beta6"
-kotlin = "2.0.0"
-kover = "0.8.0"
-qodana = "2024.1.5"
+changelog = "2.2.1"
+intelliJPlatform = "2.0.1"
+kotlin = "2.0.10"
+kover = "0.8.3"
+qodana = "2024.1.9"
 
 [libraries]
-exampleLibrary = { group = "com.example", name = "exampleLibrary", version.ref = "exampleLibrary" }
+# for unit test
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+# to make running unit test normally
+opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
