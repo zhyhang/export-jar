@@ -29,3 +29,4 @@ nbdist/
 .gradle
 .qodana
 .intellijPlatform
+.kotlin
