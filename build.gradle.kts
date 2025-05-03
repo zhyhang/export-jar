@@ -58,13 +58,7 @@ repositories {
     
     // Maven Central Repository
     mavenCentral()
-    
-    // JetBrains IntelliJ Platform Repositories
-    // Custom JetBrains mirror for China
-//    maven {
-//        url = uri("https://mirrors.tuna.tsinghua.edu.cn/jetbrains/intellij-repository/releases")
-//    }
-    
+
     // Default JetBrains repositories for IntelliJ platform plugins
     intellijPlatform {
         defaultRepositories()
@@ -88,6 +82,9 @@ dependencies {
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
+
+        // Plugin Dependencies. Uses `platformBundledModules` property from the gradle.properties file
+        bundledModules(properties("platformBundledModules").map { it.split(',') })
 
         pluginVerifier()
         zipSigner()
