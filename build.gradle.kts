@@ -25,14 +25,41 @@ version = properties("pluginVersion").get()
 // final effected target JVM version in task{} section setting
 // https://docs.gradle.org/current/userguide/toolchains.html
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
-// Configure project's dependencies
+// Configure project's dependencies read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
+// All repositories are configured in settings.gradle.kts
 repositories {
+    // Aliyun Public Repository
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public/")
+    }
+    // Gradle Plugin Repository
+    maven {
+        url = uri("https://maven.aliyun.com/repository/gradle-plugin/")
+    }
+    // Spring Repository
+    maven {
+        url = uri("https://maven.aliyun.com/repository/spring/")
+    }
+    // Spring Plugin Repository
+    maven {
+        url = uri("https://maven.aliyun.com/repository/spring-plugin/")
+    }
+    // Google Repository
+    maven {
+        url = uri("https://maven.aliyun.com/repository/google/")
+    }
+    // JCenter Repository
+    maven {
+        url = uri("https://maven.aliyun.com/repository/jcenter/")
+    }
+
+    // Maven Central Repository
     mavenCentral()
 
-    // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
+    // JetBrains IntelliJ Platform Repositories
     intellijPlatform {
         defaultRepositories()
     }
@@ -56,7 +83,6 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
 
-        instrumentationTools()
         pluginVerifier()
         zipSigner()
         // TestFrameworkType.Platform.JUnit4 to TestFrameworkType.Platform
