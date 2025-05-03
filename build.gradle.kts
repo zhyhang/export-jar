@@ -83,10 +83,28 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
 
-        // Plugin Dependencies. Uses `platformBundledModules` property from the gradle.properties file
-        bundledModules(properties("platformBundledModules").map { it.split(',') })
+        // Check if platformVersion is greater than or equal to 2024.2, only add modules dependency when condition is met
+        val platformVersion = properties("platformVersion").get().toString()
+        val is20242OrLater = run {
+            val versionParts = platformVersion.split(".")
+            if (versionParts.size >= 2) {
+                val majorVersion = versionParts[0].toIntOrNull() ?: 0
+                val minorVersion = versionParts[1].toIntOrNull() ?: 0
+                (majorVersion > 2024) || (majorVersion == 2024 && minorVersion >= 2)
+            } else {
+                false
+            }
+        }   
 
-        pluginVerifier()
+        if (is20242OrLater) {
+            // Plugin Dependencies. Uses `platformBundledModules` property from the gradle.properties file
+            bundledModules(properties("platformBundledModules").map { it.split(',') })
+            logger.lifecycle("Added lib/modules dependencies, applicable for IntelliJ IDEA 2024.2+")
+        } else {    
+            logger.lifecycle("Detected IntelliJ IDEA version $platformVersion, no need to add lib/modules dependencies")
+        }
+
+        pluginVerifier()    
         zipSigner()
         // TestFrameworkType.Platform.JUnit4 to TestFrameworkType.Platform
         // TestFrameworkType.Platform.JUnit5 to TestFrameworkType.JUnit5
