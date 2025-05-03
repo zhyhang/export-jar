@@ -55,11 +55,17 @@ repositories {
     maven {
         url = uri("https://maven.aliyun.com/repository/jcenter/")
     }
-
+    
     // Maven Central Repository
     mavenCentral()
-
+    
     // JetBrains IntelliJ Platform Repositories
+    // Custom JetBrains mirror for China
+//    maven {
+//        url = uri("https://mirrors.tuna.tsinghua.edu.cn/jetbrains/intellij-repository/releases")
+//    }
+    
+    // Default JetBrains repositories for IntelliJ platform plugins
     intellijPlatform {
         defaultRepositories()
     }
