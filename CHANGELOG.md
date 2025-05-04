@@ -11,7 +11,7 @@
 ## [2.5.4]
 - Upgrade IntelliJ Platform Gradle Plugin to 2.5.0
 - Change certain actions' update and perform thread comply to ActionUpdateThread modal rule
-- Fix some issue, e.g. export action exception not show message in message tool window
+- Fix some issues, e.g. export action exception not show message in message tool window
 
 ## [2.5.3]
 - Refactor export jar from local changes action

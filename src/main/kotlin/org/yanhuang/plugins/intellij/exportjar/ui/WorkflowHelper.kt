@@ -21,12 +21,12 @@ class WorkflowHelper() {
         try {
             // directly new workflow instance after 2025.1+
             return SingleChangeListCommitWorkflow(project, affectedVcses, initialChangeList, listOf(), true, null)
-        }catch (e:Exception){
+        }catch (e: Throwable){
             logger.warn("Exception while directly creating a workflow 2025+", e)
             try {
                 // reflect create workflow instance after 2022+
                 return reflectAfterVer2022(project, affectedVcses, initiallyIncluded, initialChangeList)
-            }catch (e:Exception){
+            }catch (e: Throwable){
                 logger.warn("Exception while creating a workflow 2022+", e)
                 // reflect create workflow instance before 2022+
                 return reflectBeforeVer2022(project, affectedVcses, initiallyIncluded, initialChangeList)
