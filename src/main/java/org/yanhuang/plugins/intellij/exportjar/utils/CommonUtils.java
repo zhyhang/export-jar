@@ -291,7 +291,16 @@ public class CommonUtils {
         return Path.of(virtualFile.getPath());
     }
 
-    // must hold small lock when using
+    /**
+     * Executes a task with read lock in background thread and waits for its completion.
+     * Must hold small lock when using this method.
+     * 
+     * @param task callable task to execute
+     * @param project current project
+     * @param <T> return type of the task
+     * @return result of the task execution
+     * @throws RuntimeException if any exception occurs during execution
+     */
     public static <T> T runInBgtWithReadLockAndWait(Callable<? extends T> task, Project project) {
         try {
             if (EDT.isCurrentThreadEdt()) {
@@ -308,6 +317,14 @@ public class CommonUtils {
         }
     }
 
+    /**
+     * Runs a task in the background without holding a read lock.
+     * Used to avoid throwing SLOW warning exceptions when performing potentially lengthy operations.
+     * 
+     * @param runnable the task to run
+     * @param project current project
+     * @param taskTitle title of the background task to be displayed in the progress indicator
+     */
     public static void backgroundRunWithoutLock(final Runnable runnable, final Project project, final String taskTitle) {
         // move export action to BGT, avoid throwing SLOW warning exception
         // read more: https://plugins.jetbrains.com/docs/intellij/threading-model.html
