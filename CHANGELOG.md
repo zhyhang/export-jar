@@ -8,6 +8,11 @@
 - Improve compile error message detail display
 - Supports view include/exclude dir in pop dialog
 
+## [2.5.5]
+- Supports export pre-compiled class files that not  just in time compiling
+- Improve compile error message detail display
+- Supports view include/exclude dir in pop dialog
+
 ## [2.5.4]
 - Upgrade IntelliJ Platform Gradle Plugin to 2.5.0
 - Fix export not working in IntelliJIdea 2025.1+
