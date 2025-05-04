@@ -160,7 +160,7 @@ public class MessagesUtils {
      */
     public static String stackInfo(Throwable throwable) {
         final StringWriter msg = new StringWriter();
-        final PrintWriter pw = new PrintWriter(new StringWriter());
+        final PrintWriter pw = new PrintWriter(msg);
         throwable.printStackTrace(pw);
         return msg.toString();
     }

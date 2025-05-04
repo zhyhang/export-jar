@@ -11,6 +11,9 @@ out/
 .springBeans
 .sts4-cache
 
+### Vscode ###
+.vscode
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
@@ -28,3 +31,5 @@ nbdist/
 ### ide plugin template
 .gradle
 .qodana
+.intellijPlatform
+.kotlin

@@ -4,9 +4,14 @@
 # Changelogs
 
 ## [Unreleased]
-- Refactor export jar from local changes action
-- Supports export pre-compiled class file need not just in time compiling
+- Supports export pre-compiled class files that not  just in time compiling 
+- Improve compile error message detail display
 - Supports view include/exclude dir in pop dialog
+
+## [2.5.4]
+- Upgrade IntelliJ Platform Gradle Plugin to 2.5.0
+- Change certain actions' update and perform thread comply to ActionUpdateThread modal rule
+- Fix some issues, e.g. export action exception not show message in message tool window
 
 ## [2.5.3]
 - Refactor export jar from local changes action

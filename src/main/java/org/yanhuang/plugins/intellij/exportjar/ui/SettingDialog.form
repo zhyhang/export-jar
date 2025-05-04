@@ -229,7 +229,6 @@
         </constraints>
         <properties>
           <showDividerControls value="true"/>
-          <useViewportViewSizes value="false"/>
         </properties>
       </component>
     </children>

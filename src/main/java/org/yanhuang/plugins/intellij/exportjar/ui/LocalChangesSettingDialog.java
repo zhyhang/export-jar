@@ -1,5 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -38,7 +39,13 @@ public class LocalChangesSettingDialog extends SettingDialog{
 
 	@Override
 	public void dispose() {
-		provider.dispose();
-		super.dispose();
+		disposeInEdt();
+	}
+
+	private void disposeInEdt(){
+		ApplicationManager.getApplication().invokeAndWait(()->{
+			provider.dispose();
+			super.dispose();
+		});
 	}
 }

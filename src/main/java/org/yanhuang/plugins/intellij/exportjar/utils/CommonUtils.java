@@ -5,8 +5,13 @@ import com.intellij.compiler.CompilerConfiguration;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -18,6 +23,8 @@ import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
+import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.ui.EDT;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.org.objectweb.asm.Attribute;
 import org.jetbrains.org.objectweb.asm.ClassReader;
@@ -31,6 +38,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -167,6 +175,10 @@ public class CommonUtils {
         CompilerConfiguration compilerConfiguration = CompilerConfiguration.getInstance(project);
         ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         CompilerManager compilerManager = CompilerManager.getInstance(project);
+        return isValidExport(project, virtualFile, projectFileIndex, psiManager, compilerManager, compilerConfiguration);
+    }
+
+    private static boolean isValidExport(Project project, VirtualFile virtualFile, ProjectFileIndex projectFileIndex, PsiManager psiManager, CompilerManager compilerManager, CompilerConfiguration compilerConfiguration) {
         if (projectFileIndex.isInSourceContent(virtualFile) && virtualFile.isInLocalFileSystem()) {
             if (virtualFile.isDirectory()) {
                 PsiDirectory vfd = psiManager.findDirectory(virtualFile);
@@ -277,6 +289,56 @@ public class CommonUtils {
 
     public static Path toOsFile(VirtualFile virtualFile) {
         return Path.of(virtualFile.getPath());
+    }
+
+    /**
+     * Executes a task with read lock in background thread and waits for its completion.
+     * Must hold small lock when using this method.
+     * 
+     * @param task callable task to execute
+     * @param project current project
+     * @param <T> return type of the task
+     * @return result of the task execution
+     * @throws RuntimeException if any exception occurs during execution
+     */
+    public static <T> T runInBgtWithReadLockAndWait(Callable<? extends T> task, Project project) {
+        try {
+            if (EDT.isCurrentThreadEdt()) {
+                final var promise = ReadAction.nonBlocking(task)
+                        .inSmartMode(project)
+                        .withDocumentsCommitted(project)
+                        .submit(AppExecutorUtil.getAppExecutorService());
+                return promise.get();
+            } else {
+                return ReadAction.compute(task::call);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Runs a task in the background without holding a read lock.
+     * Used to avoid throwing SLOW warning exceptions when performing potentially lengthy operations.
+     * 
+     * @param runnable the task to run
+     * @param project current project
+     * @param taskTitle title of the background task to be displayed in the progress indicator
+     */
+    public static void backgroundRunWithoutLock(final Runnable runnable, final Project project, final String taskTitle) {
+        // move export action to BGT, avoid throwing SLOW warning exception
+        // read more: https://plugins.jetbrains.com/docs/intellij/threading-model.html
+        if (EDT.isCurrentThreadEdt()) {
+            Task.Backgroundable task = new Task.Backgroundable(project, taskTitle) {
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    runnable.run();
+                }
+            };
+            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
+        } else {
+            runnable.run();
+        }
     }
 
 }

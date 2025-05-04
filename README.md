@@ -28,14 +28,16 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 
 ## plugin developing guide
 - [plugin development official guide](https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html)
-- [plugin ide env template project](https://github.com/JetBrains/intellij-platform-plugin-template)
+- [plugin dev project template (official)](https://github.com/JetBrains/intellij-platform-plugin-template)
   - notices
+    - suggest using **2023+ IDEA IC or IU** as plugin develop environment 
     - upgrade dev tools copy following files from official template code:
     ```shell
        /gradle/*
        /gradle/wrapper/*
       ./build.gradle.kts
     ```
+    - strongly suggest new plugin dev project generate by click [official github template](https://github.com/new?template_name=intellij-platform-plugin-template&template_owner=JetBrains) 
     - change build.gradle.kts to make building success, generally remove jvmToolchain line: vendor = JvmVendorSpec.JETBRAINS
     ```kotlin
       // Set the JVM language level used to tools to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
@@ -58,10 +60,12 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
     ```
     - **keep dependencies and tasks test section code in build.gradle.ks not remove**
     - change gradle.properties to make compatible
+    - 
+- plugin dev thread model notices
+[read more](DevGuide.md)
 
 ## screenshot
 ![From Build Menu](image/export-jar-menus.gif)
-![From VCS Menu](image/export-jar-local-changes-vcs-menu.png)
 ![From Normal Commit](image/export-jar-local-changes-add-to-commit-button-group.png)
 ![From Local Changes Pop Menu](image/export-jar-local-changes-right-click.png)
 ![Setting Dialog](image/export-jar-setting.gif)
@@ -69,6 +73,8 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 ![Template Operation](image/export-jar-template.gif)
 ![Include/Exclude Operation](image/v2.5.2-inlcude-exclude-select.gif)
 ![Expand All Directory Operation](image/v2.5.2-expand-all-directory.gif)
+![From All Local changes new](image/export-all-local-changes-dialog.gif)
+![From Select Local changes new](image/export-select-local-changes-dialog.gif)
 
 ## TODO 
 - [OK]support inner and anonymous class export
@@ -103,23 +109,33 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - reset dialog ui size
 - plugin.xml item not working: add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"
 - [OK]make unused org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.FileListTree to use for some tree select operation.
+- template name remove path and keep file name (now input /data/temp/t1 will error)
 ## Build
 - config java homes for gradle to lookup JDK 11 and JDK 17
-  - JAVA_HOME=path_to_jdk11
+  - JAVA_HOME=path_to_jdk17 (**use IntelliJ Platform Gradle Plugin 2.x must use jdk17 to run gradle**)
   - JAVA11_HOME=path_to_jdk11
   - JAVA17_HOME=path_to_jdk17
 
 ```shell
 # win
-.\gradlew.bat clean buildPlugin
+.\gradlew.bat clean buildPlugin -i -V
+or
+.\gradlew.bat clean buildPlugin verifyPlugin -i -V
+
 
 # linux/macos
-./gradlew clean buildPlugin
+./gradlew clean buildPlugin -i -V
+or
+./gradlew clean buildPlugin verifyPlugin -i -V
 ```
 !!When buildPlugin throw **build/tmp/initializeIntelliJPlugin/coroutines-javaagent.jar not found** error change gradle.properties
 ```kotlin
 org.gradle.configuration-cache = false
 ```
+!!Update: above issue disappeared from IntelliJ Platform Gradle Plugin 2.0
+
 **[See the issue in Github](https://github.com/JetBrains/gradle-intellij-plugin/issues/1491)**
 - **!!Gradle plugin 1.12.0, at this plugin one version build multi-times will lead plugin not available!! You must modify plugin version number before every build or run or debug**
 - **!!If download gradle.bin timeout, please change IDEA system networks proxy**
+
+## Development

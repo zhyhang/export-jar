@@ -73,7 +73,7 @@ public class LocalChangesDialogProvider {
             } else {
                 LOGGER.warn("init CommitChangeListDialog by invoking reflected beforeInit() (which not found)");
             }
-            final Method init = ReflectionUtil.findMethod(methods, "afterInit");
+            final Method init = ReflectionUtil.findMethod(methods, "init");
             if (init != null) {
                 init.invoke(commitChangeListDialog);
             } else {
