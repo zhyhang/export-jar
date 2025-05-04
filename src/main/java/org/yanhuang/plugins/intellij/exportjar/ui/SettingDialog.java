@@ -367,10 +367,10 @@ public class SettingDialog extends DialogWrapper {
 
 	@Override
 	public void dispose() {
-		disposeIEdt();
+		disposeInEdt();
 	}
 
-	private void disposeIEdt() {
+	private void disposeInEdt() {
 		ApplicationManager.getApplication().invokeAndWait(() -> {
 			disposeFileListDialog();
 			super.dispose();
