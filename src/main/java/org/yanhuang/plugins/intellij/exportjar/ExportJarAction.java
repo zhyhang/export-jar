@@ -1,5 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -16,6 +17,11 @@ public class ExportJarAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent event) {
         final SettingDialog setting = UIFactory.createSettingDialog(event.getDataContext());
         ApplicationManager.getApplication().invokeAndWait(setting::show);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
 }

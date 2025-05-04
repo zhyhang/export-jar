@@ -3,12 +3,17 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 import com.intellij.openapi.MnemonicHelper;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -38,8 +43,8 @@ import java.awt.event.KeyEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static com.intellij.openapi.ui.Messages.getWarningIcon;
 import static com.intellij.openapi.ui.Messages.showErrorDialog;
@@ -261,7 +266,16 @@ public class SettingDialog extends DialogWrapper {
 
 	public void onOK() {
 		final VirtualFile[] finalSelectFiles = this.getExportingFiles();
-		doExport(finalSelectFiles);
+
+		// move export action to BGT, avoid throw SLOW warning exception
+		// read more: https://plugins.jetbrains.com/docs/intellij/threading-model.html
+		Task.Backgroundable task = new Task.Backgroundable(project, "Exporting jar") {
+			@Override
+			public void run(@NotNull ProgressIndicator indicator) {
+				doExport(finalSelectFiles);
+			}
+		};
+		ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
 	}
 
 	private void onDebug() {
@@ -289,7 +303,7 @@ public class SettingDialog extends DialogWrapper {
 			return;
 		}
 		final Application app = ApplicationManager.getApplication();
-		final Module[] modules = CommonUtils.findModule(project, exportFiles);
+		final Module[] modules = ReadAction.compute(()->CommonUtils.findModule(project, exportFiles));
 		String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
 		if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().isEmpty()) {
 			app.invokeAndWait(() -> showErrorDialog(project, "The selected output path should not empty",
@@ -353,8 +367,14 @@ public class SettingDialog extends DialogWrapper {
 
 	@Override
 	public void dispose() {
-		disposeFileListDialog();
-		super.dispose();
+		disposeIEdt();
+	}
+
+	private void disposeIEdt() {
+		ApplicationManager.getApplication().invokeAndWait(() -> {
+			disposeFileListDialog();
+			super.dispose();
+		});
 	}
 
 	/**
