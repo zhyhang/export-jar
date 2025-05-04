@@ -10,7 +10,7 @@
 
 ## [2.5.4]
 - Upgrade IntelliJ Platform Gradle Plugin to 2.5.0
-- Fix export now working in IntelliJIdea 2025.1+
+- Fix export not working in IntelliJIdea 2025.1+
 - Change certain actions' update and perform thread comply to ActionUpdateThread modal rule
 - Fix other issues, e.g. export action exception not show message in message tool window
 
