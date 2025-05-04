@@ -167,6 +167,10 @@ public class CommonUtils {
         CompilerConfiguration compilerConfiguration = CompilerConfiguration.getInstance(project);
         ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         CompilerManager compilerManager = CompilerManager.getInstance(project);
+        return isValidExport(project, virtualFile, projectFileIndex, psiManager, compilerManager, compilerConfiguration);
+    }
+
+    private static boolean isValidExport(Project project, VirtualFile virtualFile, ProjectFileIndex projectFileIndex, PsiManager psiManager, CompilerManager compilerManager, CompilerConfiguration compilerConfiguration) {
         if (projectFileIndex.isInSourceContent(virtualFile) && virtualFile.isInLocalFileSystem()) {
             if (virtualFile.isDirectory()) {
                 PsiDirectory vfd = psiManager.findDirectory(virtualFile);

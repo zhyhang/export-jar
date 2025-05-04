@@ -1,5 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
@@ -170,19 +171,25 @@ public class ExportPacker implements CompileStatusNotification {
     @Override
     public void finished(boolean b, int error, int i1, @NotNull CompileContext compileContext) {
         if (error == 0) {
-            try {
-                this.pack();
-            } catch (Exception e) {
-                error(project, stackInfo(e));
-                errorNotify(Constants.actionName + " status", "export jar error, detail in the messages tab");
-                return;
-            }
-            info(project, exportJarFullPath + " complete export successfully");
-            infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete export successfully", List.of(new CopyTextToClipboardAction(exportJarFullPath.toString()), new ShowInExplorerAction(exportJarFullPath)));
+            ApplicationManager.getApplication().runWriteAction(this::whenFinishSuccess);
         } else {
             error(project, "compile error");
             infoNotify(Constants.actionName + " status", "compile error, detail in the messages tab");
         }
+    }
+
+    private void whenFinishSuccess() {
+        try {
+            this.pack();
+        } catch (Exception e) {
+            error(project, stackInfo(e));
+            errorNotify(Constants.actionName + " status", "export jar error, detail in the messages tab");
+            return;
+        }
+        info(project, exportJarFullPath + " complete export successfully");
+        infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete export successfully",
+                List.of(new CopyTextToClipboardAction(exportJarFullPath.toString()), new ShowInExplorerAction(exportJarFullPath)));
+
     }
 
 }
