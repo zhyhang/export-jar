@@ -109,6 +109,7 @@ Plugin of Intellij IDEA for quickly export java project's class, resource, sourc
 - reset dialog ui size
 - plugin.xml item not working: add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="ChangesView.Shelve"
 - [OK]make unused org.yanhuang.plugins.intellij.exportjar.ui.FileListDialog.FileListTree to use for some tree select operation.
+- template name remove path and keep file name (now input /data/temp/t1 will error)
 ## Build
 - config java homes for gradle to lookup JDK 11 and JDK 17
   - JAVA_HOME=path_to_jdk17 (**use IntelliJ Platform Gradle Plugin 2.x must use jdk17 to run gradle**)
