@@ -2,6 +2,7 @@ package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.changes.Change;
@@ -66,20 +67,21 @@ public class LocalChangesDialogProvider {
 
     private void reflectInvokeInit(CommitChangeListDialog commitChangeListDialog) {
         try {
-            final List<Method> methods = ReflectionUtil.getClassDeclaredMethods(CommitChangeListDialog.class);
-            final Method beforeInit = ReflectionUtil.findMethod(methods, "beforeInit");
+            final var commitDialogMethods = ReflectionUtil.getClassDeclaredMethods(CommitChangeListDialog.class);
+            final var beforeInit = ReflectionUtil.findMethod(commitDialogMethods, "beforeInit");
             if (beforeInit != null) {
                 beforeInit.invoke(commitChangeListDialog);
             } else {
                 LOGGER.warn("init CommitChangeListDialog by invoking reflected beforeInit() (which not found)");
             }
-            final Method init = ReflectionUtil.findMethod(methods, "init");
+            final var dialogWrapperMethods = ReflectionUtil.getClassDeclaredMethods(DialogWrapper.class);
+            final var init = ReflectionUtil.findMethod(dialogWrapperMethods, "init");
             if (init != null) {
                 init.invoke(commitChangeListDialog);
             } else {
                 LOGGER.warn("init CommitChangeListDialog by invoking reflected init() (which not found)");
             }
-            final Method afterInit = ReflectionUtil.findMethod(methods, "afterInit");
+            final var afterInit = ReflectionUtil.findMethod(commitDialogMethods, "afterInit");
             if (afterInit != null) {
                 afterInit.invoke(commitChangeListDialog);
             } else {
