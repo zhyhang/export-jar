@@ -19,8 +19,8 @@ class WorkflowHelper() {
         initialChangeList: LocalChangeList
     ): SingleChangeListCommitWorkflow {
         try {
-            // directly new workflow instance after 2025.1+
-            return SingleChangeListCommitWorkflow(project, affectedVcses, initialChangeList, listOf(), true, null)
+            // reflect create workflow instance after 2025.1+
+            return reflectAfterVer2025(project, affectedVcses, initialChangeList)
         }catch (e: Throwable){
             logger.warn("Exception while directly creating a workflow 2025+", e)
             try {
@@ -32,6 +32,24 @@ class WorkflowHelper() {
                 return reflectBeforeVer2022(project, affectedVcses, initiallyIncluded, initialChangeList)
             }
         }
+    }
+
+    private fun reflectAfterVer2025(
+        project: Project,
+        affectedVcses: Set<AbstractVcs>,
+        initialChangeList: LocalChangeList
+    ): SingleChangeListCommitWorkflow {
+        val constructor = SingleChangeListCommitWorkflow::class.java.getConstructor(
+            Project::class.java,
+            Set::class.java,
+            LocalChangeList::class.java,
+            List::class.java,
+            Boolean::class.java,
+            CommitResultHandler::class.java
+        )
+        return constructor.newInstance(
+            project, affectedVcses, initialChangeList, emptyList<Any>(), true, null
+        )
     }
 
     private fun reflectAfterVer2022(
