@@ -19,9 +19,4 @@ public class ExportJarAction extends AnAction {
         ApplicationManager.getApplication().invokeAndWait(setting::show);
     }
 
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
-    }
-
 }
