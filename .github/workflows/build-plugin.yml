@@ -1,0 +1,59 @@
+name: Build Plugin
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-plugin:
+    name: Build IntelliJ plugin package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build plugin
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon buildPlugin
+
+      - name: Collect package files
+        shell: bash
+        run: |
+          mkdir -p build/github-artifacts
+          cp build/distributions/*.zip build/github-artifacts/
+
+          shopt -s nullglob
+          jars=(build/libs/*.jar)
+          if (( ${#jars[@]} > 0 )); then
+            cp "${jars[@]}" build/github-artifacts/
+          fi
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: intellij-plugin-package
+          path: build/github-artifacts/*
+          if-no-files-found: error
+
+      - name: Attach package files to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/github-artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
