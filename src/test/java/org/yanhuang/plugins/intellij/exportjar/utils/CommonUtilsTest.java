@@ -2,12 +2,15 @@ package org.yanhuang.plugins.intellij.exportjar.utils;
 
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils.collectFilesNest;
@@ -130,6 +133,48 @@ public class CommonUtilsTest extends BasePlatformTestCase {
         assertTrue(result3.contains(file2));
         assertFalse(result3.contains(subDir));
         assertFalse(result3.contains(subFile));
+    }
+
+    public void testCollectWebAppFilesUnderProjectContent() {
+        final VirtualFile file = myFixture.addFileToProject("src/main/webapp/static/app.css", "body {}").getVirtualFile();
+        final VirtualFile webAppDir = file.getParent().getParent();
+        PsiTestUtil.addContentRoot(getModule(), webAppDir.getParent().getParent());
+        final Set<VirtualFile> collected = new HashSet<>();
+
+        CommonUtils.collectExportFilesNest(getProject(), collected, webAppDir);
+
+        assertTrue(CommonUtils.isWebAppExportFile(getProject(), file));
+        assertTrue(collected.contains(file));
+        assertEquals("webapp/static/app.css", CommonUtils.toWebAppEntryName(getProject(), file));
+    }
+
+    public void testJavaPackageNamedWebAppIsNotTreatedAsWebAppResource() {
+        final VirtualFile file = myFixture.addFileToProject("src/main/java/com/example/webapp/Foo.java",
+                "package com.example.webapp; class Foo {}").getVirtualFile();
+        PsiTestUtil.addContentRoot(getModule(), myFixture.findFileInTempDir("src"));
+        PsiTestUtil.addSourceRoot(getModule(), myFixture.findFileInTempDir("src/main/java"));
+        final Set<VirtualFile> collected = new HashSet<>();
+
+        CommonUtils.collectExportFilesNest(getProject(), collected, file);
+
+        assertFalse(CommonUtils.isWebAppExportFile(getProject(), file));
+        assertNull(CommonUtils.toWebAppEntryName(getProject(), file));
+        assertTrue(collected.contains(file));
+    }
+
+    public void testExternalWebAppDirectoryIsNotExported() throws IOException {
+        final Path webAppDir = Files.createTempDirectory("webapp");
+        final Path file = webAppDir.resolve("app.css");
+        Files.createFile(file);
+        LocalFileSystem.getInstance().refreshAndFindFileByNioFile(webAppDir);
+        final VirtualFile virtualFile = fromOsFile(file.toString());
+        final Set<VirtualFile> collected = new HashSet<>();
+
+        CommonUtils.collectExportFilesNest(getProject(), collected, fromOsFile(webAppDir.toString()));
+
+        assertFalse(CommonUtils.isWebAppExportFile(getProject(), virtualFile));
+        assertNull(CommonUtils.toWebAppEntryName(getProject(), virtualFile));
+        assertFalse(collected.contains(virtualFile));
     }
 
 }

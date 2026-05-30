@@ -187,23 +187,56 @@ public class CommonUtils {
                 return compilerManager.isCompilableFileType(virtualFile.getFileType()) ||
                         compilerConfiguration.isCompilableResourceFile(project, virtualFile);
             }
-        }
-        else if (virtualFile.isInLocalFileSystem()) {
-            return isInWebAppDirectory(virtualFile);
+        } else if (isWebAppExportFile(project, virtualFile)) {
+            return true;
         }
         return false;
     }
 
-    private static boolean isInWebAppDirectory(VirtualFile virtualFile) {
+    public static boolean isWebAppExportFile(Project project, VirtualFile virtualFile) {
+        if (project == null || virtualFile == null || !virtualFile.isInLocalFileSystem()) {
+            return false;
+        }
+        ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+        return projectFileIndex.isInContent(virtualFile) &&
+                !projectFileIndex.isInSourceContent(virtualFile) &&
+                !projectFileIndex.isInTestSourceContent(virtualFile) &&
+                findWebAppDirectory(virtualFile) != null;
+    }
+
+    public static String toWebAppEntryName(Project project, VirtualFile virtualFile) {
+        if (!isWebAppExportFile(project, virtualFile)) {
+            return null;
+        }
+        VirtualFile webAppDirectory = findWebAppDirectory(virtualFile);
+        if (webAppDirectory == null) {
+            return null;
+        }
+        List<String> pathSegments = new ArrayList<>();
+        VirtualFile current = virtualFile;
+        while (current != null && !current.equals(webAppDirectory)) {
+            pathSegments.add(0, current.getName());
+            current = current.getParent();
+        }
+
+        StringBuilder path = new StringBuilder("webapp");
+        for (String segment : pathSegments) {
+            path.append("/").append(segment);
+        }
+        return path.toString();
+    }
+
+    private static VirtualFile findWebAppDirectory(VirtualFile virtualFile) {
         VirtualFile current = virtualFile;
         while (current != null) {
-            if ("webapp".equals(current.getName())) {
-                return true;
+            if ("webapp".equals(current.getName()) && current.isDirectory()) {
+                return current;
             }
             current = current.getParent();
         }
-        return false;
+        return null;
     }
+
     /**
      * lookup modules from data context
      *

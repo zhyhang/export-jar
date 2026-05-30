@@ -88,49 +88,6 @@ public class ExportPacker implements CompileStatusNotification {
             spIndex = entryName.indexOf("/", spIndex + 1);
         }
 
-        if (entryName.startsWith("webapp/")) {
-            spIndex = entryName.indexOf("/", 7);
-            while (spIndex > 0) {
-                final String dir = entryName.substring(0, spIndex + 1);
-                if (added.add(dir)) {
-                    filePaths.add(null);
-                    entryNames.add(dir);
-                }
-                spIndex = entryName.indexOf("/", spIndex + 1);
-            }
-        }
-    }
-
-    private boolean isInWebAppDirectory(VirtualFile virtualFile) {
-        VirtualFile current = virtualFile;
-        while (current != null) {
-            if ("webapp".equals(current.getName())) {
-                return true;
-            }
-            current = current.getParent();
-        }
-        return false;
-    }
-
-    private String calculateWebAppEntryPath(VirtualFile virtualFile) {
-        List<String> pathSegments = new ArrayList<>();
-        VirtualFile current = virtualFile;
-
-        while (current != null && !"webapp".equals(current.getName())) {
-            pathSegments.add(0, current.getName());
-            current = current.getParent();
-        }
-
-        if (current == null) {
-            return null;
-        }
-
-        StringBuilder path = new StringBuilder("webapp");
-        for (String segment : pathSegments) {
-            path.append("/").append(segment);
-        }
-
-        return path.toString();
     }
 
     private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
@@ -140,9 +97,8 @@ public class ExportPacker implements CompileStatusNotification {
             return;
         }
 
-        if (isInWebAppDirectory(virtualFile)) {
-
-            String entryPath = calculateWebAppEntryPath(virtualFile);
+        if (CommonUtils.isWebAppExportFile(project, virtualFile)) {
+            String entryPath = CommonUtils.toWebAppEntryName(project, virtualFile);
             if (entryPath != null) {
                 collectExportFile(filePaths, jarEntryNames, "", Paths.get(virtualFile.getPath()), entryPath);
             }
@@ -227,8 +183,7 @@ public class ExportPacker implements CompileStatusNotification {
     }
 
     @Override
-    public void finished(boolean b, int error, int i1, @NotNull
-    CompileContext compileContext) {
+    public void finished(boolean b, int error, int i1, @NotNull CompileContext compileContext) {
         if (error == 0) {
             ApplicationManager.getApplication().runWriteAction(this::whenFinishSuccess);
         } else {
