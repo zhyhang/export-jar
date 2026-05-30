@@ -59,6 +59,13 @@ repositories {
     // Maven Central Repository
     mavenCentral()
 
+    // Required by IntelliJ Platform Gradle Plugin tasks such as code instrumentation.
+    // Keep explicit so CI cold caches can resolve org.jetbrains.intellij.deps artifacts.
+    maven {
+        name = "JetBrains IntelliJ Dependencies"
+        url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+    }
+
     // Default JetBrains repositories for IntelliJ platform plugins
     intellijPlatform {
         defaultRepositories()
