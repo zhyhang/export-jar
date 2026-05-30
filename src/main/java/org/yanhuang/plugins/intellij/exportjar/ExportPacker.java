@@ -87,20 +87,29 @@ public class ExportPacker implements CompileStatusNotification {
             }
             spIndex = entryName.indexOf("/", spIndex + 1);
         }
+
     }
 
     private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
-        final boolean inTestSourceContent =
-                ProjectRootManager.getInstance(project).getFileIndex().isInTestSourceContent(virtualFile);
-        if (inTestSourceContent && !exportOptionSet.contains(ExportOptions.export_test)) { // not export test source and resource files
+        final boolean inTestSourceContent = ProjectRootManager.getInstance(project).getFileIndex().isInTestSourceContent(virtualFile);
+
+        if (inTestSourceContent && !exportOptionSet.contains(ExportOptions.export_test)) {
             return;
         }
-        // find package name
-        PsiDirectory psiDirectory = PsiManager.getInstance(project).findDirectory(virtualFile.isDirectory() ?
-                virtualFile : virtualFile.getParent());
+
+        if (CommonUtils.isWebAppExportFile(project, virtualFile)) {
+            String entryPath = CommonUtils.toWebAppEntryName(project, virtualFile);
+            if (entryPath != null) {
+                collectExportFile(filePaths, jarEntryNames, "", Paths.get(virtualFile.getPath()), entryPath);
+            }
+            return;
+        }
+
+        PsiDirectory psiDirectory = PsiManager.getInstance(project).findDirectory(virtualFile.isDirectory() ? virtualFile : virtualFile.getParent());
         PsiPackage psiPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
         String packagePath = psiPackage == null ? "" : psiPackage.getQualifiedName().replaceAll("\\.", "/");
         String fileName = virtualFile.getName();
+
         if (CompilerManager.getInstance(project).isCompilableFileType(virtualFile.getFileType())) {
             if (exportOptionSet.contains(ExportOptions.export_java)) {
                 collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
@@ -131,8 +140,7 @@ public class ExportPacker implements CompileStatusNotification {
                 final Path classFileBasePath = Paths.get(outPutPath).resolve(packagePath);
                 Set<String> offspringClassNames = new HashSet<>();
                 for (String localClassName : localClassNames) {
-                    CommonUtils.findOffspringClassName(offspringClassNames,
-                            classFileBasePath.resolve(localClassName + ".class"));
+                    CommonUtils.findOffspringClassName(offspringClassNames, classFileBasePath.resolve(localClassName + ".class"));
                 }
                 try {
                     Files.walk(classFileBasePath, 1).forEach(p -> {
@@ -160,12 +168,18 @@ public class ExportPacker implements CompileStatusNotification {
         return fileName.endsWith(".java") || fileName.endsWith(".kt");
     }
 
-    private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath,
-                                   Path filePath) {
+    private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath, Path filePath, String entryName) {
         filePaths.add(filePath);
-        String normalPackagePath = "".equals(packagePath) ? "" : packagePath.endsWith("/") ? packagePath :
-                packagePath + "/";
-        jarEntryNames.add(normalPackagePath + filePath.getFileName());
+        String normalEntryName = entryName == null ? "" : entryName;
+        if (entryName == null) {
+            String normalPackagePath = "".equals(packagePath) ? "" : packagePath.endsWith("/") ? packagePath : packagePath + "/";
+            normalEntryName = normalPackagePath + filePath.getFileName();
+        }
+        jarEntryNames.add(normalEntryName);
+    }
+
+    private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath, Path filePath) {
+        collectExportFile(filePaths, jarEntryNames, packagePath, filePath, null);
     }
 
     @Override
@@ -187,8 +201,7 @@ public class ExportPacker implements CompileStatusNotification {
             return;
         }
         info(project, exportJarFullPath + " complete export successfully");
-        infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete export successfully",
-                List.of(new CopyTextToClipboardAction(exportJarFullPath.toString()), new ShowInExplorerAction(exportJarFullPath)));
+        infoNotify(Constants.actionName + " status", exportJarFullPath + "<br> complete export successfully", List.of(new CopyTextToClipboardAction(exportJarFullPath.toString()), new ShowInExplorerAction(exportJarFullPath)));
 
     }
 
