@@ -82,7 +82,7 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        create(properties("platformType"), properties("platformVersion"))
+        intellijIdea(properties("platformVersion"))
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(properties("platformBundledPlugins").map { it.split(',') })
@@ -90,26 +90,9 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
 
-        // Check if platformVersion is greater than or equal to 2024.2, only add modules dependency when condition is met
-        val platformVersion = properties("platformVersion").get().toString()
-        val is20242OrLater = run {
-            val versionParts = platformVersion.split(".")
-            if (versionParts.size >= 2) {
-                val majorVersion = versionParts[0].toIntOrNull() ?: 0
-                val minorVersion = versionParts[1].toIntOrNull() ?: 0
-                (majorVersion > 2024) || (majorVersion == 2024 && minorVersion >= 2)
-            } else {
-                false
-            }
-        }   
-
-        if (is20242OrLater) {
-            // Plugin Dependencies. Uses `platformBundledModules` property from the gradle.properties file
-            bundledModules(properties("platformBundledModules").map { it.split(',') })
-            logger.lifecycle("Added lib/modules dependencies, applicable for IntelliJ IDEA 2024.2+")
-        } else {    
-            logger.lifecycle("Detected IntelliJ IDEA version $platformVersion, no need to add lib/modules dependencies")
-        }
+        // VCS classes live in separately-classloaded bundled modules (extended in 2025.3); declare them explicitly
+        // or VCS classes won't resolve. Module ids == jar file names (minus .jar) under <sdk>/lib/modules.
+        bundledModules(properties("platformBundledModules").map { it.split(',') })
 
         pluginVerifier()    
         zipSigner()
