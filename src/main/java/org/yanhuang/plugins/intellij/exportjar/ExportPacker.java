@@ -53,44 +53,23 @@ public class ExportPacker implements CompileStatusNotification {
         for (VirtualFile virtualFile : virtualFiles) {
             CommonUtils.collectExportFilesNest(project, allVfs, virtualFile);
         }
-        List<Path> filePaths = new ArrayList<>();
+        final JarEntryAssembler assembler = new JarEntryAssembler();
         Map<Path, VirtualFile> filePathVfMap = new HashMap<>();
-        List<String> jarEntryNames = new ArrayList<>();
         for (VirtualFile vf : allVfs) {
-            final int startIndex = filePaths.size();
-            collectExportVirtualFile(filePaths, jarEntryNames, vf);
-            for (int i = startIndex; i < filePaths.size(); i++) {
-                filePathVfMap.put(filePaths.get(i), vf);
+            final int startIndex = assembler.size();
+            collectExportVirtualFile(assembler, vf);
+            for (int i = startIndex; i < assembler.size(); i++) {
+                filePathVfMap.put(assembler.filePathAt(i), vf);
             }
         }
         if (exportOptionSet.contains(ExportOptions.add_directory)) {
-            addDirectoryEntries(filePaths, jarEntryNames);
+            assembler.addDirectoryEntries();
         }
-        CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames, filePathVfMap);
+        CommonUtils.createNewJar(project, exportJarFullPath, assembler.getFilePaths(), assembler.getEntryNames(), filePathVfMap);
     }
 
-    private void addDirectoryEntries(List<Path> filePaths, List<String> entryNames) {
-        final var added = new HashSet<String>();
-        final int size = entryNames.size();
-        for (int i = 0; i < size; i++) {
-            addDirectoryEntry(filePaths, entryNames, entryNames.get(i), added);
-        }
-    }
 
-    private void addDirectoryEntry(List<Path> filePaths, List<String> entryNames, String entryName, HashSet<String> added) {
-        int spIndex = entryName.indexOf("/");
-        while (spIndex > 0) {
-            final String dir = entryName.substring(0, spIndex + 1);
-            if (added.add(dir)) {
-                filePaths.add(null);
-                entryNames.add(dir);
-            }
-            spIndex = entryName.indexOf("/", spIndex + 1);
-        }
-
-    }
-
-    private void collectExportVirtualFile(List<Path> filePaths, List<String> jarEntryNames, VirtualFile virtualFile) {
+    private void collectExportVirtualFile(JarEntryAssembler assembler, VirtualFile virtualFile) {
         final boolean inTestSourceContent = ProjectRootManager.getInstance(project).getFileIndex().isInTestSourceContent(virtualFile);
 
         if (inTestSourceContent && !exportOptionSet.contains(ExportOptions.export_test)) {
@@ -100,7 +79,7 @@ public class ExportPacker implements CompileStatusNotification {
         if (CommonUtils.isWebAppExportFile(project, virtualFile)) {
             String entryPath = CommonUtils.toWebAppEntryName(project, virtualFile);
             if (entryPath != null) {
-                collectExportFile(filePaths, jarEntryNames, "", Paths.get(virtualFile.getPath()), entryPath);
+                assembler.addEntry("", Paths.get(virtualFile.getPath()), entryPath);
             }
             return;
         }
@@ -112,7 +91,7 @@ public class ExportPacker implements CompileStatusNotification {
 
         if (CompilerManager.getInstance(project).isCompilableFileType(virtualFile.getFileType())) {
             if (exportOptionSet.contains(ExportOptions.export_java)) {
-                collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
+                assembler.addEntry(packagePath, Paths.get(virtualFile.getPath()));
             }
             // only export java classes
             if (psiPackage != null && exportOptionSet.contains(ExportOptions.export_class) && isExportClassSourceFile(fileName)) {
@@ -150,9 +129,9 @@ public class ExportPacker implements CompileStatusNotification {
                         }
                         String className = classFileName.substring(0, classFileName.length() - ".class".length());
                         if (localClassNames.contains(className)) {
-                            collectExportFile(filePaths, jarEntryNames, packagePath, p);
+                            assembler.addEntry(packagePath, p);
                         } else if (offspringClassNames.contains(className)) {
-                            collectExportFile(filePaths, jarEntryNames, packagePath, p);
+                            assembler.addEntry(packagePath, p);
                         }
                     });
                 } catch (IOException e) {
@@ -160,26 +139,12 @@ public class ExportPacker implements CompileStatusNotification {
                 }
             }
         } else {
-            collectExportFile(filePaths, jarEntryNames, packagePath, Paths.get(virtualFile.getPath()));
+            assembler.addEntry(packagePath, Paths.get(virtualFile.getPath()));
         }
     }
 
     private boolean isExportClassSourceFile(String fileName) {
         return fileName.endsWith(".java") || fileName.endsWith(".kt");
-    }
-
-    private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath, Path filePath, String entryName) {
-        filePaths.add(filePath);
-        String normalEntryName = entryName == null ? "" : entryName;
-        if (entryName == null) {
-            String normalPackagePath = "".equals(packagePath) ? "" : packagePath.endsWith("/") ? packagePath : packagePath + "/";
-            normalEntryName = normalPackagePath + filePath.getFileName();
-        }
-        jarEntryNames.add(normalEntryName);
-    }
-
-    private void collectExportFile(List<Path> filePaths, List<String> jarEntryNames, String packagePath, Path filePath) {
-        collectExportFile(filePaths, jarEntryNames, packagePath, filePath, null);
     }
 
     @Override

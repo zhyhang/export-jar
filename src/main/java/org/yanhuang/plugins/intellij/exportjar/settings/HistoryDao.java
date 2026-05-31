@@ -19,11 +19,23 @@ import static org.yanhuang.plugins.intellij.exportjar.utils.MessagesUtils.errorN
 
 public class HistoryDao {
 
+	private final Path cacheRoot;
+	private final Path historyFilePath2023;
+
+	public HistoryDao() {
+		this(Constants.cachePath);
+	}
+
+	public HistoryDao(Path cacheRoot) {
+		this.cacheRoot = cacheRoot;
+		this.historyFilePath2023 = cacheRoot.resolve(Constants.historyFileName2023);
+	}
+
 	/**
 	 * create v2023 history and save if that not exists.
 	 */
 	public void initV2023() {
-		if (Constants.historyFilePath2023.toFile().exists()) {
+		if (this.historyFilePath2023.toFile().exists()) {
 			return;
 		}
 		save(defaultHistory());
@@ -41,12 +53,12 @@ public class HistoryDao {
 	}
 
 	private SettingHistory save(SettingHistory history) {
-		if (!Constants.cachePath.toFile().exists()) {
-			final boolean ignoredMkdirs = Constants.cachePath.toFile().mkdirs();
+		if (!this.cacheRoot.toFile().exists()) {
+			final boolean ignoredMkdirs = this.cacheRoot.toFile().mkdirs();
 		}
 		try {
 			final String json = CommonUtils.toJson(history);
-			Files.writeString(Constants.historyFilePath2023, json);
+			Files.writeString(this.historyFilePath2023, json);
 			return history;
 		} catch (IOException e) {
 			MessagesUtils.errorNotify(Constants.titleHistorySaveErr, e.getMessage());
@@ -151,7 +163,7 @@ public class HistoryDao {
 	 */
 	public SettingHistory readOrDefault() {
 		try {
-			final String json = Files.readString(Constants.historyFilePath2023);
+			final String json = Files.readString(this.historyFilePath2023);
 			return CommonUtils.fromJson(json, SettingHistory.class);
 		} catch (IOException e) {
 			return defaultHistory();
@@ -229,12 +241,12 @@ public class HistoryDao {
 	}
 
 	private Path getSelectFilesStorePath2023(String projectName, String templateName) {
-		return cachePath.resolve(historySelectsFilePathPrefix2023
+		return this.cacheRoot.resolve(historySelectsFilePathPrefix2023
 				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
 	}
 
 	private Path getSelectFilesStorePath2024(String projectName, String templateName) {
-		return cachePath.resolve(historySelectsFilePathPrefix2024
+		return this.cacheRoot.resolve(historySelectsFilePathPrefix2024
 				+ projectName + "_" + templateName + historySelectsFilePathSuffix2023);
 	}
 

@@ -35,8 +35,10 @@ public interface Constants {
     String actionNameCopy = "Copy";
     String creator = "yanhuang.org";
     Path cachePath = SystemUtils.getUserHome().toPath().resolve(".IntelliJIdea_export_jar");
-    Path historyFilePath = cachePath.resolve("select_history.json");
-    Path historyFilePath2023 = cachePath.resolve("history_v2023.json");
+    String historyFileName = "select_history.json";
+    String historyFileName2023 = "history_v2023.json";
+    Path historyFilePath = cachePath.resolve(historyFileName);
+    Path historyFilePath2023 = cachePath.resolve(historyFileName2023);
     String historySelectsFilePathPrefix2023 = "history_v2023_";
     String historySelectsFilePathPrefix2024 = "history_v2024_";
     String historySelectsFilePathSuffix2023 = "_selects.json";
