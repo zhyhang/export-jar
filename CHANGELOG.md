@@ -4,14 +4,16 @@
 # Changelogs
 
 ## [Unreleased]
-- Supports export pre-compiled class files that not  just in time compiling 
+- Supports export pre-compiled class files that not just in time compiling
 - Improve compile error message detail display
 - Supports view include/exclude dir in pop dialog
 
 ## [2.5.5]
-- Supports export pre-compiled class files that not  just in time compiling
-- Improve compile error message detail display
-- Supports view include/exclude dir in pop dialog
+- Supports export pre-compiled class files that not just in time compiling
+- Supports export static resources under webapp directory
+- Fix compatibility issues with IDE versions before 2022.1
+- Fix plugin verification rule incompatibility
+- Improve local changes dialog code compatibility
 
 ## [2.5.4]
 - Upgrade IntelliJ Platform Gradle Plugin to 2.5.0
