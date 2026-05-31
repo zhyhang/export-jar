@@ -11,7 +11,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -34,7 +33,6 @@ import org.jetbrains.org.objectweb.asm.Opcodes;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -47,17 +45,6 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 public class CommonUtils {
-
-    private static int versionOpcodes;
-
-    static {
-        try {
-            final Field apiVersion = Opcodes.class.getField("API_VERSION");
-            versionOpcodes = (int) apiVersion.get(null);
-        } catch (Exception e) {
-            versionOpcodes = Opcodes.API_VERSION;
-        }
-    }
 
     public static String toJson(Object obj) {
         return new Gson().toJson(obj);
@@ -311,7 +298,7 @@ public class CommonUtils {
         try {
             ClassReader reader = new ClassReader(Files.readAllBytes(ancestorClassFile));
             final String ancestorClassName = reader.getClassName();
-            reader.accept(new ClassVisitor(versionOpcodes) {
+            reader.accept(new ClassVisitor(Opcodes.API_VERSION) {
                 @Override
                 public void visitInnerClass(String name, String outer, String inner, int access) {
                     final int indexSplash = name.lastIndexOf('/');
@@ -381,7 +368,7 @@ public class CommonUtils {
                     runnable.run();
                 }
             };
-            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
+            ProgressManager.getInstance().run(task);
         } else {
             runnable.run();
         }

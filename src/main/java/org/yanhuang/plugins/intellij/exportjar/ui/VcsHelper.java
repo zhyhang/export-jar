@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
-import com.intellij.openapi.vcs.changes.ChangeListManagerImpl;
 import com.intellij.openapi.vcs.changes.LocalChangeList;
 import com.intellij.openapi.vcs.changes.ui.*;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -32,9 +31,9 @@ public final class VcsHelper {
 		final ChangeListManager changeListManager = ChangeListManager.getInstance(project);
 		final List<VirtualFile> affectedFiles = changeListManager.getAffectedFiles();
 		final List<LocalChangeList> changeLists = changeListManager.getChangeLists();
-		// keep compatible with prior to version 2020.3
+		// getUnversionedFilesPaths() is public on ChangeListManager since 2020.3+
 		final List<FilePath> unVersionedFilesPaths =
-				((ChangeListManagerImpl) changeListManager).getUnversionedFilesPaths();
+				changeListManager.getUnversionedFilesPaths();
 		final List<VirtualFile> unVersionedFiles =
 				unVersionedFilesPaths.stream().map(FilePath::getVirtualFile).collect(Collectors.toList());
 		final DefaultTreeModel tempTreeModel = new TreeModelBuilder(project, grouping).setChangeLists(changeLists,
