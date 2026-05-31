@@ -182,7 +182,7 @@ intellijPlatform {
         freeArgs = listOf("-mute", "TemplateWordInPluginId")
         failureLevel = VerifyPluginTask.FailureLevel.NONE
         ides {
-            ides(properties("verifyPluginUseIdes").get().split(','))
+            create(properties("verifyPluginUseIdes").map { it.split(',') })
             // also can use following lines to specify verify using IDEs
 //            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2020.2")
 //            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1")
@@ -236,17 +236,6 @@ tasks {
     // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#runIdeForUiTests
     // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#testIdeUi
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
-    /**
-     * testIdeUi task not registered default (real state is not available as my test) in v2.0.1
-     * use runIdeForUiTests instead, as well need register in following intellijPlatformTesting section
-     * https://github.com/JetBrains/intellij-platform-gradle-plugin/releases/tag/v2.0.1
-    testIdeUi {
-        systemProperty("robot-server.port", "8082")
-        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
-        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
-        systemProperty("jb.consents.confirmation.enabled", "false")
-    }
-    */
 }
 intellijPlatformTesting {
     runIde {
