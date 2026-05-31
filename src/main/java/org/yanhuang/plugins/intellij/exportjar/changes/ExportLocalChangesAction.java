@@ -1,5 +1,6 @@
 package org.yanhuang.plugins.intellij.exportjar.changes;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -22,6 +23,11 @@ import java.util.List;
  */
 public class ExportLocalChangesAction extends AnAction {
 	private static final Logger LOGGER = Logger.getInstance(ExportLocalChangesAction.class);
+
+	@Override
+	public @NotNull ActionUpdateThread getActionUpdateThread() {
+		return ActionUpdateThread.BGT;
+	}
 
 	@Override
 	public void actionPerformed(@NotNull AnActionEvent e) {

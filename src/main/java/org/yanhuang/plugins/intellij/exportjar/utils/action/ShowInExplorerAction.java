@@ -1,6 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.utils.action;
 
 import com.intellij.ide.actions.RevealFileAction;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,11 @@ public class ShowInExplorerAction extends AnAction {
     public ShowInExplorerAction(Path filePath) {
         super(Constants.actionNameExplorer);
         this.filePath = filePath;
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override

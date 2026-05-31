@@ -1,6 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.template;
 
 import com.intellij.openapi.actionSystem.ActionGroup;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -24,6 +25,11 @@ public class TemplateExportActionGroup extends ActionGroup {
 	private final HistoryDao dao = new HistoryDao();
 
 	@Override
+	public @NotNull ActionUpdateThread getActionUpdateThread() {
+		return ActionUpdateThread.BGT;
+	}
+
+	@Override
 	public AnAction @NotNull [] getChildren(@Nullable AnActionEvent e) {
 		final Project project = e != null ? e.getProject() : null;
 		if (project != null) {
@@ -42,6 +48,11 @@ public class TemplateExportActionGroup extends ActionGroup {
 
 	private AnAction createTemplateAction(Project project, SettingTemplate template) {
 		return new AnAction(template.getName(), template.getName(), null) {
+			@Override
+			public @NotNull ActionUpdateThread getActionUpdateThread() {
+				return ActionUpdateThread.BGT;
+			}
+
 			@Override
 			public void actionPerformed(@NotNull AnActionEvent e) {
 				final SettingDialog dialog = UIFactory.createSettingDialog(project, template.getName());

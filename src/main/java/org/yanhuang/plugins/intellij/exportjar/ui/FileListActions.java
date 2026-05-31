@@ -1,6 +1,7 @@
 package org.yanhuang.plugins.intellij.exportjar.ui;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -73,6 +74,11 @@ public class FileListActions {
 		}
 
 		@Override
+		public @NotNull ActionUpdateThread getActionUpdateThread() {
+			return ActionUpdateThread.EDT;
+		}
+
+		@Override
 		public void update(@NotNull AnActionEvent e) {
 			super.update(e);
 			actionEnable(e, fileTree);
@@ -96,6 +102,11 @@ public class FileListActions {
 		}
 
 		@Override
+		public @NotNull ActionUpdateThread getActionUpdateThread() {
+			return ActionUpdateThread.EDT;
+		}
+
+		@Override
 		public void update(@NotNull AnActionEvent e) {
 			super.update(e);
 			actionEnable(e, fileTree);
@@ -114,6 +125,11 @@ public class FileListActions {
 		public RecursiveToggleAction(FileListDialog dialog) {
 			super(actionNameUnRecursiveSelection, null, AllIcons.Actions.ListFiles);
 			this.dialog = dialog;
+		}
+
+		@Override
+		public @NotNull ActionUpdateThread getActionUpdateThread() {
+			return ActionUpdateThread.EDT;
 		}
 
 		@Override
@@ -149,6 +165,11 @@ public class FileListActions {
 			super(actionNameCleanIncludeExclude, null, AllIcons.Actions.Undo);
 			this.dialog = dialog;
 			this.fileTree = dialog.getFileList();
+		}
+
+		@Override
+		public @NotNull ActionUpdateThread getActionUpdateThread() {
+			return ActionUpdateThread.EDT;
 		}
 
 		@Override
@@ -227,6 +248,11 @@ public class FileListActions {
 		}
 
 		@Override
+		public @NotNull ActionUpdateThread getActionUpdateThread() {
+			return ActionUpdateThread.EDT;
+		}
+
+		@Override
 		public void update(@NotNull AnActionEvent e) {
 			super.update(e);
 			final boolean enable = dialog.isDirectoryModuleGrouping();
@@ -265,6 +291,11 @@ public class FileListActions {
 	 * @see FileListTreeGroupPolicyFactory
 	 */
 	public static class SetDirectoryNoCollapseChangesGroupingAction extends SetChangesGroupingAction {
+
+		@Override
+		public @NotNull ActionUpdateThread getActionUpdateThread() {
+			return ActionUpdateThread.EDT;
+		}
 
 		@NotNull
 		@Override

@@ -14,6 +14,11 @@ import org.yanhuang.plugins.intellij.exportjar.ui.UIFactory;
 public class ExportJarAction extends AnAction {
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         final SettingDialog setting = UIFactory.createSettingDialog(event.getDataContext());
         ApplicationManager.getApplication().invokeAndWait(setting::show);
