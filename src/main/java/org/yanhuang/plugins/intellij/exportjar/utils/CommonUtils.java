@@ -32,18 +32,12 @@ import org.jetbrains.org.objectweb.asm.ClassVisitor;
 import org.jetbrains.org.objectweb.asm.Opcodes;
 import org.yanhuang.plugins.intellij.exportjar.ExportJarException;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 public class CommonUtils {
@@ -125,37 +119,6 @@ public class CommonUtils {
             return List.of(parentVf);
         }else{
             return Arrays.stream(parentVf.getChildren()).filter(Predicate.not(VirtualFile::isDirectory)).collect(Collectors.toList());
-        }
-    }
-
-    public static void createNewJar(Project project, Path jarFileFullPath, List<Path> filePaths,
-                                    List<String> entryNames, Map<Path, VirtualFile> filePathVfMap) {
-        final Manifest manifest = new Manifest();
-        Attributes mainAttributes = manifest.getMainAttributes();
-        mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "2.5.0");
-        // remove according https://github.com/zhyhang/export-jar/issues/15
-        // mainAttributes.put(new Attributes.Name("Created-By"), Constants.creator);
-        try (OutputStream os = Files.newOutputStream(jarFileFullPath);
-             BufferedOutputStream bos = new BufferedOutputStream(os);
-             JarOutputStream jos = new JarOutputStream(bos, manifest)) {
-            for (int i = 0; i < entryNames.size(); i++) {
-                String entryName = entryNames.get(i);
-                JarEntry je = new JarEntry(entryName);
-                Path filePath = filePaths.get(i);
-                jos.putNextEntry(je);
-                if (filePath != null && Files.isRegularFile(filePath)) {
-                    // using origin entry(file) last modified time
-                    je.setLastModifiedTime(Files.getLastModifiedTime(filePath));
-                    jos.write(Files.readAllBytes(filePath));
-                }
-                jos.closeEntry();
-                VirtualFile vf = filePathVfMap.get(filePath);
-                if (vf != null) {
-                    MessagesUtils.infoAndMore(project, "packed " + filePath + " to jar", vf);
-                }
-            }
-        } catch (Exception e) {
-            throw new ExportJarException(e);
         }
     }
 

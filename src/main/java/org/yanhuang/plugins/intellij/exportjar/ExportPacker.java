@@ -66,7 +66,13 @@ public class ExportPacker implements CompileStatusNotification {
         if (exportOptionSet.contains(ExportOptions.add_directory)) {
             addDirectoryEntries(filePaths, jarEntryNames);
         }
-        CommonUtils.createNewJar(project, exportJarFullPath, filePaths, jarEntryNames, filePathVfMap);
+        final Map<Path, VirtualFile> vfMap = filePathVfMap;
+        new JarWriter().write(exportJarFullPath, filePaths, jarEntryNames, (filePath, entryName) -> {
+            final VirtualFile vf = vfMap.get(filePath);
+            if (vf != null) {
+                infoAndMore(project, "packed " + filePath + " to jar", vf);
+            }
+        });
     }
 
     private void addDirectoryEntries(List<Path> filePaths, List<String> entryNames) {
