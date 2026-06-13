@@ -66,8 +66,7 @@ public class SettingDialog extends DialogWrapper {
 	private JButton selectJarFileButton;
 	private JPanel settingPanel;
 	protected JPanel fileListPanel;
-	private JButton debugButton;
-	private JPanel actionPanel;
+		private JPanel actionPanel;
 	protected JPanel optionsPanel;
 	private JPanel jarFilePanel;
 	private JBSplitter fileListSettingSplitPanel;
@@ -94,7 +93,6 @@ public class SettingDialog extends DialogWrapper {
 		getRootPane().setDefaultButton(buttonOK);
 		this.buttonOK.addActionListener(e -> onOK());
 		this.buttonCancel.addActionListener(e -> onCancel());
-		this.debugButton.addActionListener(e -> onDebug());
 
 		this.contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -213,13 +211,6 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 
-	private void uiDebug() {
-		debugButton.setVisible(true);
-		this.fileListDialog.getFileList().addSelectionListener(() -> {
-			System.out.println("in ui debug");
-		});
-
-	}
 
 	private void migrateSavedHistory() {
 		UpgradeManager.migrateHistoryToV2023(this.project);
@@ -276,9 +267,6 @@ public class SettingDialog extends DialogWrapper {
 		// move export action to BGT, avoid throw SLOW warning exception
 		// read more: https://plugins.jetbrains.com/docs/intellij/threading-model.html
 		backgroundRunWithoutLock(() -> doExport(finalSelectFiles), project, "Exporting files");
-	}
-
-	private void onDebug() {
 	}
 
 	public void setSelectedFiles(VirtualFile[] selectedFiles) {

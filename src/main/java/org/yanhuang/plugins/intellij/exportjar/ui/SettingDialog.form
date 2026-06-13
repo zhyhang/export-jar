@@ -198,21 +198,6 @@
               <text value="C&amp;ancel"/>
             </properties>
           </component>
-          <hspacer id="17de7">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </hspacer>
-          <component id="89b5e" class="javax.swing.JButton" binding="debugButton" default-binding="true">
-            <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <enabled value="true"/>
-              <text value="Debug"/>
-              <visible value="false"/>
-            </properties>
-          </component>
         </children>
       </grid>
       <grid id="2ef79" binding="fileListPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
