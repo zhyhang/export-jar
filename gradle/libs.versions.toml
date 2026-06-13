@@ -2,6 +2,11 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
+# integration (UI) test - Starter framework
+junitJupiter = "5.10.2"
+junitPlatform = "1.10.2"
+kodein = "7.20.2"
+kotlinxCoroutines = "1.10.1"
 
 # plugins
 changelog = "2.2.1"
@@ -15,6 +20,11 @@ qodana = "2024.3.4"
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 # to make running unit test normally
 opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
+# integration (UI) test - Starter framework (JUnit 5)
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
+kodein-di-jvm = { group = "org.kodein.di", name = "kodein-di-jvm", version.ref = "kodein" }
+kotlinx-coroutines-core-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }

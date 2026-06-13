@@ -33,3 +33,5 @@ nbdist/
 .qodana
 .intellijPlatform
 .kotlin
+# Starter/Allure integration test artifacts
+allure-results/

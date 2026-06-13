@@ -73,6 +73,19 @@ repositories {
     }
 }
 
+// Integration (UI) test source set, kept separate from unit tests (src/test).
+// Sources live under src/integrationTest/{kotlin,java,resources}.
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val integrationTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
 
@@ -80,6 +93,14 @@ dependencies {
     // how write unit test: https://plugins.jetbrains.com/docs/intellij/testing-plugins.html
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
+
+    // Integration (UI) tests with the Starter framework run in a separate `integrationTest` source set
+    // so they don't disturb the existing JUnit4 platform unit tests. See README/refactor doc.
+    "integrationTestImplementation"(libs.junit.jupiter)
+    "integrationTestImplementation"(libs.kodein.di.jvm)
+    "integrationTestImplementation"(libs.kotlinx.coroutines.core.jvm)
+    // JUnit Platform launcher is required on the runtime classpath for useJUnitPlatform()
+    "integrationTestRuntimeOnly"(libs.junit.platform.launcher)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
@@ -112,12 +133,14 @@ dependencies {
             logger.lifecycle("Detected IntelliJ IDEA version $platformVersion, no need to add lib/modules dependencies")
         }
 
-        pluginVerifier()    
+        pluginVerifier()
         zipSigner()
         // TestFrameworkType.Platform.JUnit4 to TestFrameworkType.Platform
         // TestFrameworkType.Platform.JUnit5 to TestFrameworkType.JUnit5
         // TestFrameworkType.Platform.Bundled to TestFrameworkType.Bundled
         testFramework(TestFrameworkType.Platform)
+        // Starter framework (+ Driver) for integration/UI tests, scoped to the integrationTest source set
+        testFramework(TestFrameworkType.Starter, configurationName = "integrationTestImplementation")
     }
 }
 
@@ -266,5 +289,22 @@ intellijPlatformTesting {
                 robotServerPlugin()
             }
         }
+    }
+}
+
+// Integration (UI) tests using the Starter framework + Driver.
+// Run with: ./gradlew integrationTest   (downloads & launches a real IDE; needs a display)
+val integrationTest by intellijPlatformTesting.testIdeUi.registering {
+    task {
+        val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        // Starter installs the plugin from its built distribution zip
+        dependsOn(tasks.named("buildPlugin"))
+        systemProperty(
+            "path.to.build.plugin",
+            tasks.named<Zip>("buildPlugin").get().archiveFile.get().asFile.absolutePath
+        )
     }
 }
