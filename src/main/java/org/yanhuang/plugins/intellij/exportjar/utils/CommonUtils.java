@@ -34,7 +34,6 @@ import org.jetbrains.org.objectweb.asm.Opcodes;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -352,7 +351,10 @@ public class CommonUtils {
                         .submit(AppExecutorUtil.getAppExecutorService());
                 return promise.get();
             } else {
-                return ReadAction.compute(task::call);
+                return ReadAction.nonBlocking(task)
+                        .inSmartMode(project)
+                        .withDocumentsCommitted(project)
+                        .executeSynchronously();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
