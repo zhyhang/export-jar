@@ -13,8 +13,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBSplitter;
-import com.intellij.ui.SeparatorFactory;
-import com.intellij.ui.TitledSeparator;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
@@ -189,16 +187,11 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 	private void createJarOutputPanelTiledSeparator() {
-		createTitledSeparatorForPanel(this.outputJarTitlePanel, Constants.titleJarFileSeparator, this.outPutJarFileComboBox);
+		UIFactory.addTitledSeparator(this.outputJarTitlePanel, Constants.titleJarFileSeparator, this.outPutJarFileComboBox);
 	}
 
 	private void createOptionPanelTitledSeparator() {
-		createTitledSeparatorForPanel(this.optionTitlePanel, Constants.titleOptionSeparator, this.optionsPanel);
-	}
-
-	private void createTitledSeparatorForPanel(JPanel borderContainer, String title, JComponent separatorForComp) {
-		final TitledSeparator separator = SeparatorFactory.createSeparator(title, separatorForComp);
-		borderContainer.add(separator, BorderLayout.CENTER);
+		UIFactory.addTitledSeparator(this.optionTitlePanel, Constants.titleOptionSeparator, this.optionsPanel);
 	}
 
 	private void updateFileListSettingSplitPanel() {

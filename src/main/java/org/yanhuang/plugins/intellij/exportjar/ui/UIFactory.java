@@ -95,6 +95,18 @@ public class UIFactory {
         return simplePanel().addToBottom(separator).addToTop(Box.createVerticalGlue());
     }
 
+    /**
+     * create a titled separator for {@code forComp} and add it to the center of {@code container}.
+     *
+     * @param container the BorderLayout container to receive the separator
+     * @param title     separator title
+     * @param forComp   the component the separator labels (for mnemonics)
+     */
+    public static void addTitledSeparator(JPanel container, String title, JComponent forComp) {
+        final TitledSeparator separator = SeparatorFactory.createSeparator(title, forComp);
+        container.add(separator, BorderLayout.CENTER);
+    }
+
     public static LocalChangesSettingDialog createLocalChangesSettingDialog(Project project, VirtualFile[] initialSelections) {
         final var changesDialog = new LocalChangesSettingDialog(project, initialSelections);
         setDialogLocation(changesDialog);
