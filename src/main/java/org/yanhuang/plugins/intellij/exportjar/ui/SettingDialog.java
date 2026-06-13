@@ -242,6 +242,8 @@ public class SettingDialog extends DialogWrapper {
 	}
 
 		private void onSelectJarFileButton(ActionEvent event) {
+		// Suppress deprecation warning for factory method (still supported, no suitable replacement)
+		@SuppressWarnings("deprecation")
 		FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
 		Consumer<VirtualFile> chooserConsumer = new FileChooserConsumerImplForComboBox(this.outPutJarFileComboBox);
 		FileChooser.chooseFile(descriptor, project, null, chooserConsumer);
