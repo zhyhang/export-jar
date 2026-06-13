@@ -61,7 +61,8 @@ public class ExportCommitSession implements CommitSession {
 	@Nullable
 	@Override
 	public String getHelpId() {
-		return null;//TODO help doc
+		// no dedicated help page; null disables the help button
+		return null;
 	}
 
 }

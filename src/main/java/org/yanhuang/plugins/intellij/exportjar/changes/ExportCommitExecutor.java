@@ -23,7 +23,8 @@ public class ExportCommitExecutor extends LocalCommitExecutor {
     @Nullable
     @Override
     public String getHelpId() {
-        return null; //TODO help doc
+        // no dedicated help page; null disables the help button
+        return null;
     }
 
     @Nls
