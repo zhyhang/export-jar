@@ -17,6 +17,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yanhuang.plugins.intellij.exportjar.ExportJarPathResolver;
 import org.yanhuang.plugins.intellij.exportjar.ExportPacker;
 import org.yanhuang.plugins.intellij.exportjar.model.ExportOptions;
 import org.yanhuang.plugins.intellij.exportjar.model.SettingHistory;
@@ -34,7 +35,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -288,49 +288,42 @@ public class SettingDialog extends DialogWrapper {
 		final var app = ApplicationManager.getApplication();
 		final var modules = runInBgtWithReadLockAndWait(() -> findModule(project, exportFiles), project);
 		final String selectedOutputJarFullPath = (String) this.outPutJarFileComboBox.getModel().getSelectedItem();
-		if (selectedOutputJarFullPath == null || selectedOutputJarFullPath.trim().isEmpty()) {
-			app.invokeAndWait(() -> showErrorDialog(project, "The selected output path should not empty",
-					Constants.actionName));
-			return;
-		}
-		Path exportJarFullPath = Paths.get(selectedOutputJarFullPath.trim());
-		if (!Files.isDirectory(exportJarFullPath)) {
-			Path exportJarParentPath = exportJarFullPath.getParent();
-			if (exportJarParentPath == null) {// when input file without parent dir, current dir as parent dir.
-				String basePath = project.getBasePath();
-				exportJarParentPath = Paths.get(Objects.requireNonNullElse(basePath, "./"));
-				exportJarFullPath = exportJarParentPath.resolve(exportJarFullPath);
-			}
-			if (!Files.exists(exportJarParentPath)) {
+		final ExportJarPathResolver.Result resolution =
+				ExportJarPathResolver.resolve(selectedOutputJarFullPath, project.getBasePath());
+		switch (resolution.getStatus()) {
+			case EMPTY_PATH:
+				app.invokeAndWait(() -> showErrorDialog(project, "The selected output path should not empty",
+						Constants.actionName));
+				return;
+			case IS_DIRECTORY:
+				app.invokeAndWait(() -> showErrorDialog(project, "Please specify export jar file name",
+						Constants.actionName));
+				return;
+			case PARENT_NOT_EXISTS:
 				app.invokeAndWait(() -> showErrorDialog(project, "The selected output path is not exists",
 						Constants.actionName));
-			} else {
-				String exportJarName = exportJarFullPath.getFileName().toString();
-				if (!exportJarName.endsWith(".jar")) {
-					exportJarFullPath = Paths.get(exportJarFullPath + ".jar");
-				}
-				if (Files.exists(exportJarFullPath)) {
-					final int[] result = new int[1];
-					final Path finalJarPath = exportJarFullPath;
-					app.invokeAndWait(() -> result[0] = Messages.showYesNoDialog(project, finalJarPath + " already " +
-									"exists, replace it? ",
-							Constants.actionName, getWarningIcon()));
-					if (result[0] == Messages.NO) {
-						return;
-					}
-				}
-				this.dispose();
-				templateHandler.saveCurTemplate();
-				templateHandler.saveGlobalTemplate();
-				final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath,
-						pickExportOptions());
-				app.invokeAndWait(() -> CompilerManager.getInstance(project).make(project, null == modules ?
-						new Module[0] : modules, packager));
-			}
-		} else {
-			app.invokeAndWait(() -> showErrorDialog(project, "Please specify export jar file name",
-					Constants.actionName));
+				return;
+			case RESOLVED:
+			default:
+				break;
 		}
+		final Path exportJarFullPath = resolution.getResolvedPath();
+		if (Files.exists(exportJarFullPath)) {
+			final int[] result = new int[1];
+			app.invokeAndWait(() -> result[0] = Messages.showYesNoDialog(project, exportJarFullPath + " already " +
+							"exists, replace it? ",
+					Constants.actionName, getWarningIcon()));
+			if (result[0] == Messages.NO) {
+				return;
+			}
+		}
+		this.dispose();
+		templateHandler.saveCurTemplate();
+		templateHandler.saveGlobalTemplate();
+		final CompileStatusNotification packager = new ExportPacker(project, exportFiles, exportJarFullPath,
+				pickExportOptions());
+		app.invokeAndWait(() -> CompilerManager.getInstance(project).make(project, null == modules ?
+				new Module[0] : modules, packager));
 	}
 
 	private boolean isEmpty(VirtualFile[] exportFiles) {
