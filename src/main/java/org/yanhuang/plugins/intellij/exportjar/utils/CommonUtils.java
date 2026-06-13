@@ -48,16 +48,12 @@ import java.util.stream.Collectors;
 
 public class CommonUtils {
 
-    private static int versionOpcodes;
-
-    static {
-        try {
-            final Field apiVersion = Opcodes.class.getField("API_VERSION");
-            versionOpcodes = (int) apiVersion.get(null);
-        } catch (Exception e) {
-            versionOpcodes = Opcodes.API_VERSION;
-        }
-    }
+    /**
+     * ASM API version for ClassVisitor.
+     * since-build: 251 (2025.1+) uses stable ASM version.
+     * Direct constant usage instead of reflection for plugin verifier compatibility.
+     */
+    private static final int VERSION_OPCODES = Opcodes.ASM9;
 
     public static String toJson(Object obj) {
         return new Gson().toJson(obj);
@@ -311,7 +307,7 @@ public class CommonUtils {
         try {
             ClassReader reader = new ClassReader(Files.readAllBytes(ancestorClassFile));
             final String ancestorClassName = reader.getClassName();
-            reader.accept(new ClassVisitor(versionOpcodes) {
+            reader.accept(new ClassVisitor(VERSION_OPCODES) {
                 @Override
                 public void visitInnerClass(String name, String outer, String inner, int access) {
                     final int indexSplash = name.lastIndexOf('/');
