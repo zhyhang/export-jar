@@ -7,6 +7,8 @@
 - Supports export pre-compiled class files that not just in time compiling
 - Improve compile error message detail display
 - Supports view include/exclude dir in pop dialog
+- Replace deprecated ReadAction.compute with modern nonBlocking API
+- Remove Opcodes reflection for better plugin verifier compatibility
 
 ## [2.5.5]
 - Supports export pre-compiled class files that not just in time compiling
