@@ -706,39 +706,44 @@ class FileCollector(private val project: Project) {
 
 ## 执行路线图
 
+> 执行进度更新 (2026-06-13)：P0/P1 已完成可安全验证的全部项；P2/P3 完成低风险项。
+> 每项改动均通过 `./gradlew test` 验证，并单独提交。`buildPlugin` 成功，
+> `verifyPlugin` 对 IC-251/252、IU-253/261/262 全部报告 **Compatible**（基线
+> deprecated/internal API 计数无新增）。
+
 ### Phase 0: 反射与 API 修复 (1-2 天)
-- [ ] 修复 CommonUtils Opcodes 反射
-- [ ] 分析 FileListDialog 反射替换 ChangesTree 方案
-- [ ] 修复废弃 API 警告
-- [ ] 添加 @SuppressWarnings 或重构
+- [x] 修复 CommonUtils Opcodes 反射 → 改用 `Opcodes.ASM9` 常量 (commit b387617)
+- [x] 修复废弃 API 警告 → `@SuppressWarnings("deprecation")` (commit 6b37936)
+- [x] 简化 MessagesUtils 版本兼容代码 (P0-B 0.5, commit 1fae1ba)
+- [x] 清理 FileListTree 双方法签名兼容 (P0-B 0.6, commit 73c7538)
+- [x] 提取树遍历工具方法 (P0-C 0.10, commit 29bbf69)
+- [ ] **[延后/高风险]** FileListDialog 反射替换 ChangesTree (0.3.2) 与内部 API 重写
+      (0.2)：二者均需彻底移除 `extends SelectFilesDialog` 继承（见 0.4），属于核心
+      文件树对话框的整体重写。`verifyPlugin` 将其判定为非阻塞（failureLevel=NONE，
+      Compatible）。脱离继承会改变 include/exclude、分组、展开/折叠等行为，需在运行
+      中的 IDE 手动验证，故本轮不盲目重构。
 
-### Phase 1: Workaround 消除 (1 周)
-- [ ] 重构 FileListDialog 脱离 SelectFilesDialog 继承
-- [ ] 清理 MessagesUtils 版本兼容代码
-- [ ] 清理 FileListTree 双方法签名兼容
-- [ ] 评估并消除其他 workaround
+### Phase 1: 核心重构 (已完成)
+- [x] 提取 FileCollector (1.1, commit c61811d)
+- [x] 提取 JarWriter (1.2, commit 2649545)
+- [x] 统一 TaskExecutors 线程工具 (1.3, commit f9f6378)
+- [x] 统一异常处理 ExportJarException (1.4, commit 721b514)
 
-### Phase 2: 核心重构 (1-2 周)
-- [ ] 提取 FileCollector
-- [ ] 提取 JarWriter
-- [ ] 统一 TaskExecutors
-- [ ] 统一异常处理
+### Phase 2: UI 重构 (部分完成)
+- [x] UI 组件工厂化 (2.4, commit 43068fa)
+- [ ] **[延后/高风险]** 拆分 SettingDialog (2.1) / FileListDialog (2.2) /
+      TemplateEventHandler (2.3)：SettingDialog 通过 `.form`（GUI Designer）按字段名
+      绑定组件，拆分会破坏表单绑定；FileListDialog 与 SelectFilesDialog 继承强耦合。
+      这些 God-class 拆分需要 UI 回归测试，超出可自动验证范围。
 
-### Phase 3: UI 重构 (1-2 周)
-- [ ] 拆分 SettingDialog
-- [ ] 拆分 FileListDialog
-- [ ] 组件工厂化
-- [ ] 提取树遍历工具类
+### Phase 3: 清理 (已完成)
+- [x] 移除 SettingDialog 调试代码 (3.3, commit 0e506ce)
+- [x] 处理代码中 help-doc TODO 标记 (3.2, commit bca472c)
+- [x] CHANGELOG 更新 (commit 110cfc6)
+- [ ] README TODO 列表（功能性待办，见 3.1，属产品需求非重构）
 
-### Phase 4: 清理 (3-5 天)
-- [ ] 处理 TODO 项
-- [ ] 清理废弃代码
-- [ ] 完善测试覆盖
-
-### Phase 5: Kotlin 迁移 (长期)
-- [ ] 工具类 Kotlin 化
-- [ ] 模型类 Kotlin 化
-- [ ] 测试代码 Kotlin 化
+### Phase 4 / Phase 5: 留作待办
+- Kotlin 迁移、新增功能等长期项，按计划延后。
 
 ---
 
