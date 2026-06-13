@@ -5,7 +5,6 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -166,22 +165,20 @@ public class MessagesUtils {
     }
 
     /**
-     * delegate get message view method to platform method for compatible with old version.
-     * use com.intellij.ui.content.MessageView#getInstance(com.intellij.openapi.project.Project) when this plugin support mini version update to greater than 222.2680.4.
+     * get message view service for the project.
      * @param project project
      * @return message view
      */
     public static MessageView getMessageView(Project project){
-        return project.getService(MessageView.class);
+        return MessageView.getInstance(project);
     }
 
     /**
-     * delegate get ContentFactory method to platform method for compatible with old version.
-     *  use com.intellij.ui.content.ContentFactory#getInstance() when this plugin support mini version update to greater than 222.2680.4.
+     * get ContentFactory service.
      * @return ContentFactory
      */
     public static ContentFactory getContentFactory() {
-        return ApplicationManager.getApplication().getService(ContentFactory.class);
+        return ContentFactory.getInstance();
     }
 
 }
