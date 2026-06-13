@@ -244,10 +244,32 @@ public class FileListTreeHandler {
 	 * @return An array of VirtualFile objects representing the collected virtual files
 	 */
 	public static VirtualFile[] collectVirtualFilesInTree(final TreeNode root) {
-		return TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().map(n -> getNodeBindVirtualFile((ChangesBrowserNode<?>) n))
+		return preOrderNodes(root).map(FileListTreeHandler::getNodeBindVirtualFile)
 				.filter(Objects::nonNull)
 				.filter(vf -> !vf.isDirectory())
 				.toArray(new VirtualFile[0]);
+	}
+
+	/**
+	 * Pre-order DFS traversal of the tree, yielding typed {@link ChangesBrowserNode} elements.
+	 * Centralizes the repeated treeNodeTraverser + cast pattern.
+	 *
+	 * @param root tree root node
+	 * @return pre-order node iterable
+	 */
+	public static JBIterable<ChangesBrowserNode<?>> preOrderNodes(final TreeNode root) {
+		return TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().map(n -> (ChangesBrowserNode<?>) n);
+	}
+
+	/**
+	 * Post-order DFS traversal of the tree, yielding typed {@link ChangesBrowserNode} elements.
+	 * Centralizes the repeated treeNodeTraverser + cast pattern.
+	 *
+	 * @param root tree root node
+	 * @return post-order node iterable
+	 */
+	public static JBIterable<ChangesBrowserNode<?>> postOrderNodes(final TreeNode root) {
+		return TreeUtil.treeNodeTraverser(root).postOrderDfsTraversal().map(n -> (ChangesBrowserNode<?>) n);
 	}
 
 }

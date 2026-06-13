@@ -146,8 +146,7 @@ public class FileListDialog extends SelectFilesDialog {
 	private List<SettingSelectFile> filterMatchTreeNode() {
 		final ChangesBrowserNode<?> root = this.getFileList().getRoot();
 		final Set<VirtualFile> allVfInTree = new HashSet<>();
-		TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().forEach(n -> {
-			final var node = (ChangesBrowserNode<?>) n;
+		FileListTreeHandler.preOrderNodes(root).forEach(node -> {
 			final var vfs = FileListTreeHandler.getNodeBindVirtualFile(node);
 			if (vfs != null) {
 				allVfInTree.add(vfs);
@@ -291,10 +290,9 @@ public class FileListDialog extends SelectFilesDialog {
 
 		private void expandDirectoryNodes(DefaultTreeModel model) {
 			final ChangesBrowserNode<?> root = (ChangesBrowserNode<?>) model.getRoot();
-			final var treeNodes = TreeUtil.treeNodeTraverser(root).postOrderDfsTraversal().toList();
+			final var treeNodes = FileListTreeHandler.postOrderNodes(root).toList();
 			final var directoryNodeCache = new HashMap<VirtualFile, ChangesBrowserNode<?>>();
-			treeNodes.forEach(n -> {
-				final var node = (ChangesBrowserNode<?>) n;
+			treeNodes.forEach(node -> {
 				final ChangesBrowserNode<?> parent = node.getParent();
 				final VirtualFile nodeVf = FileListTreeHandler.getNodeBindVirtualFile(node);
 				final VirtualFile parentVf = FileListTreeHandler.getNodeBindVirtualFile(parent);
@@ -338,9 +336,8 @@ public class FileListDialog extends SelectFilesDialog {
 
 		private void collapseDirectoryNotInModules(DefaultTreeModel model) {
 			final ChangesBrowserNode<?> root = (ChangesBrowserNode<?>) model.getRoot();
-			final var treeNodes = TreeUtil.treeNodeTraverser(root).preOrderDfsTraversal().toList();
-			treeNodes.forEach(n -> {
-				final var node = (ChangesBrowserNode<?>) n;
+			final var treeNodes = FileListTreeHandler.preOrderNodes(root).toList();
+			treeNodes.forEach(node -> {
 				final var virtualFile = FileListTreeHandler.getNodeBindVirtualFile(node);
 				if (virtualFile != null && !isInModule(virtualFile)) {
 					moveChildToRoot(root, node);
