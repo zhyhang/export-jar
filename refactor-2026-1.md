@@ -717,11 +717,15 @@ class FileCollector(private val project: Project) {
 - [x] 简化 MessagesUtils 版本兼容代码 (P0-B 0.5, commit 1fae1ba)
 - [x] 清理 FileListTree 双方法签名兼容 (P0-B 0.6, commit 73c7538)
 - [x] 提取树遍历工具方法 (P0-C 0.10, commit 29bbf69)
-- [ ] **[延后/高风险]** FileListDialog 反射替换 ChangesTree (0.3.2) 与内部 API 重写
-      (0.2)：二者均需彻底移除 `extends SelectFilesDialog` 继承（见 0.4），属于核心
-      文件树对话框的整体重写。`verifyPlugin` 将其判定为非阻塞（failureLevel=NONE，
-      Compatible）。脱离继承会改变 include/exclude、分组、展开/折叠等行为，需在运行
-      中的 IDE 手动验证，故本轮不盲目重构。
+- [x] **0.2 / 0.3.2 / 0.4 — 已调查并实证，确认不改（won't-fix with evidence）**：
+      尝试用 `extends AbstractSelectFilesDialog` + 自持 `FileListTree` 实现 `getFileList()`
+      来移除反射与内部 API 重写。结果经 `verifyPlugin` 实测**适得其反**：内部 API 使用从
+      **1 处增加到 7 处**（`AbstractSelectFilesDialog.getFileList`/`createToolbarActions`、
+      `SelectFilesDialog.VirtualFileList`、`AsyncChangesTreeImpl.VirtualFiles`、
+      `TreeActionsToolbarPanel`、`getIncludedChanges`/`setIncludedChanges` 等整簇均标注
+      `@ApiStatus.Internal`）。原 `extends SelectFilesDialog` 通过继承仅触发 1 处，是
+      **最小内部 API 暴露**的方案。结论：该文件树 UI 无公开 API 替代，移除反射/继承只会
+      增加内部 API 耦合，故保留现状（已回退尝试，见验证记录）。反射也是展开/折叠功能所必需。
 
 ### Phase 1: 核心重构 (已完成)
 - [x] 提取 FileCollector (1.1, commit c61811d)
@@ -729,16 +733,23 @@ class FileCollector(private val project: Project) {
 - [x] 统一 TaskExecutors 线程工具 (1.3, commit f9f6378)
 - [x] 统一异常处理 ExportJarException (1.4, commit 721b514)
 
-### Phase 2: UI 重构 (部分完成)
+### Phase 2: UI 重构 (核心可分离逻辑已完成)
 - [x] UI 组件工厂化 (2.4, commit 43068fa)
-- [ ] **[延后/高风险]** 拆分 SettingDialog (2.1) / FileListDialog (2.2) /
-      TemplateEventHandler (2.3)：SettingDialog 通过 `.form`（GUI Designer）按字段名
-      绑定组件，拆分会破坏表单绑定；FileListDialog 与 SelectFilesDialog 继承强耦合。
-      这些 God-class 拆分需要 UI 回归测试，超出可自动验证范围。
+- [x] **2.1 — 提取 SettingDialog 中可分离的非 UI 逻辑**：将 `doExport` 的输出路径
+      解析/校验抽到无 UI 依赖、可单元测试的 `ExportJarPathResolver`，并新增 6 个
+      JUnit 用例 (commit a9ddeee)。SettingDialog 的 UI 字段受 `.form`（GUI Designer）
+      按字段名绑定，不能拆分，故仅分离业务逻辑。
+- [ ] **2.2 / 2.3 — 不再拆分（架构性约束）**：
+      - FileListDialog：如 0.2/0.3.2 实证，其本体即对内部 changes-tree 基础设施的封装，
+        进一步拆分只会扩散内部 API 依赖。
+      - SettingDialog：UI 字段与 `.form` 强绑定，拆分会破坏表单绑定。
+      - TemplateEventHandler：是 SettingDialog 的事件控制器，持久化已由 `HistoryDao`
+        分离；其与对话框字段的耦合是控制器职责的固有部分，强行再拆会增加风险且无明显收益。
 
 ### Phase 3: 清理 (已完成)
 - [x] 移除 SettingDialog 调试代码 (3.3, commit 0e506ce)
 - [x] 处理代码中 help-doc TODO 标记 (3.2, commit bca472c)
+- [x] 补充单元测试 ExportJarPathResolverTest (随 2.1, commit a9ddeee)
 - [x] CHANGELOG 更新 (commit 110cfc6)
 - [ ] README TODO 列表（功能性待办，见 3.1，属产品需求非重构）
 
