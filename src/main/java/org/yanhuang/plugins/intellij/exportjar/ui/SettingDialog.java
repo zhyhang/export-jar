@@ -43,6 +43,8 @@ import static com.intellij.openapi.ui.Messages.showErrorDialog;
 import static com.intellij.util.ui.JBUI.Panels.simplePanel;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static org.yanhuang.plugins.intellij.exportjar.utils.CommonUtils.*;
+import static org.yanhuang.plugins.intellij.exportjar.utils.TaskExecutors.backgroundRunWithoutLock;
+import static org.yanhuang.plugins.intellij.exportjar.utils.TaskExecutors.runInBgtWithReadLockAndWait;
 
 /**
  * export jar settings dialog (link to SettingDialog.form)
