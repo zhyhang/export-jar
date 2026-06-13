@@ -125,7 +125,7 @@ public class ExportPacker implements CompileStatusNotification {
                 ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
                 final Module module = projectFileIndex.getModuleForFile(virtualFile);
                 if (module == null) {
-                    throw new RuntimeException("not found module info of file " + virtualFile.getName());
+                    throw new ExportJarException("not found module info of file " + virtualFile.getName());
                 }
                 String outPutPath;
                 if (inTestSourceContent) {
@@ -134,7 +134,7 @@ public class ExportPacker implements CompileStatusNotification {
                     outPutPath = CompilerPaths.getModuleOutputPath(module, false);
                 }
                 if (outPutPath == null) {
-                    throw new RuntimeException("not found module " + module.getName() + " output path");
+                    throw new ExportJarException("not found module " + module.getName() + " output path");
                 }
                 //find inner class
                 final Path classFileBasePath = Paths.get(outPutPath).resolve(packagePath);
@@ -156,7 +156,7 @@ public class ExportPacker implements CompileStatusNotification {
                         }
                     });
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new ExportJarException(e);
                 }
             }
         } else {

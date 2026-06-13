@@ -30,6 +30,7 @@ import org.jetbrains.org.objectweb.asm.Attribute;
 import org.jetbrains.org.objectweb.asm.ClassReader;
 import org.jetbrains.org.objectweb.asm.ClassVisitor;
 import org.jetbrains.org.objectweb.asm.Opcodes;
+import org.yanhuang.plugins.intellij.exportjar.ExportJarException;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -154,7 +155,7 @@ public class CommonUtils {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ExportJarException(e);
         }
     }
 
@@ -320,7 +321,7 @@ public class CommonUtils {
                 }
             }, new Attribute[0], ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ExportJarException(e);
         }
     }
 
@@ -340,7 +341,7 @@ public class CommonUtils {
      * @param project current project
      * @param <T> return type of the task
      * @return result of the task execution
-     * @throws RuntimeException if any exception occurs during execution
+     * @throws ExportJarException if any exception occurs during execution
      */
     public static <T> T runInBgtWithReadLockAndWait(Callable<? extends T> task, Project project) {
         try {
@@ -357,7 +358,7 @@ public class CommonUtils {
                         .executeSynchronously();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ExportJarException(e);
         }
     }
 
