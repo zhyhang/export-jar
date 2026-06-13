@@ -277,16 +277,6 @@ public class FileListDialog extends SelectFilesDialog {
 			return defaultTreeModel;
 		}
 
-		// for compatible with before version 2022
-		protected @NotNull DefaultTreeModel buildTreeModel(@NotNull List<? extends VirtualFile> changes) {
-			DefaultTreeModel defaultTreeModel;
-			final ChangesGroupingPolicyFactory grouping = getGrouping();
-			defaultTreeModel = TreeModelBuilder.buildFromVirtualFiles(myProject, grouping, changes);
-			expandDirWhenSetting(defaultTreeModel);
-			collapseDirIfNeed(defaultTreeModel);
-			return defaultTreeModel;
-		}
-
 		private void collapseDirIfNeed(DefaultTreeModel defaultTreeModel) {
 			if (isDirectoryModuleGrouping()) {
 				collapseDirectoryNotInModules(defaultTreeModel);
