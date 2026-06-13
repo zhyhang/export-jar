@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -91,7 +92,7 @@ dependencies {
         plugins(properties("platformPlugins").map { it.split(',') })
 
         // Check if platformVersion is greater than or equal to 2024.2, only add modules dependency when condition is met
-        val platformVersion = properties("platformVersion").get().toString()
+        val platformVersion = properties("platformVersion").get()
         val is20242OrLater = run {
             val versionParts = platformVersion.split(".")
             if (versionParts.size >= 2) {
@@ -182,18 +183,17 @@ intellijPlatform {
         freeArgs = listOf("-mute", "TemplateWordInPluginId")
         failureLevel = VerifyPluginTask.FailureLevel.NONE
         ides {
-            ides(properties("verifyPluginUseIdes").get().split(','))
+            // Use select to match IDEs based on platform defaults
+            select {
+                types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+                sinceBuild = properties("pluginSinceBuild")
+            }
             // also can use following lines to specify verify using IDEs
-//            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2020.2")
-//            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1")
+//            create(IntelliJPlatformType.IntellijIdeaCommunity, "2025.1")
+//            create(IntelliJPlatformType.IntellijIdeaCommunity, "2025.2")
 //            local(file("/path/to/ide/"))
 //            recommended()
-//            select {
-//                types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
-//                channels = listOf(ProductRelease.Channel.RELEASE)
-//                sinceBuild = properties("pluginSinceBuild")
-//                untilBuild = "241.*"
-//            }
+//            current()
         }
     }
 }

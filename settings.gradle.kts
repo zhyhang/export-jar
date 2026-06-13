@@ -9,6 +9,9 @@ pluginManagement {
         maven {
             url = uri("https://maven.aliyun.com/repository/public/")
         }
+        maven {
+            url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+        }
         gradlePluginPortal()
     }
 }
