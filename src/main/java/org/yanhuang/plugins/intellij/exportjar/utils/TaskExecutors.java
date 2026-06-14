@@ -44,10 +44,13 @@ public final class TaskExecutors {
                         .submit(AppExecutorUtil.getAppExecutorService());
                 return promise.get();
             } else {
-                return ReadAction.nonBlocking(task)
-                        .inSmartMode(project)
-                        .withDocumentsCommitted(project)
-                        .executeSynchronously();
+                // On a background thread, take the read lock synchronously and run directly.
+                // Do NOT use nonBlocking().inSmartMode()/.withDocumentsCommitted().executeSynchronously()
+                // here: those constraints require the EDT to commit documents / confirm smart mode, but
+                // the export task is launched from onOK() while the modal SettingDialog is still showing,
+                // so the EDT is stuck in the modal event loop and the constraints can never be satisfied
+                // -> permanent deadlock (UI freeze). ReadAction.compute needs no EDT coordination.
+                return ReadAction.compute(task::call);
             }
         } catch (Exception e) {
             throw new ExportJarException(e);
